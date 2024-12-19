@@ -34,8 +34,8 @@ public class AdaptWall extends Wall {
 	public float damageReduction = 0.1f;
 	public float maxShareStep = 3;
 
-	private final Seq<Building> toDamage = new Seq<>();
-	private final Queue<Building> queue = new Queue<>();
+	private final Seq<Building> toDamage = new Seq<>(true,64);
+	private final Queue<Building> queue = new Queue<>(true,64);
 
 	public AdaptWall(String name){
 		super(name);
