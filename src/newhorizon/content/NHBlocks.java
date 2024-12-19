@@ -4206,7 +4206,7 @@ public class NHBlocks{
 			requirements(Category.defense, with(NHItems.multipleSteel, 100, NHItems.presstanium, 260, NHItems.juniorProcessor, 120, Items.thorium, 500, Items.surgeAlloy, 75));
 			//NHTechTree.add(Blocks.massDriver, this);
 			size = 3;
-			storage = 1;
+			storage = 10;
 			
 			bullet = new EffectBulletType(15f){{
 				trailChance = 0.25f;
