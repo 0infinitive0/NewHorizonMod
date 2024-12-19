@@ -32,10 +32,10 @@ public class AdaptWall extends Wall {
 	public TextureRegion[] atlasRegion, topRegion;
 
 	public float damageReduction = 0.1f;
-	public float maxShareStep = 3;
+	public float maxShareStep = 64;
 
-	private final Seq<Building> toDamage = new Seq<>(64);
-	private final Queue<Building> queue = new Queue<>(64);
+	private final Seq<Building> toDamage = new Seq<>();
+	private final Queue<Building> queue = new Queue<>();
 
 	public AdaptWall(String name){
 		super(name);
@@ -70,7 +70,7 @@ public class AdaptWall extends Wall {
 	}
 
 	public class AdaptWallBuild extends Building{
-		public Seq<AdaptWallBuild> connectedWalls = new Seq<>(64);
+		public Seq<AdaptWallBuild> connectedWalls = new Seq<>();
 		public int drawIndex = 0;
 		public int topIdx = 0;
 
