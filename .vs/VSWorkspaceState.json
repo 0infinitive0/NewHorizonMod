@@ -3,11 +3,9 @@
     "",
     "\\src",
     "\\src\\newhorizon",
-    "\\src\\newhorizon\\content",
     "\\src\\newhorizon\\expand",
     "\\src\\newhorizon\\expand\\block",
-    "\\src\\newhorizon\\expand\\block\\defence"
+    "\\src\\newhorizon\\expand\\block\\commandable"
   ],
-  "SelectedNode": "\\src\\newhorizon\\content\\NHBlocks.java",
   "PreviewInSolutionExplorer": false
 }
