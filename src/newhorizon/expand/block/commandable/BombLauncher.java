@@ -107,7 +107,7 @@ public class BombLauncher extends CommandableAttackerBlock{
 			BombEntity bomb = Pools.obtain(BombEntity.class, BombEntity::new);
 			bomb.init(team, 80f, this, target.x + rand.range(spread) + Mathf.range(12f), target.y + rand.range(spread) + Mathf.range(12f), true);
 			bomb.add();
-			bomb.setDamage(bullet.damage*this.ammo, bullet.splashDamageRadius);
+			bomb.setDamage(bullet.damage*this.ammo(), bullet.splashDamageRadius);
 		}
 	}
 	
