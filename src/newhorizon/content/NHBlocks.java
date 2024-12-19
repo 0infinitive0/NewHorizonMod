@@ -4218,7 +4218,7 @@ public class NHBlocks{
 				
 				scaledSplashDamage = true;
 				collidesTiles = collidesGround = collides = true;
-				damage = 100;
+				damage = 100f * bombLauncher.item;
 				splashDamage = 800f;
 				lightningDamage = 400f;
 				lightColor = lightningColor = trailColor = hitColor = NHColor.thurmixRed;
