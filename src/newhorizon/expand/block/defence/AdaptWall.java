@@ -210,6 +210,7 @@ public class AdaptWall extends Wall {
 			if (!net.client()) {
 				building.health -= damage;
 				building.maxHealth += damage;
+				building.setBars();
 			}
 			healthChanged();
 			if (building.health <= 0) {

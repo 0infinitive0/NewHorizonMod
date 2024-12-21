@@ -3,24 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\asus\\source\\repos\\NewHorizonMod\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|I:\\AsiaSoft\\Asia02\\ThuanPhong_DuLich_AE21\\Programs\\AE21\\Views\\Template\\modules\\SO8\\language\\en-US.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\asus\\source\\repos\\NewHorizonMod\\src\\newhorizon\\expand\\block\\commandable\\BombLauncher.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\newhorizon\\expand\\block\\commandable\\BombLauncher.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|I:\\AsiaSoft\\Asia02\\ThuanPhong_DuLich_AE21\\Programs\\AE21\\Views\\Template\\modules\\SO8\\language\\vi-VN.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\asus\\source\\repos\\NewHorizonMod\\src\\newhorizon\\expand\\block\\commandable\\CommandableAttackerBlock.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\newhorizon\\expand\\block\\commandable\\CommandableAttackerBlock.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|I:\\AsiaSoft\\Asia02\\ThuanPhong_DuLich_AE21\\Programs\\AE21\\Views\\Template\\modules\\SO8\\template\\Form.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|I:\\AsiaSoft\\Asia02\\ThuanPhong_DuLich_AE21\\Programs\\AE21\\Views\\Template\\modules\\SO8\\js\\SO8FormController.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\asus\\source\\repos\\NewHorizonMod\\src\\newhorizon\\content\\blocks\\DefenseBlock.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\newhorizon\\content\\blocks\\DefenseBlock.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\asus\\source\\repos\\NewHorizonMod\\src\\newhorizon\\expand\\block\\defence\\AdaptWall.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\newhorizon\\expand\\block\\defence\\AdaptWall.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\asus\\source\\repos\\NewHorizonMod\\src\\newhorizon\\content\\NHBlocks.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\newhorizon\\content\\NHBlocks.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
     }
   ],
   "DocumentGroupContainers": [
@@ -30,7 +22,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 8,
           "Children": [
             {
               "$type": "Bookmark",
@@ -58,76 +50,41 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "CommandableAttackerBlock.java",
+              "DocumentMoniker": "C:\\Users\\asus\\source\\repos\\NewHorizonMod\\src\\newhorizon\\expand\\block\\commandable\\CommandableAttackerBlock.java",
+              "RelativeDocumentMoniker": "src\\newhorizon\\expand\\block\\commandable\\CommandableAttackerBlock.java",
+              "ToolTip": "C:\\Users\\asus\\source\\repos\\NewHorizonMod\\src\\newhorizon\\expand\\block\\commandable\\CommandableAttackerBlock.java",
+              "RelativeToolTip": "src\\newhorizon\\expand\\block\\commandable\\CommandableAttackerBlock.java",
+              "ViewState": "AgIAANIAAAAAAAAAAAAAAEMAAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001630|",
+              "WhenOpened": "2024-12-19T07:24:46.574Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "Form.html",
-              "DocumentMoniker": "I:\\AsiaSoft\\Asia02\\ThuanPhong_DuLich_AE21\\Programs\\AE21\\Views\\Template\\modules\\SO8\\template\\Form.html",
-              "ToolTip": "I:\\AsiaSoft\\Asia02\\ThuanPhong_DuLich_AE21\\Programs\\AE21\\Views\\Template\\modules\\SO8\\template\\Form.html",
-              "ViewState": "AgIAAFwAAAAAAAAAAAAewGoAAABMAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2024-12-19T06:06:29.562Z",
+              "Title": "NHBlocks.java",
+              "DocumentMoniker": "C:\\Users\\asus\\source\\repos\\NewHorizonMod\\src\\newhorizon\\content\\NHBlocks.java",
+              "RelativeDocumentMoniker": "src\\newhorizon\\content\\NHBlocks.java",
+              "ToolTip": "C:\\Users\\asus\\source\\repos\\NewHorizonMod\\src\\newhorizon\\content\\NHBlocks.java",
+              "RelativeToolTip": "src\\newhorizon\\content\\NHBlocks.java",
+              "ViewState": "AgIAAGYQAAAAAAAAAAAcwHwQAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001630|",
+              "WhenOpened": "2024-12-19T07:13:53.627Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "en-US.js",
-              "DocumentMoniker": "I:\\AsiaSoft\\Asia02\\ThuanPhong_DuLich_AE21\\Programs\\AE21\\Views\\Template\\modules\\SO8\\language\\en-US.js",
-              "ToolTip": "I:\\AsiaSoft\\Asia02\\ThuanPhong_DuLich_AE21\\Programs\\AE21\\Views\\Template\\modules\\SO8\\language\\en-US.js",
-              "ViewState": "AgIAABMAAAAAAAAAAAAcwBYAAAAfAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2024-12-19T06:06:12.52Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "vi-VN.js",
-              "DocumentMoniker": "I:\\AsiaSoft\\Asia02\\ThuanPhong_DuLich_AE21\\Programs\\AE21\\Views\\Template\\modules\\SO8\\language\\vi-VN.js",
-              "ToolTip": "I:\\AsiaSoft\\Asia02\\ThuanPhong_DuLich_AE21\\Programs\\AE21\\Views\\Template\\modules\\SO8\\language\\vi-VN.js",
-              "ViewState": "AgIAAAgAAAAAAAAAAAAcwBYAAAAdAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2024-12-19T06:06:09.598Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "SO8FormController.js",
-              "DocumentMoniker": "I:\\AsiaSoft\\Asia02\\ThuanPhong_DuLich_AE21\\Programs\\AE21\\Views\\Template\\modules\\SO8\\js\\SO8FormController.js",
-              "ToolTip": "I:\\AsiaSoft\\Asia02\\ThuanPhong_DuLich_AE21\\Programs\\AE21\\Views\\Template\\modules\\SO8\\js\\SO8FormController.js",
-              "ViewState": "AgIAAFcCAAAAAAAAAAAcwF4CAAAoAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2024-12-19T04:30:51.227Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "DefenseBlock.java",
-              "DocumentMoniker": "C:\\Users\\asus\\source\\repos\\NewHorizonMod\\src\\newhorizon\\content\\blocks\\DefenseBlock.java",
-              "RelativeDocumentMoniker": "src\\newhorizon\\content\\blocks\\DefenseBlock.java",
-              "ToolTip": "C:\\Users\\asus\\source\\repos\\NewHorizonMod\\src\\newhorizon\\content\\blocks\\DefenseBlock.java",
-              "RelativeToolTip": "src\\newhorizon\\content\\blocks\\DefenseBlock.java",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAC8AAAASAAAAAAAAAA==",
+              "Title": "BombLauncher.java",
+              "DocumentMoniker": "C:\\Users\\asus\\source\\repos\\NewHorizonMod\\src\\newhorizon\\expand\\block\\commandable\\BombLauncher.java",
+              "RelativeDocumentMoniker": "src\\newhorizon\\expand\\block\\commandable\\BombLauncher.java",
+              "ToolTip": "C:\\Users\\asus\\source\\repos\\NewHorizonMod\\src\\newhorizon\\expand\\block\\commandable\\BombLauncher.java",
+              "RelativeToolTip": "src\\newhorizon\\expand\\block\\commandable\\BombLauncher.java",
+              "ViewState": "AgIAAGAAAAAAAAAAAAAAAG8AAAACAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001630|",
-              "WhenOpened": "2024-12-19T04:06:50.341Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "AdaptWall.java",
-              "DocumentMoniker": "C:\\Users\\asus\\source\\repos\\NewHorizonMod\\src\\newhorizon\\expand\\block\\defence\\AdaptWall.java",
-              "RelativeDocumentMoniker": "src\\newhorizon\\expand\\block\\defence\\AdaptWall.java",
-              "ToolTip": "C:\\Users\\asus\\source\\repos\\NewHorizonMod\\src\\newhorizon\\expand\\block\\defence\\AdaptWall.java",
-              "RelativeToolTip": "src\\newhorizon\\expand\\block\\defence\\AdaptWall.java",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAMAAAAAbAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001630|",
-              "WhenOpened": "2024-12-19T03:42:04.86Z",
+              "WhenOpened": "2024-12-19T07:11:54.367Z",
               "EditorCaption": ""
             }
           ]

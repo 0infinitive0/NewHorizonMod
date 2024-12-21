@@ -3,9 +3,10 @@
     "",
     "\\src",
     "\\src\\newhorizon",
-    "\\src\\newhorizon\\expand",
-    "\\src\\newhorizon\\expand\\block",
-    "\\src\\newhorizon\\expand\\block\\commandable"
+    "\\src\\newhorizon\\content",
+    "\\src\\newhorizon\\content\\blocks",
+    "\\src\\newhorizon\\expand\\block\\defence"
   ],
+  "SelectedNode": "\\src\\newhorizon\\content\\NHStatusEffects.java",
   "PreviewInSolutionExplorer": false
 }
