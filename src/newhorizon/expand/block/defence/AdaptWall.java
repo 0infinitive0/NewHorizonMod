@@ -60,7 +60,7 @@ public class AdaptWall extends Wall {
 	@Override
 	public void setBars() {
 		barMap.clear();
-		addBar("health", e -> new BarExtend(Core.bundle.format("nh.bar.health", Strings.autoFixed(e.health(), 0), health, Strings.autoFixed(e.healthf() * 100, 0)), Pal.health, e::healthf, Iconc.add + "").blink(Color.white));
+		addBar("health", e -> new BarExtend(Core.bundle.format("nh.bar.health", Strings.autoFixed(e.health(), 0), health, Strings.autoFixed(e.maxHealth, 0)), Pal.health, e::healthf, Iconc.add + "").blink(Color.white));
 	}
 
 	@Override
@@ -196,7 +196,7 @@ public class AdaptWall extends Wall {
 			for (Building b: toDamage){
 				damageShared(b, shareDamage);
 			}
-			setBars();
+			this.setBars();
 			return shareDamage;
 		}
 
