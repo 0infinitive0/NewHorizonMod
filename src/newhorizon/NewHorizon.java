@@ -33,6 +33,7 @@ import mindustry.world.modules.ItemModule;
 import newhorizon.content.*;
 import newhorizon.content.blocks.DefenseBlock;
 import newhorizon.content.blocks.DistributionBlock;
+import newhorizon.content.jade.JadeFaction;
 import newhorizon.expand.NHVars;
 import newhorizon.expand.entities.EntityRegister;
 import newhorizon.expand.entities.WorldEvent;
@@ -411,6 +412,7 @@ public class NewHorizon extends Mod{
 			NHUnitTypes.load();
 			Recipes.load();
 			NHBlocks.load();
+			JadeFaction.load();
 			NHWeathers.load();
 			NHPlanets.load();
 			NHSectorPresents.load();
