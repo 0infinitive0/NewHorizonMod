@@ -196,7 +196,7 @@ public class AdaptWall extends Wall {
 			for (Building b: toDamage){
 				damageShared(b, shareDamage);
 			}
-			this.setBars();
+			setBars();
 			return shareDamage;
 		}
 
