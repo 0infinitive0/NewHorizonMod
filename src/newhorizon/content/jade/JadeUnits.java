@@ -1,6 +1,5 @@
 package newhorizon.content.jade;
 
-import mindustry.ai.types.SuicideAI;
 import mindustry.content.Fx;
 import mindustry.entities.abilities.EnergyFieldAbility;
 import mindustry.entities.abilities.RepairFieldAbility;
@@ -12,6 +11,7 @@ import mindustry.gen.UnitEntity;
 import mindustry.type.Weapon;
 import mindustry.type.ammo.ItemAmmoType;
 import newhorizon.NewHorizon;
+import newhorizon.expand.units.ai.SporelingAI;
 import newhorizon.expand.units.unitType.NHUnitType;
 
 /**
@@ -250,7 +250,7 @@ public class JadeUnits{
 		//Suicide unit. Whatever it infects bursts into more Sporelings when it dies, see JadeInfection.
 		sporeling = new NHUnitType("sporeling"){{
 			constructor = MechUnit::create;
-			aiController = SuicideAI::new;
+			aiController = SporelingAI::new;
 			outlineColor = JadeColor.outline;
 			ammoType = new ItemAmmoType(JadeItems.verdantResin);
 

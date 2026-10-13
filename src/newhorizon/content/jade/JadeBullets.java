@@ -260,8 +260,8 @@ public class JadeBullets{
 				collidesAir = true;
 				splashDamageRadius = 52f;
 				splashDamage = 70f;
-				//Suicide units must be worth it against structures: 70 x 3 = 210 damage to buildings.
-				buildingDamageMultiplier = 3f;
+				//Deliberately harmless to structures: Sporelings are an anti-unit swarm.
+				buildingDamageMultiplier = 0f;
 				status = JadeStatus.infested;
 				statusDuration = 60f * 10f;
 				lightColor = hitColor = JadeColor.infection;
