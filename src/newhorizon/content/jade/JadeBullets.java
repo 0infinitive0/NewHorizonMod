@@ -11,7 +11,8 @@ public class JadeBullets{
 	public static BulletType
 		needle, thornShard, thornShardSilk, thornSpread,
 		seed, lifeBolt, bloomMissile,
-		lanceBeam, canopyShell, canopyShellCore, briarMortar;
+		lanceBeam, canopyShell, canopyShellCore, briarMortar,
+		sporelingBlast;
 
 	private static final float bloomTime = 60f * 3f;
 
@@ -244,5 +245,35 @@ public class JadeBullets{
 			fragBullets = 3;
 			fragBullet = thornSpread;
 		}};
+
+		//The Sporeling's body: explodes on contact, infects everything caught in the blast and kills its owner.
+		sporelingBlast = new BulletType(){
+			{
+				speed = 0f;
+				rangeOverride = 30f;
+				instantDisappear = true;
+				killShooter = true;
+				hittable = false;
+				collides = false;
+				collidesTiles = false;
+				collidesAir = true;
+				splashDamageRadius = 52f;
+				splashDamage = 70f;
+				buildingDamageMultiplier = 0.5f;
+				status = JadeStatus.infested;
+				statusDuration = 60f * 10f;
+				lightColor = hitColor = JadeColor.infection;
+				hitSound = Sounds.explosion;
+				hitShake = 1f;
+				hitEffect = new mindustry.entities.effect.MultiEffect(JadeFx.leafBurstBig, JadeFx.bloomRing);
+				despawnEffect = Fx.none;
+			}
+
+			@Override
+			public void hit(mindustry.gen.Bullet b, float x, float y){
+				super.hit(b, x, y);
+				JadeInfection.infectArea(b.team, x, y, splashDamageRadius);
+			}
+		};
 	}
 }

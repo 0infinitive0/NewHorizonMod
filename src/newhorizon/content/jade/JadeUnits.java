@@ -1,5 +1,6 @@
 package newhorizon.content.jade;
 
+import mindustry.ai.types.SuicideAI;
 import mindustry.content.Fx;
 import mindustry.entities.abilities.EnergyFieldAbility;
 import mindustry.entities.abilities.RepairFieldAbility;
@@ -18,12 +19,14 @@ import newhorizon.expand.units.unitType.NHUnitType;
  * <ul>
  *     <li>Ground (thorn line): {@link #sprig} -> {@link #thornback} -> {@link #briarlord}</li>
  *     <li>Air (pollen line): {@link #wisp} -> {@link #luminar} -> {@link #verdance}</li>
+ *     <li>Suicide: {@link #sporeling}, which infects what it blows up</li>
  * </ul>
  */
 public class JadeUnits{
 	public static NHUnitType
 		sprig, thornback, briarlord,
-		wisp, luminar, verdance;
+		wisp, luminar, verdance,
+		sporeling;
 
 	public static void load(){
 		sprig = new NHUnitType("sprig"){{
@@ -242,6 +245,35 @@ public class JadeUnits{
 					bullet = JadeBullets.lifeBolt;
 				}}
 			);
+		}};
+
+		//Suicide unit. Whatever it infects bursts into more Sporelings when it dies, see JadeInfection.
+		sporeling = new NHUnitType("sporeling"){{
+			constructor = MechUnit::create;
+			aiController = SuicideAI::new;
+			outlineColor = JadeColor.outline;
+			ammoType = new ItemAmmoType(JadeItems.verdantResin);
+
+			health = 110f;
+			speed = 1.05f;
+			hitSize = 8f;
+			range = 40f;
+			targetAir = false;
+			//Sporelings burst out in swarms (one per 100 max health of the host), which the normal unit cap would cull.
+			useUnitCap = false;
+			mechSideSway = 0.25f;
+			mechStepParticles = false;
+
+			weapons.add(new Weapon(){{
+				shootOnDeath = true;
+				reload = 24f;
+				shootCone = 180f;
+				ejectEffect = Fx.none;
+				shootSound = Sounds.explosion;
+				x = shootY = 0f;
+				mirror = false;
+				bullet = JadeBullets.sporelingBlast;
+			}});
 		}};
 	}
 }

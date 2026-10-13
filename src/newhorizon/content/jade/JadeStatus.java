@@ -8,6 +8,11 @@ public class JadeStatus{
 	public static StatusEffect bloom;
 	/** Applied by Jade support units: slowly mends whatever carries it. */
 	public static StatusEffect regrowth;
+	/**
+	 * Applied by the Sporeling. Never times out: it ends only when the host dies (spawning Sporelings, see
+	 * {@link JadeInfection}) or is healed back to full health. Deals damage over time.
+	 */
+	public static StatusEffect infested;
 
 	public static void load(){
 		bloom = new StatusEffect("bloom"){{
@@ -25,6 +30,15 @@ public class JadeStatus{
 			healthMultiplier = 1.1f;
 			effect = JadeFx.leafBurst;
 			effectChance = 0.06f;
+		}};
+
+		infested = new StatusEffect("infested"){{
+			color = JadeColor.infection;
+			permanent = true;
+			damage = 0.3f;
+			speedMultiplier = 0.92f;
+			effect = Fx.sporeSlowed;
+			effectChance = 0.12f;
 		}};
 	}
 }

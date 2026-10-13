@@ -45,6 +45,7 @@ public class JadeTechTree{
 						node(JadeUnits.verdance, Seq.with(new Objectives.Research(JadeBlocks.groveCultivator)), () -> {});
 					});
 				});
+				node(JadeUnits.sporeling, () -> {});
 				node(JadeBlocks.verdantCultivator, () -> {
 					node(JadeBlocks.groveCultivator, Seq.with(new Objectives.Research(JadeBlocks.silkLoom)), () -> {});
 				});

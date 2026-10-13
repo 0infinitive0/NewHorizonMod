@@ -185,7 +185,8 @@ public class JadeBlocks{
 			consumePower(1.4f);
 			plans.add(
 				new UnitFactory.UnitPlan(JadeUnits.sprig, 60f * 12f, with(Items.silicon, 18, JadeItems.verdantResin, 12)),
-				new UnitFactory.UnitPlan(JadeUnits.wisp, 60f * 14f, with(Items.silicon, 22, Items.lead, 10, JadeItems.verdantResin, 14))
+				new UnitFactory.UnitPlan(JadeUnits.wisp, 60f * 14f, with(Items.silicon, 22, Items.lead, 10, JadeItems.verdantResin, 14)),
+				new UnitFactory.UnitPlan(JadeUnits.sporeling, 60f * 8f, with(Items.silicon, 10, JadeItems.verdantResin, 20))
 			);
 		}};
 

@@ -13,6 +13,7 @@ public class JadeFaction{
 		JadeItems.load();
 		JadeBullets.load();
 		JadeUnits.load();
+		JadeInfection.load();
 		JadeBlocks.load();
 	}
 }

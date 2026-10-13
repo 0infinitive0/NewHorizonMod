@@ -29,6 +29,8 @@ JADE = (63, 191, 143)
 JADE_L = (180, 245, 214)
 JADE_D = (29, 107, 83)
 POLLEN = (246, 216, 107)
+INFECT = (155, 217, 74)
+INFECT_D = (74, 122, 36)
 RESIN = (217, 165, 58)
 RESIN_D = (140, 95, 30)
 WHITE = (255, 255, 255)
@@ -208,6 +210,15 @@ def status_icons():
     r.part([(14.5, 3), (17.5, 3), (17.5, 8.5), (23, 8.5), (23, 11.5), (17.5, 11.5), (17.5, 17), (14.5, 17), (14.5, 11.5), (9, 11.5), (9, 8.5), (14.5, 8.5)], POLLEN, light=WHITE, dark=RESIN)
     r.outline()
     r.save(STATUS_DIR, "regrowth")
+
+    i = Canvas(32, 32)
+    i.part(rrect(14, 16, 18, 29, 1.5), JADE_D, light=JADE, dark=HULL_D)
+    i.part(ellipse(16, 12, 9, 9, 28), INFECT_D, light=INFECT, dark=HULL_D)
+    for a in range(0, 360, 60):
+        leaf(i, 16, 12, 13, 5, a, base=INFECT_D, light=INFECT, dark=HULL_D)
+    i.circle(16, 12, 4, INFECT, light=WHITE, dark=INFECT_D, rim=0.8)
+    i.outline()
+    i.save(STATUS_DIR, "infested")
 
 
 # ---------------------------------------------------------------------------------------------
@@ -407,6 +418,27 @@ def unit_mech(name, px, scale):
     leg.save(UNIT_DIR, name + "-leg")
 
 
+def unit_sporeling():
+    """A small spore bulb on a stalk: round body, spikes, glowing infectious core."""
+    px = 24
+    c = Canvas(px, px)
+    cx = cy = px / 2
+    for a in range(0, 360, 60):
+        leaf(c, cx, cy, 11, 4.5, a + 30, base=INFECT_D, light=INFECT, dark=HULL_D)
+    c.part(ellipse(cx, cy, 6.5, 7.5, 28), JADE_D, light=JADE, dark=HULL_D)
+    c.glow(cx, cy, 5, INFECT, 150)
+    c.circle(cx, cy, 3.2, INFECT, light=WHITE, dark=INFECT_D, rim=0.8)
+    c.save(UNIT_DIR, "sporeling")
+
+    base = Canvas(px, px)
+    base.part(ellipse(cx, cy, 5, 4, 20), HULL, light=HULL_L, dark=HULL_D)
+    base.save(UNIT_DIR, "sporeling-base")
+
+    leg = Canvas(px, px)
+    leg.part(rrect(cx - 2, cy - 1, cx + 2, cy + 8, 1.5), HULL, light=HULL_L, dark=HULL_D)
+    leg.save(UNIT_DIR, "sporeling-leg")
+
+
 def unit_air(name, w, h, wing, accent=POLLEN):
     c = Canvas(w, h)
     cx = w / 2
@@ -434,6 +466,7 @@ def units():
     unit_mech("sprig", 32, 1.0)
     unit_mech("thornback", 48, 1.5)
     unit_mech("briarlord", 80, 2.5)
+    unit_sporeling()
     unit_air("wisp", 32, 32, 12)
     unit_air("luminar", 56, 60, 24)
     unit_air("verdance", 96, 108, 44)
