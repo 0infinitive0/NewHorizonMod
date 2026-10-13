@@ -356,6 +356,26 @@ def blk_turrets():
     turret_head("canopy-mortar", 128, [(52, 50, 14), (76, 50, 14)], 74, 70)
 
 
+def blk_catapult():
+    """Spore Catapult head (points up): a wide basket cradling a glowing spore pod."""
+    px = 96
+    c = Canvas(px, px)
+    cx = px / 2
+    c.part(mirror([(cx + 16, 52), (cx + 30, 60), (cx + 32, 80), (cx + 18, 90)], cx), HULL, light=HULL_L, dark=HULL_D)
+    for sgn in (-1, 1):
+        c.part(rrect(cx + sgn * 21 - 4, 16, cx + sgn * 21 + 4, 62, 2), HULL_L, light=lerp(HULL_L, WHITE, 0.35), dark=HULL_D)
+        leaf(c, cx + sgn * 21, 20, 22, 9, sgn * 12, base=JADE_D, light=JADE, dark=HULL_D)
+    c.part(rrect(cx - 15, 36, cx + 15, 70, 6), HULL_D, rim=0.6)
+    c.glow(cx, 34, 17, INFECT, 150)
+    c.circle(cx, 34, 11, INFECT_D, light=INFECT, dark=HULL_D)
+    for a in range(0, 360, 60):
+        leaf(c, cx, 34, 12, 5, a, base=INFECT_D, light=INFECT, dark=HULL_D)
+    c.circle(cx, 34, 4.5, INFECT, light=WHITE, dark=INFECT_D, rim=0.8)
+    c.circle(cx, 66, 5, POLLEN, light=WHITE, rim=0.75)
+    c.outline()
+    c.save(BLOCK_DIR, "spore-catapult")
+
+
 def blk_unit_blocks():
     for name, px in (("jade-nursery", 96), ("verdant-cultivator", 96), ("grove-cultivator", 160)):
         c = Canvas(px, px)
@@ -515,6 +535,7 @@ def main():
     blk_wall(2)
     blk_pylon()
     blk_turrets()
+    blk_catapult()
     blk_unit_blocks()
     units()
     print("wrote %d sprites" % len(generated))

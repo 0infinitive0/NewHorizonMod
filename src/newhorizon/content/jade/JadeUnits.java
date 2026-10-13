@@ -261,6 +261,8 @@ public class JadeUnits{
 			targetAir = false;
 			//Sporelings burst out in swarms (one per 100 max health of the host), which the normal unit cap would cull.
 			useUnitCap = false;
+			//Swarm unit: always hunts on its own. The default controller for player teams is CommandAI, which just stands still.
+			playerControllable = false;
 			mechSideSway = 0.25f;
 			mechStepParticles = false;
 

@@ -27,7 +27,7 @@ public class JadeBlocks{
 	public static Block
 		resinTapper, silkLoom, bloomConservatory,
 		sporeFurnace,
-		thornSpitter, briarLance, canopyMortar,
+		thornSpitter, briarLance, canopyMortar, sporeCatapult,
 		jadeWall, jadeWallLarge, lifebloomPylon,
 		jadeNursery, verdantCultivator, groveCultivator;
 
@@ -143,6 +143,32 @@ public class JadeBlocks{
 			ammo(
 				JadeItems.jadeSilk, JadeBullets.canopyShell,
 				JadeItems.everbloomCore, JadeBullets.canopyShellCore
+			);
+		}};
+
+		//Lobs pods that burst into Sporelings far behind enemy lines; the Sporelings then hunt on their own.
+		sporeCatapult = new ItemTurret("spore-catapult"){{
+			requirements(Category.turret, with(Items.titanium, 220, Items.silicon, 180, Items.plastanium, 70, JadeItems.jadeSilk, 120));
+			size = 3;
+			health = 2400;
+			range = 480f;
+			minRange = 60f;
+			reload = 150f;
+			rotateSpeed = 3f;
+			recoil = 4f;
+			shake = 1.5f;
+			inaccuracy = 3f;
+			velocityRnd = 0.08f;
+			ammoPerShot = 3;
+			targetAir = false;
+			shootSound = Sounds.artillery;
+			outlineColor = JadeColor.outline;
+			consumePower(3f);
+			coolant = consumeCoolant(0.2f);
+
+			ammo(
+				JadeItems.verdantResin, JadeBullets.sporePod,
+				JadeItems.jadeSilk, JadeBullets.sporePodSilk
 			);
 		}};
 

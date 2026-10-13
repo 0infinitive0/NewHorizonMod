@@ -12,7 +12,8 @@ public class JadeBullets{
 		needle, thornShard, thornShardSilk, thornSpread,
 		seed, lifeBolt, bloomMissile,
 		lanceBeam, canopyShell, canopyShellCore, briarMortar,
-		sporelingBlast;
+		sporelingBlast,
+		sporePod, sporePodSilk;
 
 	private static final float bloomTime = 60f * 3f;
 
@@ -259,7 +260,8 @@ public class JadeBullets{
 				collidesAir = true;
 				splashDamageRadius = 52f;
 				splashDamage = 70f;
-				buildingDamageMultiplier = 0.5f;
+				//Suicide units must be worth it against structures: 70 x 3 = 210 damage to buildings.
+				buildingDamageMultiplier = 3f;
 				status = JadeStatus.infested;
 				statusDuration = 60f * 10f;
 				lightColor = hitColor = JadeColor.infection;
@@ -275,5 +277,39 @@ public class JadeBullets{
 				JadeInfection.infectArea(b.team, x, y, splashDamageRadius);
 			}
 		};
+	}
+
+	/**
+	 * Artillery pods that carry Sporelings. They need the unit, so unlike the rest of the bullets they are created
+	 * after {@link JadeUnits#load()}.
+	 */
+	public static void loadPods(){
+		sporePod = sporePod(2, 16f, JadeColor.infection);
+		sporePodSilk = sporePod(4, 26f, JadeColor.jadeLight);
+	}
+
+	private static BulletType sporePod(int sporelings, float scatter, Color color){
+		return new ArtilleryBulletType(4.4f, 0f){{
+			sprite = "circle-bullet";
+			width = height = 14f;
+			lifetime = 120f;
+			scaleLife = true;
+			collides = false;
+			collidesTiles = false;
+			collidesAir = false;
+			ammoMultiplier = 1f;
+			despawnUnit = JadeUnits.sporeling;
+			despawnUnitCount = sporelings;
+			despawnUnitChance = 1f;
+			despawnUnitRadius = scatter;
+			backColor = trailColor = lightColor = hitColor = color;
+			frontColor = Color.white;
+			trailLength = 14;
+			trailWidth = 2.2f;
+			hitShake = 1.5f;
+			hitSound = Sounds.plantBreak;
+			shootEffect = Fx.shootBig;
+			hitEffect = despawnEffect = new mindustry.entities.effect.MultiEffect(JadeFx.leafBurstBig, JadeFx.bloomRingBig);
+		}};
 	}
 }
