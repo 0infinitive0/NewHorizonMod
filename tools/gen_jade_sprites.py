@@ -436,6 +436,21 @@ def blk_waterwheel():
     r.save(BLOCK_DIR, "spore-waterwheel-rotor")
 
 
+def blk_contagion_spire():
+    """Contagion Spire: a plate with a thorned spore spire and an infection-green glow."""
+    c = Canvas(64, 64)
+    plate(c, 64)
+    c.circle(32, 32, 16, HULL_D, rim=0.6)
+    for a in range(0, 360, 45):
+        leaf(c, 32, 32, 22, 6, a, base=INFECT_D, light=INFECT, dark=HULL_D)
+    c.glow(32, 32, 14, INFECT, 150)
+    c.part([(32, 8), (40, 32), (32, 56), (24, 32)], MOSS, light=INFECT, dark=INFECT_D)
+    c.glow(32, 32, 7, WHITE, 150)
+    c.circle(32, 32, 4, INFECT, light=WHITE, dark=INFECT_D, rim=0.8, shine=1.0)
+    c.outline()
+    c.save(BLOCK_DIR, "contagion-spire")
+
+
 def blk_liquid_driver():
     """Liquid Mass Driver: a plate with an open tank (-base, -liquid is the tank, tinted by the game) and a rotating nozzle (points up)."""
     base = Canvas(96, 96)
@@ -715,6 +730,7 @@ def main():
     blk_spore_walls()
     blk_waterwheel()
     blk_liquid_driver()
+    blk_contagion_spire()
     blk_unit_blocks()
     units()
     print("wrote %d sprites" % len(generated))

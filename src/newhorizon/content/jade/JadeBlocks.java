@@ -20,6 +20,7 @@ import mindustry.world.consumers.ConsumeItemFlammable;
 import mindustry.world.draw.DrawDefault;
 import mindustry.world.draw.DrawMulti;
 import mindustry.world.draw.DrawRegion;
+import newhorizon.expand.block.defence.ContagionSpire;
 import newhorizon.expand.block.defence.RegrowthWall;
 import newhorizon.expand.block.defence.SporeWall;
 import newhorizon.expand.block.distribution.LiquidMassDriver;
@@ -33,7 +34,7 @@ public class JadeBlocks{
 		thornSpitter, briarLance, canopyMortar, sporeCatapult,
 		jadeWall, jadeWallLarge, sporeWall, sporeWallLarge, lifebloomPylon,
 		jadeNursery, verdantCultivator, groveCultivator,
-		verdantClinic;
+		verdantClinic, contagionSpire;
 
 	public static void load(){
 		//Resource chain: spore pods -> resin -> silk -> everbloom core
@@ -259,6 +260,19 @@ public class JadeBlocks{
 			laserColor = JadeColor.jadeLight;
 			laserTopColor = JadeColor.jade;
 			acceptCoolant = false;
+		}};
+
+		//Infects every enemy unit in range, the same infestation a Sporeling leaves: damage over time until it dies (into Sporelings) or is healed to full.
+		//Has to be fed constantly with spore pods, water and power.
+		contagionSpire = new ContagionSpire("contagion-spire"){{
+			requirements(Category.effect, with(Items.silicon, 90, Items.lead, 80, Items.titanium, 60, JadeItems.verdantResin, 50, JadeItems.jadeSilk, 40));
+			size = 2;
+			health = 520;
+			range = 170f;
+			consumePower(1.2f);
+			consumeLiquid(Liquids.water, 0.2f);
+			itemDuration = 60f * 4f;
+			pulseEffect = JadeFx.bloomRing(JadeColor.infection, 170f);
 		}};
 
 		//Unit production

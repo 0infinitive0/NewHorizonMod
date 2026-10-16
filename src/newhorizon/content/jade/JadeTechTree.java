@@ -60,6 +60,7 @@ public class JadeTechTree{
 				node(JadeUnits.bogguard, () -> {});
 				node(JadeUnits.sporeling, () -> {
 					node(JadeBlocks.sporeCatapult);
+					node(JadeBlocks.contagionSpire);
 				});
 				node(JadeBlocks.verdantCultivator, () -> {
 					node(JadeBlocks.groveCultivator, Seq.with(new Objectives.Research(JadeBlocks.silkLoom)), () -> {});
