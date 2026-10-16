@@ -41,9 +41,18 @@ public class HealSeekAbility extends Ability{
 	public int phase = NONE;
 	protected float idle, stall, lastHealth, ignoredUntil;
 	protected Position source, ignored;
-	protected final Vec2 home = new Vec2(), move = new Vec2();
+	protected Vec2 home = new Vec2(), move = new Vec2();
 
 	private static Seq<RepairTurret> repairBlocks;
+
+	/** Per-unit copy: a plain clone would share the position vectors between every unit with this ability. */
+	@Override
+	public Ability copy(){
+		HealSeekAbility copy = (HealSeekAbility)super.copy();
+		copy.home = new Vec2();
+		copy.move = new Vec2();
+		return copy;
+	}
 
 	@Override
 	public void update(Unit unit){
