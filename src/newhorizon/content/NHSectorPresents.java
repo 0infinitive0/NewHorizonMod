@@ -71,7 +71,6 @@ public class NHSectorPresents{
 			rules = r -> {
 				r.loadout.clear();
 				r.loadout.addAll(ItemStack.with(NHItems.presstanium, 300, NHItems.juniorProcessor, 300, NHItems.zeta, 500, NHItems.metalOxhydrigen, 500, Items.tungsten, 500, Items.copper, 1000, Items.lead, 1000, Items.silicon, 800, Items.metaglass, 200, Items.titanium, 500, Items.thorium, 300));
-				r.hiddenBuildItems.clear();
 				r.attackMode = true;
 				r.waves = true;
 			};
@@ -170,7 +169,7 @@ public class NHSectorPresents{
 								CSSActions.cameraScl(1.5f),
 								CSSActions.cameraMove(cX, cY),
 								CSSActions.text(getBundle("new-horizon-ancient-shipyard", 14)),
-								CSSActions.runnable(() -> Sounds.unlock.play()),
+								CSSActions.runnable(() -> Sounds.uiUnlock.play()),
 								CSSActions.text(missionAccomplished()),
 								CSSActions.waitUntil(() -> state.gameOver),
 								CSSActions.withdrawCurtain()
@@ -260,7 +259,6 @@ public class NHSectorPresents{
 					types.each(WorldEventType::create);
 					
 					NHVars.worldData.eventReloadSpeed = 0.35f;
-					Vars.state.rules.hiddenBuildItems.clear();
 					AutoEventTrigger.addAll();
 					
 					NHCSS_UI.opening();
@@ -311,9 +309,7 @@ public class NHSectorPresents{
 				Unit nucleoid = UnitOverride.marked.get(nucleoidFlagLong);
 				
 				if(nucleoid != null){
-					if(nucleoid.physref != null && nucleoid.physref.body != null){
-						nucleoid.physref.body.radius = 0;
-					}
+					nucleoid.hasPhysicsRef(false);
 					
 					if(!cutscene.getValueBool("Stage00Completed")){
 						nucleoid.apply(NHStatusEffects.quiet, Float.POSITIVE_INFINITY);
@@ -422,7 +418,7 @@ public class NHSectorPresents{
 							nucleoid.heal();
 							nucleoid.team(Vars.state.rules.defaultTeam);
 							cutscene.putTag("Stage00Completed");
-							if(!Vars.headless) Sounds.unlock.play();
+							if(!Vars.headless) Sounds.uiUnlock.play();
 							nucleoid.unapply(NHStatusEffects.healthLocker);
 							NHUnitTypes.nucleoid.targetable = true;
 						}
@@ -480,7 +476,6 @@ public class NHSectorPresents{
 			rules = r -> {
 				r.loadout.clear();
 				r.loadout.addAll(ItemStack.with(NHItems.presstanium, 300, NHItems.juniorProcessor, 300, NHItems.zeta, 500, NHItems.metalOxhydrigen, 500, Items.tungsten, 500, Items.copper, 1000, Items.lead, 1000, Items.silicon, 800, Items.metaglass, 200, Items.titanium, 500, Items.thorium, 300));
-				r.hiddenBuildItems.clear();
 				r.attackMode = true;
 				r.waves = true;
 			};
@@ -513,7 +508,6 @@ public class NHSectorPresents{
 				
 				EventHandler.runEventOnce("init", () -> {
 					NHVars.worldData.eventReloadSpeed = 0.35f;
-					Vars.state.rules.hiddenBuildItems.clear();
 					
 					AutoEventTrigger.addAll();
 					NHCSS_UI.opening();

@@ -58,21 +58,18 @@ public class NHContent extends Content{
 		CacheLayer.add(armorLayer = new CacheLayer.ShaderLayer(NHShaders.tiler){
 			@Override
 			public void begin(){
-				renderer.blocks.floor.endc();
-				renderer.effectBuffer.begin();
-				Core.graphics.clear(Color.clear);
-				renderer.blocks.floor.beginc();
+				renderer.effectBuffer.begin(Color.clear);
+				renderer.blocks.floor.beginDraw();
 			}
 			
 			@Override
 			public void end(){
-				renderer.blocks.floor.endc();
 				renderer.effectBuffer.end();
 				
 				NHShaders.tiler.texture = armorTex;
 				renderer.effectBuffer.blit(shader);
 				
-				renderer.blocks.floor.beginc();
+				renderer.blocks.floor.beginDraw();
 			}
 		});
 		

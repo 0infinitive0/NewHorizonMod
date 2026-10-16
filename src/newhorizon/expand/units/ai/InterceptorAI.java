@@ -2,7 +2,7 @@ package newhorizon.expand.units.ai;
 
 import mindustry.ai.types.FlyingAI;
 import mindustry.entities.Units;
-import mindustry.gen.Flyingc;
+import mindustry.gen.Unit;
 import mindustry.gen.Teamc;
 
 import static mindustry.Vars.state;
@@ -72,7 +72,7 @@ public class InterceptorAI extends FlyingAI{
 	
 	@Override
 	public Teamc findMainTarget(float x, float y, float range, boolean air, boolean ground){
-		return Units.closestEnemy(unit.team, x, y, range * 10, Flyingc::isFlying);
+		return Units.closestEnemy(unit.team, x, y, range * 10, Unit::isFlying);
 	}
 //	protected boolean needRepair = false;
 

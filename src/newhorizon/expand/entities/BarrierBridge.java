@@ -100,6 +100,21 @@ public class BarrierBridge implements Healthc, Teamc, QuadTreeObject{
     }
 
     @Override
+    public void damageContinuousArmorMult(float amount, float armorMultiplier) {
+
+    }
+
+    @Override
+    public void damageArmorMult(float amount, float armorMultiplier) {
+
+    }
+
+    @Override
+    public void damageArmorMult(float amount, float armorMultiplier, boolean withEffect) {
+
+    }
+
+    @Override
     public void dead(boolean dead) {
 
     }
@@ -155,8 +170,11 @@ public class BarrierBridge implements Healthc, Teamc, QuadTreeObject{
     }
 
     @Override
-    public boolean isNull() {
-        return false;
+    public void beforeWrite() {
+    }
+
+    @Override
+    public void afterReadAll() {
     }
 
     @Override

@@ -10,7 +10,7 @@ import arc.util.Tmp;
 import mindustry.entities.UnitSorts;
 import mindustry.entities.Units;
 import mindustry.entities.units.StatusEntry;
-import mindustry.gen.Flyingc;
+import mindustry.gen.Unit;
 import mindustry.gen.Physicsc;
 import mindustry.gen.UnitEntity;
 import mindustry.graphics.Layer;
@@ -52,7 +52,7 @@ public class EnergyUnitII extends UnitEntity{
 		super.update();
 		
 		clamps.each(c -> {
-			c.target = Units.bestEnemy(team, x, y, 800, Flyingc::isFlying, UnitSorts.strongest);
+			c.target = Units.bestEnemy(team, x, y, 800, Unit::isFlying, UnitSorts.strongest);
 			c.update();
 		});
 	}

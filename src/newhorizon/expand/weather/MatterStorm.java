@@ -110,7 +110,7 @@ public class MatterStorm extends Weather{
 		super(name, AdaptedWeatherState::new);
 		
 		opacityMultiplier = 3;
-		sound = Sounds.pulse;
+		sound = Sounds.loopPulse;
 		duration = 0.4f * Time.toMinutes;
 		
 		attrs = new Attributes();
@@ -204,8 +204,8 @@ public class MatterStorm extends Weather{
 				addBeginPoint = despawnHit = true;
 				
 				
-				hitSound = Sounds.plasmaboom;
-				despawnSound = Sounds.plasmaboom;
+				hitSound = Sounds.explosionPlasmaSmall;
+				despawnSound = Sounds.explosionPlasmaSmall;
 				hitSoundVolume = 0.2f;
 			}
 
@@ -224,7 +224,7 @@ public class MatterStorm extends Weather{
 				public void init(Bullet b){
 					super.init(b);
 					despawnEffect.at(b.x, b.y, 0, hitColor);
-					Sounds.spark.at(b);
+					Sounds.shootArc.at(b);
 				}
 			};
 		}

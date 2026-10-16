@@ -30,7 +30,7 @@ public interface LinkGroupc extends Linkablec{
 		return true;
 	}
 	
-	@Override default int linkPos(){return pos();}
-	@Override default Building link(){return as();}
+	@Override default int linkPos(){return building().pos();}
+	@Override default Building link(){return building();}
 	
 }

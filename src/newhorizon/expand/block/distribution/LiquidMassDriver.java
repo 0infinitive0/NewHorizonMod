@@ -71,7 +71,7 @@ public class LiquidMassDriver extends Block{
 	public Effect shootEffect = Fx.shootBig2;
 	public Effect smokeEffect = Fx.shootBigSmoke2;
 	public Effect receiveEffect = Fx.mineBig;
-	public Sound shootSound = Sounds.shootBig;
+	public Sound shootSound = Sounds.shootScepter;
 	public float shake = 2f;
 
 	public TextureRegion baseRegion, liquidRegion;
@@ -306,7 +306,7 @@ public class LiquidMassDriver extends Block{
 
 			LiquidMassDriverBuild target = linkedDriver();
 			if(target != null){
-				Drawf.circles(target.x, target.y, (target.block().size / 2f + 1) * tilesize + sin - 2f, Pal.place);
+				Drawf.circles(target.x, target.y, (target.block.size / 2f + 1) * tilesize + sin - 2f, Pal.place);
 				Drawf.arrow(x, y, target.x, target.y, size * tilesize + sin, 4f + sin);
 			}
 

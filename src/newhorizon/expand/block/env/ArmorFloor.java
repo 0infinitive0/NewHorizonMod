@@ -46,7 +46,7 @@ public class ArmorFloor extends Floor{
 	}
 	
 	protected boolean doEdge(Tile tile, Tile otherTile, Floor other){
-		return (solidReact == null || other.blendGroup != solidReact) && (other.realBlendId(otherTile) > realBlendId(tile) || edges() == null);
+		return (solidReact == null || other.blendGroup != solidReact) && (other.realBlendId(otherTile) > realBlendId(tile) || edges == null);
 	}
 	
 	@Override

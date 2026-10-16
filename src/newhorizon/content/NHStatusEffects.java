@@ -11,6 +11,7 @@ import mindustry.Vars;
 import mindustry.content.StatusEffects;
 import mindustry.entities.Effect;
 import mindustry.entities.effect.MultiEffect;
+import mindustry.entities.units.StatusEntry;
 import mindustry.gen.Unit;
 import mindustry.graphics.Layer;
 import mindustry.graphics.Pal;
@@ -44,8 +45,9 @@ public class NHStatusEffects{
         }
     
             @Override
-            public void update(Unit unit, float time){
-                super.update(unit, time);
+            public void update(Unit unit, StatusEntry entry){
+                float time = entry.time;
+                super.update(unit, entry);
             
                 if(unit.healthf() < 0.25f){
                     unit.health = unit.maxHealth() / 4f;
@@ -60,7 +62,8 @@ public class NHStatusEffects{
         }
     
             @Override
-            public void update(Unit unit, float time){
+            public void update(Unit unit, StatusEntry entry){
+                float time = entry.time;
                 UnitOverride.marked.put(Double.doubleToLongBits(unit.flag), unit);
             }
         };
@@ -80,7 +83,8 @@ public class NHStatusEffects{
         }
     
             @Override
-            public void update(Unit unit, float time){
+            public void update(Unit unit, StatusEntry entry){
+                float time = entry.time;
                 if(time < 60f || unit.healthf() < 0.1f){
                     unit.clearStatuses();
                     Effect.shake(unit.hitSize / 10f, unit.hitSize / 8f, unit.x, unit.y);
@@ -105,8 +109,9 @@ public class NHStatusEffects{
         }
         
             @Override
-            public void update(Unit unit, float time){
-                super.update(unit, time);
+            public void update(Unit unit, StatusEntry entry){
+                float time = entry.time;
+                super.update(unit, entry);
                 
                 unit.shield *= 0.985f;
                 
@@ -137,7 +142,8 @@ public class NHStatusEffects{
             }
     
             @Override
-            public void update(Unit unit, float time){
+            public void update(Unit unit, StatusEntry entry){
+                float time = entry.time;
                 if(damage > 0){
                     unit.damageContinuousPierce(damage);
                 }else if(damage < 0){ //heal unit
@@ -192,8 +198,9 @@ public class NHStatusEffects{
         }
     
             @Override
-            public void update(Unit unit, float time){
-                super.update(unit, time);
+            public void update(Unit unit, StatusEntry entry){
+                float time = entry.time;
+                super.update(unit, entry);
                 
 //                if(unit.controller() instanceof AIController){
 //                    AIController controller = (AIController)unit.controller();
@@ -203,7 +210,7 @@ public class NHStatusEffects{
     
             //            @Override
 //            public void update(Unit unit, float time){
-//               super.update(unit, time);
+//               super.update(unit, entry);
 //
 //                if(unit.isLocal()){
 //                    ScreenInterferencer.continueGenerate();
@@ -257,7 +264,8 @@ public class NHStatusEffects{
         }
     
             @Override
-            public void update(Unit unit, float time){
+            public void update(Unit unit, StatusEntry entry){
+                float time = entry.time;
                 unit.damage(120, true);
             
                 if(!Vars.headless && Mathf.chanceDelta(0.1)){
@@ -308,8 +316,9 @@ public class NHStatusEffects{
         
         staticVel = new NHStatusEffect("static-vel") {
             @Override
-            public void update(Unit unit, float time){
-                super.update(unit, time);
+            public void update(Unit unit, StatusEntry entry){
+                float time = entry.time;
+                super.update(unit, entry);
                 unit.vel = unit.vel.scl(0.05f);
             }
 

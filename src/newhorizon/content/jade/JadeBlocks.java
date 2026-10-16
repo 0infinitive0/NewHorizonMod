@@ -49,7 +49,7 @@ public class JadeBlocks{
 			consumeLiquid(Liquids.water, 0.1f);
 			consumePower(0.6f);
 			craftEffect = JadeFx.leafBurst;
-			ambientSound = Sounds.bioLoop;
+			ambientSound = Sounds.loopBio;
 			ambientSoundVolume = 0.04f;
 		}};
 
@@ -87,7 +87,7 @@ public class JadeBlocks{
 			itemDuration = 150f;
 			consume(new ConsumeItemFlammable(0.3f));
 			generateEffect = JadeFx.leafBurst;
-			ambientSound = Sounds.bioLoop;
+			ambientSound = Sounds.loopBio;
 			ambientSoundVolume = 0.06f;
 		}};
 
@@ -127,7 +127,7 @@ public class JadeBlocks{
 			inaccuracy = 3f;
 			shoot = new mindustry.entities.pattern.ShootSpread(3, 7f);
 			recoil = 2f;
-			shootSound = Sounds.shootSnap;
+			shootSound = Sounds.shootDuo;
 			outlineColor = JadeColor.outline;
 			coolant = consumeCoolant(0.15f);
 
@@ -149,7 +149,7 @@ public class JadeBlocks{
 			shoot.firstShotDelay = 28f;
 			moveWhileCharging = false;
 			accurateDelay = false;
-			shootSound = Sounds.laser;
+			shootSound = Sounds.shootLaser;
 			outlineColor = JadeColor.outline;
 			consumePower(5.5f);
 			coolant = consumeCoolant(0.2f);
@@ -166,7 +166,7 @@ public class JadeBlocks{
 			recoil = 5f;
 			shake = 2f;
 			targetAir = false;
-			shootSound = Sounds.artillery;
+			shootSound = Sounds.shootArtillery;
 			outlineColor = JadeColor.outline;
 			coolant = consumeCoolant(0.3f);
 
@@ -191,7 +191,7 @@ public class JadeBlocks{
 			velocityRnd = 0.08f;
 			ammoPerShot = 3;
 			targetAir = false;
-			shootSound = Sounds.artillery;
+			shootSound = Sounds.shootArtillery;
 			outlineColor = JadeColor.outline;
 			consumePower(3f);
 			coolant = consumeCoolant(0.2f);

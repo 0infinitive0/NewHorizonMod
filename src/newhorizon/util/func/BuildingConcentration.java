@@ -39,7 +39,7 @@ public class BuildingConcentration{
 		
 		while(iterated.size <= MAX_SIZE){
 			for(Building building : edgeBuilding){
-				tmpBuildings.addAll(building.proximity());
+				tmpBuildings.addAll(building.proximity);
 			}
 			
 			tmpBuildings.removeAll(lastEdgeBuilding);

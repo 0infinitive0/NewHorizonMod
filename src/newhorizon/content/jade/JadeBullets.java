@@ -212,7 +212,7 @@ public class JadeBullets{
 			trailWidth = 3f;
 			ammoMultiplier = 1f;
 			hitShake = 3.5f;
-			hitSound = Sounds.largeExplosion;
+			hitSound = Sounds.explosionReactor;
 			shootEffect = Fx.shootBig2;
 			hitEffect = despawnEffect = new mindustry.entities.effect.MultiEffect(JadeFx.pollenBurst, JadeFx.bloomRingBig);
 			fragBullets = 8;

@@ -202,8 +202,8 @@ public class EnergyUnit extends PayloadUnit{
 		});
 		
 		if(!Vars.headless && lastPos.dst(this) > effectTriggerLen){
-			Sounds.plasmaboom.at(this);
-			Sounds.plasmaboom.at(lastPos);
+			Sounds.explosionPlasmaSmall.at(this);
+			Sounds.explosionPlasmaSmall.at(lastPos);
 			
 			teleport.at(x, y, hitSize / 2, team.color);
 			teleport.at(lastPos.x, lastPos.y, hitSize / 2, team.color);

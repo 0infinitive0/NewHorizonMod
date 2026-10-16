@@ -185,7 +185,11 @@ public class TableFunc{
                     tin.pane(con -> {
                         con.button("Remove Units", Styles.cleart, Groups.unit::clear).grow();
                         con.button("Remove Fires", Styles.cleart, () -> {
-                            for(int i = 0; i < 20; i++) Time.run(i * Time.delta * 3, Groups.fire::clear);
+                            for(int i = 0; i < 20; i++) Time.run(i * Time.delta * 3, () -> {
+                                arc.struct.Seq<mindustry.gen.Entityc> fires = new arc.struct.Seq<>();
+                                Groups.all.each(e -> { if(e instanceof mindustry.gen.Fire) fires.add(e); });
+                                fires.each(mindustry.gen.Entityc::remove);
+                            });
                         }).grow();
                         con.button("Cathc Fires", Styles.cleart, () -> {
                             Geometry.circle(World.toTile(point.x), World.toTile(point.y), 10, ((x1, y1) -> {
@@ -210,7 +214,7 @@ public class TableFunc{
                                     selectPos(starter, poi -> {
                                         PixelArtGenerator.rightTop.set(poi.x, poi.y);
                                         Log.info(poi.x + " | " + poi.y);
-                                        platform.showMultiFileChooser(fi -> {
+                                        FileChoosers.choose(fi -> {
                                             PixelArtGenerator.toRead = fi;
                                             boolean b = PixelArtGenerator.process();
                                             if(b)Vars.ui.showInfoToast("Generate Successful", 1);

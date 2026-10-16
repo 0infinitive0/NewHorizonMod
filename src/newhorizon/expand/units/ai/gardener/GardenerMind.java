@@ -285,7 +285,7 @@ public class GardenerMind{
 
 	/** Higher is more worth rebuilding now, from the point of view of a Gardener standing at (x, y). */
 	public float planScore(Team team, Teams.BlockPlan plan, float x, float y){
-		Block block = Vars.content.block(plan.block);
+		Block block = plan.block;
 		if(block == null) return -1000f;
 
 		float wx = plan.x * tilesize, wy = plan.y * tilesize;

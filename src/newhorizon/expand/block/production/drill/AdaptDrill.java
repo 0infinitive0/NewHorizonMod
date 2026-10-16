@@ -78,7 +78,7 @@ public class AdaptDrill extends Block {
 
         canOverdrive = false;
 
-        ambientSound = Sounds.drill;
+        ambientSound = Sounds.loopDrill;
         ambientSoundVolume = 0.018f;
 
         group = BlockGroup.drills;

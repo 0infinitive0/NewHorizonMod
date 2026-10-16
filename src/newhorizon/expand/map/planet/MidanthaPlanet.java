@@ -63,14 +63,13 @@ public class MidanthaPlanet extends Planet {
         );
 
         clearSectorOnLose = true;
-        allowWaveSimulation = true;
         allowLaunchSchematics = false;
         allowLaunchLoadout = false;
 
         ruleSetter = r -> {
             r.waveTeam = Team.malis;
             r.placeRangeCheck = false;
-            r.showSpawns = true;
+            r.hideSpawns = false;
             r.waveSpacing = 80 * Time.toSeconds;
             r.initialWaveSpacing = 8f * Time.toMinutes;
             if(r.sector != null && r.sector.preset == null)r.winWave = 150;
@@ -88,7 +87,7 @@ public class MidanthaPlanet extends Planet {
 
             //r.env = r.sector.planet.defaultEnv;
             r.waves = true;
-            r.showSpawns = true;
+            r.hideSpawns = false;
             r.onlyDepositCore = false;
             r.fog = false;
 
@@ -99,7 +98,7 @@ public class MidanthaPlanet extends Planet {
             teamRule.buildSpeedMultiplier = 3f;
             teamRule.blockHealthMultiplier = 1.25f;
             teamRule = r.teams.get(r.waveTeam);
-            teamRule.infiniteAmmo = teamRule.infiniteResources = true;
+            teamRule.infiniteResources = true;
         };
 
         generator = new MidanthaPlanetGenerator();
@@ -148,8 +147,8 @@ public class MidanthaPlanet extends Planet {
         }
 
         @Override
-        public Color getColor(Vec3 position){
-            return Pal.gray;
+        public void getColor(Vec3 position, Color out){
+            out.set(Pal.gray);
         }
 
         @Override

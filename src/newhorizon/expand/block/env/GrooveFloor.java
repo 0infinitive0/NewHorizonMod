@@ -26,18 +26,7 @@ public class GrooveFloor extends Floor {
         super.load();
     }
 
-    @Override
-    public TextureRegion[] editorVariantRegions(){
-        if(editorVariantRegions == null){
-            variantRegions();
-            editorVariantRegions = new TextureRegion[1];
-            TextureAtlas.AtlasRegion region = (TextureAtlas.AtlasRegion)variantRegions[0];
-            editorVariantRegions[0] = Core.atlas.find("editor-" + region.name);
-        }
-        return editorVariantRegions;
-    }
-
-    @Override
+@Override
     protected boolean doEdge(Tile tile, Tile otherTile, Floor other){
         return false;
     }

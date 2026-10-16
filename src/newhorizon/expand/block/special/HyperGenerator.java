@@ -97,7 +97,7 @@ public class HyperGenerator extends PowerGenerator{
 	public Color effectColor = Color.white;
 	
 	public float workShake = 8f;
-	public Sound workSound = Sounds.plasmaboom;
+	public Sound workSound = Sounds.explosionPlasmaSmall;
 	
 	protected BulletType destroyed;
 	public float attract = 8f;
@@ -228,7 +228,7 @@ public class HyperGenerator extends PowerGenerator{
 				if(b.timer(4, 5)){
 					float range = size * Vars.tilesize / 1.5f;
 					NHFx.hyperExplode.at(b.x + Mathf.range(range), b.y + Mathf.range(range), effectColor);
-					Sounds.explosionbig.at(b);
+					Sounds.explosionTitan.at(b);
 					NHBullets.hyperBlast.create(b, Team.derelict, b.x, b.y, Mathf.random(360), NHBullets.hyperBlast.damage * baseExplosiveness, Mathf.random(minVelScl, maxVelScl), Mathf.random(minTimeScl, maxTimeScl), new Object());
 				}
 
@@ -304,7 +304,7 @@ public class HyperGenerator extends PowerGenerator{
 					
 					this.consume();
 				}
-				progress += efficiency() * Time.delta;
+				progress += efficiency * Time.delta;
 				if(Mathf.equal(warmup, 1.0F, 0.0015F)){
 					warmup = 1.0F;
 				}else warmup = Mathf.lerpDelta(warmup, 1, warmupSpeed + (Mathf.num(Vars.net.active()) * 0.025f));
@@ -405,8 +405,8 @@ public class HyperGenerator extends PowerGenerator{
 			for(i = 0; i < 30; i++){
 				Time.run(Mathf.random(80f), () -> {
 					explodeSub.get(this);
-					Sounds.bang.at(this);
-					Sounds.explosionbig.at(this);
+					Sounds.explosionMissile.at(this);
+					Sounds.explosionTitan.at(this);
 //					NHBullets.hyperBlast.create(this, Team.derelict, x, y, Mathf.random(360), NHBullets.hyperBlast.damage * baseExplosiveness, Mathf.random(minVelScl, maxVelScl), Mathf.random(minTimeScl, maxTimeScl), new Object());
 				});
 			}
@@ -414,14 +414,14 @@ public class HyperGenerator extends PowerGenerator{
 			for(i = 0; i < 10; i++){
 				Time.run(i * (3 + Mathf.random(2f)), () -> {
 					explodeSub.get(this);
-					Sounds.explosionbig.at(this);
+					Sounds.explosionTitan.at(this);
 					PosLightning.createRandomRange(Team.derelict, this, lightningRange * 3f, effectColor, true, lightningDamage, lightningLen + Mathf.random(lightningLenRand), PosLightning.WIDTH, subNum + Mathf.random(subNumRand),updateLightning + Mathf.random(updateLightningRand), point -> {
 						NHFx.lightningHitLarge.at(point.getX(), point.getY(), effectColor);
 					});
 				});
 			}
 			
-			Sounds.explosionbig.at(this);
+			Sounds.explosionTitan.at(this);
 			Effect.shake(6.0F, 16.0F, x, y);
 			
 			for(i = 0; i < 7; ++i) {

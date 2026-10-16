@@ -61,6 +61,7 @@ public class AssignOverdrive extends OverdriveProjector{
 	}
 	
 	public class AssignOverdriveBuild extends OverdriveBuild implements LinkGroupc{
+		protected float useCounter = 0f;
 		protected IntSeq targets = new IntSeq(maxLink);
 		
 		@Override
@@ -137,8 +138,9 @@ public class AssignOverdrive extends OverdriveProjector{
 				linkBuilds().each(other -> other.applyBoost(realBoost(), reload + 1f));
 			}
 			
-			if(timer(timerUse, useTime) && efficiency > 0){
-				consume();
+			if((useCounter += Time.delta) >= useTime){
+				useCounter = 0f;
+				if(efficiency > 0) consume();
 			}
 		}
 		
@@ -173,7 +175,7 @@ public class AssignOverdrive extends OverdriveProjector{
 				Lines.line(fromX, fromY, Tmp.v1.x, Tmp.v1.y, false);
 				Lines.line(Tmp.v1.x, Tmp.v1.y, toX, toY, false);
 				Fill.square(Tmp.v1.x, Tmp.v1.y, 1.5f);
-				Lines.square(b.x, b.y, b.block().size * tilesize / 2f + 2.0f);
+				Lines.square(b.x, b.y, b.block.size * tilesize / 2f + 2.0f);
 			}
 			
 			for(Building b : buildings){
@@ -200,7 +202,7 @@ public class AssignOverdrive extends OverdriveProjector{
 				Fill.square(b.x, b.y, targetOffset);
 				Draw.color(baseColor);
 				Draw.alpha(1f);
-				Lines.square(b.x, b.y, b.block().size * tilesize / 2f + 1.0f);
+				Lines.square(b.x, b.y, b.block.size * tilesize / 2f + 1.0f);
 			}
 			
 			Lines.stroke(1f, baseColor);

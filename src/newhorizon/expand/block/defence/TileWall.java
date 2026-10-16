@@ -117,15 +117,15 @@ public class TileWall extends Wall {
         private boolean check(float x, float y){
             Tile checkTile = world.tileWorld(x, y);
             return checkTile != null && checkTile.build != null && (
-                smallWall != null && checkTile.build.block() == smallWall ||
-                largeWall != null && checkTile.build.block() == largeWall);
+                smallWall != null && checkTile.build.block == smallWall ||
+                largeWall != null && checkTile.build.block == largeWall);
         }
 
         private boolean checkInt(int x, int y){
             Tile checkTile = world.tile(x, y);
             return checkTile != null && checkTile.build != null && (
-                smallWall != null && checkTile.build.block() == smallWall ||
-                largeWall != null && checkTile.build.block() == largeWall);
+                smallWall != null && checkTile.build.block == smallWall ||
+                largeWall != null && checkTile.build.block == largeWall);
         }
 
         @Override

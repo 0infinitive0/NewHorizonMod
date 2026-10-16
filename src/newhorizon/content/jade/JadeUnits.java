@@ -1,6 +1,7 @@
 package newhorizon.content.jade;
 
 import arc.graphics.Color;
+import arc.struct.Seq;
 import mindustry.ai.UnitCommand;
 import mindustry.content.Fx;
 import mindustry.content.StatusEffects;
@@ -13,7 +14,6 @@ import mindustry.gen.MechUnit;
 import mindustry.gen.Sounds;
 import mindustry.gen.UnitEntity;
 import mindustry.type.Weapon;
-import mindustry.type.ammo.ItemAmmoType;
 import newhorizon.NewHorizon;
 import newhorizon.expand.units.ai.HealerAI;
 import newhorizon.expand.units.ai.MimicAI;
@@ -51,7 +51,6 @@ public class JadeUnits{
 		sprig = new NHUnitType("sprig"){{
 			constructor = MechUnit::create;
 			outlineColor = JadeColor.outline;
-			ammoType = new ItemAmmoType(JadeItems.verdantResin);
 
 			health = 230f;
 			armor = 1f;
@@ -69,7 +68,7 @@ public class JadeUnits{
 				recoil = 1.5f;
 				inaccuracy = 2f;
 				ejectEffect = Fx.none;
-				shootSound = Sounds.pew;
+				shootSound = Sounds.shootDuo;
 				bullet = JadeBullets.needle;
 			}});
 		}};
@@ -77,7 +76,6 @@ public class JadeUnits{
 		thornback = new NHUnitType("thornback"){{
 			constructor = MechUnit::create;
 			outlineColor = JadeColor.outline;
-			ammoType = new ItemAmmoType(JadeItems.verdantResin);
 
 			health = 900f;
 			armor = 4f;
@@ -96,7 +94,7 @@ public class JadeUnits{
 				shoot = new ShootSpread(3, 11f);
 				inaccuracy = 3f;
 				ejectEffect = Fx.none;
-				shootSound = Sounds.shotgun;
+				shootSound = Sounds.shootToxopidShotgun;
 				bullet = JadeBullets.thornSpread;
 			}});
 		}};
@@ -104,7 +102,6 @@ public class JadeUnits{
 		briarlord = new NHUnitType("briarlord"){{
 			constructor = MechUnit::create;
 			outlineColor = JadeColor.outline;
-			ammoType = new ItemAmmoType(JadeItems.verdantResin);
 
 			health = 3300f;
 			armor = 9f;
@@ -130,7 +127,7 @@ public class JadeUnits{
 					recoil = 4.5f;
 					shake = 2f;
 					ejectEffect = Fx.none;
-					shootSound = Sounds.artillery;
+					shootSound = Sounds.shootArtillery;
 					bullet = JadeBullets.briarMortar;
 				}},
 				new Weapon(NewHorizon.name("thornback-thorn")){{
@@ -142,7 +139,7 @@ public class JadeUnits{
 					shoot = new ShootSpread(2, 7f);
 					inaccuracy = 2.5f;
 					ejectEffect = Fx.none;
-					shootSound = Sounds.shotgun;
+					shootSound = Sounds.shootToxopidShotgun;
 					bullet = JadeBullets.thornShard;
 				}}
 			);
@@ -151,7 +148,6 @@ public class JadeUnits{
 		wisp = new NHUnitType("wisp"){{
 			constructor = UnitEntity::create;
 			outlineColor = JadeColor.outline;
-			ammoType = new ItemAmmoType(JadeItems.verdantResin);
 
 			flying = true;
 			health = 130f;
@@ -172,7 +168,7 @@ public class JadeUnits{
 				reload = 28f;
 				inaccuracy = 3f;
 				ejectEffect = Fx.none;
-				shootSound = Sounds.pew;
+				shootSound = Sounds.shootDuo;
 				bullet = JadeBullets.seed;
 			}});
 		}};
@@ -180,7 +176,6 @@ public class JadeUnits{
 		luminar = new NHUnitType("luminar"){{
 			constructor = UnitEntity::create;
 			outlineColor = JadeColor.outline;
-			ammoType = new ItemAmmoType(JadeItems.verdantResin);
 
 			flying = true;
 			health = 580f;
@@ -207,7 +202,7 @@ public class JadeUnits{
 				recoil = 1.5f;
 				inaccuracy = 2f;
 				ejectEffect = Fx.none;
-				shootSound = Sounds.pew;
+				shootSound = Sounds.shootDuo;
 				bullet = JadeBullets.lifeBolt;
 			}});
 		}};
@@ -215,7 +210,6 @@ public class JadeUnits{
 		verdance = new NHUnitType("verdance"){{
 			constructor = UnitEntity::create;
 			outlineColor = JadeColor.outline;
-			ammoType = new ItemAmmoType(JadeItems.verdantResin);
 
 			flying = true;
 			health = 2500f;
@@ -250,7 +244,7 @@ public class JadeUnits{
 					shoot = new ShootSpread(2, 8f);
 					inaccuracy = 2f;
 					ejectEffect = Fx.none;
-					shootSound = Sounds.missile;
+					shootSound = Sounds.shootMissile;
 					bullet = JadeBullets.bloomMissile;
 				}},
 				new Weapon(NewHorizon.name("luminar-pod")){{
@@ -260,7 +254,7 @@ public class JadeUnits{
 					reload = 30f;
 					recoil = 1.5f;
 					ejectEffect = Fx.none;
-					shootSound = Sounds.pew;
+					shootSound = Sounds.shootDuo;
 					bullet = JadeBullets.lifeBolt;
 				}}
 			);
@@ -271,7 +265,6 @@ public class JadeUnits{
 			constructor = MechUnit::create;
 			aiController = SporelingAI::new;
 			outlineColor = JadeColor.outline;
-			ammoType = new ItemAmmoType(JadeItems.verdantResin);
 
 			health = 110f;
 			speed = 1.05f;
@@ -303,10 +296,9 @@ public class JadeUnits{
 		gardener = new NHUnitType("gardener"){{
 			constructor = UnitEntity::create;
 			aiController = GardenerAI::new;
-			commands = new UnitCommand[]{UnitCommand.moveCommand, gardenCommand, UnitCommand.assistCommand};
+			commands = Seq.with(UnitCommand.moveCommand, gardenCommand, UnitCommand.assistCommand);
 			defaultCommand = gardenCommand;
 			outlineColor = JadeColor.outline;
-			ammoType = new ItemAmmoType(JadeItems.verdantResin);
 
 			flying = true;
 			health = 420f;
@@ -332,10 +324,9 @@ public class JadeUnits{
 		herbalist = new NHUnitType("herbalist"){{
 			constructor = UnitEntity::create;
 			aiController = HealerAI::new;
-			commands = new UnitCommand[]{UnitCommand.moveCommand, healCommand};
+			commands = Seq.with(UnitCommand.moveCommand, healCommand);
 			defaultCommand = healCommand;
 			outlineColor = JadeColor.outline;
-			ammoType = new ItemAmmoType(JadeItems.verdantResin);
 
 			flying = true;
 			health = 380f;
@@ -360,7 +351,6 @@ public class JadeUnits{
 		scavenger = new NHUnitType("scavenger"){{
 			constructor = MechUnit::create;
 			outlineColor = JadeColor.outline;
-			ammoType = new ItemAmmoType(JadeItems.verdantResin);
 
 			health = 190f;
 			armor = 0f;
@@ -403,7 +393,6 @@ public class JadeUnits{
 		bogguard = new NHUnitType("bogguard"){{
 			constructor = MechUnit::create;
 			outlineColor = JadeColor.outline;
-			ammoType = new ItemAmmoType(JadeItems.verdantResin);
 
 			health = 2600f;
 			armor = 12f;
@@ -427,7 +416,7 @@ public class JadeUnits{
 				shoot = new ShootSpread(2, 9f);
 				inaccuracy = 3f;
 				ejectEffect = Fx.none;
-				shootSound = Sounds.shotgun;
+				shootSound = Sounds.shootToxopidShotgun;
 				bullet = JadeBullets.thornSpread;
 			}});
 		}};
@@ -439,10 +428,9 @@ public class JadeUnits{
 		mimic = new NHUnitType("mimic"){{
 			constructor = UnitEntity::create;
 			aiController = MimicAI::new;
-			commands = new UnitCommand[]{UnitCommand.moveCommand, mimicCommand};
+			commands = Seq.with(UnitCommand.moveCommand, mimicCommand);
 			defaultCommand = UnitCommand.moveCommand;
 			outlineColor = JadeColor.outline;
-			ammoType = new ItemAmmoType(JadeItems.verdantResin);
 
 			flying = true;
 			health = 600f;

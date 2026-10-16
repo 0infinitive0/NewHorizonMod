@@ -1,6 +1,7 @@
 package newhorizon.content.jade;
 
 import mindustry.content.Fx;
+import mindustry.entities.units.StatusEntry;
 import mindustry.gen.Unit;
 import mindustry.type.StatusEffect;
 
@@ -57,8 +58,9 @@ public class JadeStatus{
 			}
 
 			@Override
-			public void update(Unit unit, float time){
-				super.update(unit, time);
+			public void update(Unit unit, StatusEntry entry){
+			    float time = entry.time;
+				super.update(unit, entry);
 
 				float health = newhorizon.expand.units.mimic.Mimicry.health();
 				if(unit.maxHealth != health){

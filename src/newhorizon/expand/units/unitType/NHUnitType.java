@@ -3,14 +3,12 @@ package newhorizon.expand.units.unitType;
 import mindustry.type.ItemStack;
 import mindustry.type.UnitType;
 import mindustry.type.Weapon;
-import mindustry.type.ammo.ItemAmmoType;
 import newhorizon.content.NHItems;
 
 public class NHUnitType extends UnitType {
     public NHUnitType(String name) {
         super(name);
 
-        ammoType = new ItemAmmoType(NHItems.presstanium);
     }
 
     @Override
