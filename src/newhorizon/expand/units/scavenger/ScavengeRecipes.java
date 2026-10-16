@@ -9,11 +9,13 @@ import mindustry.content.Fx;
 import mindustry.ctype.ContentType;
 import mindustry.entities.abilities.Ability;
 import mindustry.entities.bullet.BulletType;
+import mindustry.entities.bullet.ContinuousBulletType;
 import mindustry.type.Liquid;
 import mindustry.type.UnitType;
 import mindustry.type.Weapon;
 import mindustry.world.Block;
 import mindustry.world.blocks.defense.turrets.ItemTurret;
+import mindustry.world.blocks.defense.turrets.LaserTurret;
 import mindustry.world.blocks.defense.turrets.LiquidTurret;
 import mindustry.world.blocks.defense.turrets.PowerTurret;
 import mindustry.world.blocks.defense.turrets.Turret;
@@ -227,6 +229,11 @@ public final class ScavengeRecipes{
 		w.mirror = false;
 		w.alternate = false;
 		w.ejectEffect = Fx.none;
+		//The Meltdown holds its beam for as long as it has a target. As a weapon the beam would otherwise be re-fired in short bursts every reload.
+		if(bullet instanceof ContinuousBulletType || turret instanceof LaserTurret){
+			w.continuous = true;
+			w.alwaysContinuous = true;
+		}
 		return w;
 	}
 
