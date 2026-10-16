@@ -59,6 +59,9 @@ public class UnitInfoTooltip{
 
 	private static Table panel;
 	private static Unit pinned;
+	/** The scrolling part of the panel, and where it was scrolled to before the panel was last rebuilt. */
+	private static ScrollPane bodyPane;
+	private static float restoreScroll = -1f;
 	private static int signature;
 	private static float describedAt = -1000f;
 	private static boolean broken, dockRight = true;
@@ -125,6 +128,13 @@ public class UnitInfoTooltip{
 		panel.visible = true;
 		panel.toFront();
 		panel.pack();
+		if(restoreScroll >= 0f && bodyPane != null){
+			//A rebuilt panel starts at the top: put it back where the reader was.
+			bodyPane.layout();
+			bodyPane.setScrollYForce(restoreScroll);
+			bodyPane.updateVisualScroll();
+			restoreScroll = -1f;
+		}
 		float w = Core.scene.getWidth(), h = Core.scene.getHeight();
 		//Below the minimap on the right, below the wave and event panels on the left.
 		float top = h - h * (dockRight ? 0.20f : 0.24f);
@@ -138,13 +148,20 @@ public class UnitInfoTooltip{
 	/** Pins the panel to a unit. */
 	public static void open(Unit unit){
 		pinned = unit;
+		bodyPane = null;
 		signature = Integer.MIN_VALUE;
 		describedAt = -1000f;
+	}
+
+	/** The pinned unit turned into another one (a Scavenger that gained flight, say): keep following it, and keep the scroll position. */
+	public static void replaced(Unit old, Unit now){
+		if(pinned == old && now != null) pinned = now;
 	}
 
 	/** Closes the panel. */
 	public static void close(){
 		pinned = null;
+		bodyPane = null;
 		if(panel != null) panel.visible = false;
 	}
 
@@ -176,6 +193,8 @@ public class UnitInfoTooltip{
 	private static void rebuild(Unit unit, Info info){
 		UnitType type = unit.type;
 
+		//The panel is rebuilt whenever the unit's lists change (a kill, a steal): remember how far down the reader was.
+		restoreScroll = bodyPane == null ? -1f : bodyPane.getScrollY();
 		panel.clear();
 		panel.background(Tex.pane);
 		panel.margin(8f);
@@ -211,6 +230,7 @@ public class UnitInfoTooltip{
 
 		ScrollPane pane = new ScrollPane(body, Styles.noBarPane);
 		pane.setScrollingDisabled(true, false);
+		bodyPane = pane;
 		panel.add(pane).width(contentWidth).maxHeight(Math.max(160f, Core.scene.getHeight() * 0.5f - 60f)).left().row();
 	}
 

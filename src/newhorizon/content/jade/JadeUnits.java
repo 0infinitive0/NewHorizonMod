@@ -18,6 +18,7 @@ import newhorizon.NewHorizon;
 import newhorizon.expand.units.ai.HealerAI;
 import newhorizon.expand.units.ai.MimicAI;
 import newhorizon.expand.units.mimic.MimicAbility;
+import newhorizon.expand.units.ai.SacrificeAI;
 import newhorizon.expand.units.ai.SporelingAI;
 import newhorizon.expand.units.ablility.HealSeekAbility;
 import newhorizon.expand.units.ablility.WaterRegenAbility;
@@ -39,13 +40,13 @@ public class JadeUnits{
 		sprig, thornback, briarlord,
 		wisp, luminar, verdance,
 		sporeling,
-		gardener, herbalist, scavenger, bogguard, mimic;
+		gardener, herbalist, scavenger, scavengerAmphibious, scavengerFlying, bogguard, mimic;
 
 	/** Reach of the Herbalist's repair aura, also used by units deciding whether they have arrived. */
 	public static final float herbalistHealRange = 80f;
 
 	/** The Gardener's own command: it picks {@link GardenerAI} so a player-team Gardener learns instead of standing around. */
-	public static UnitCommand gardenCommand, healCommand, mimicCommand, huntCommand;
+	public static UnitCommand gardenCommand, healCommand, mimicCommand, huntCommand, sacrificeCommand;
 
 	public static void load(){
 		sprig = new NHUnitType("sprig"){{
@@ -353,44 +354,36 @@ public class JadeUnits{
 
 		//Starts as a weak little thing with a duo-like gun. Every enemy it helps destroy makes it tougher, and now and then
 		//it walks away with a weapon or ability of the victim. See ScavengerAbility and Scavenging.
+		//Starts as a weak little thing with a duo-like gun. Every enemy it helps destroy makes it tougher, and now and then
+		//it walks away with a weapon or ability of the victim. See ScavengerAbility and Scavenging.
+		sacrificeCommand = new UnitCommand("nh-sacrifice", "units", u -> new SacrificeAI());
+
 		scavenger = new NHUnitType("scavenger"){{
 			constructor = MechUnit::create;
-			outlineColor = JadeColor.outline;
+			shapeScavenger(this);
+		}};
 
-			health = 190f;
-			armor = 0f;
-			speed = 0.62f;
-			hitSize = 10f;
-			rotateSpeed = 3.4f;
-			mechStepParticles = true;
-			stepShake = 0.05f;
+		//A Scavenger that took the swimming of a boat it helped sink: it wades through deep water instead of drowning in it.
+		scavengerAmphibious = new NHUnitType("scavenger-amphibious"){{
+			constructor = MechUnit::create;
+			shapeScavenger(this);
+			canDrown = false;
+			hidden = true;
+		}};
 
-			abilities.add(new ScavengerAbility());
-
-			weapons.add(new Weapon(NewHorizon.name("scavenger-gun")){{
-				top = true;
-				mirror = false;
-				x = 0f;
-				y = 1f;
-				shootY = 5f;
-				reload = 26f;
-				recoil = 1.5f;
-				rotate = true;
-				rotateSpeed = 12f;
-				inaccuracy = 3f;
-				ejectEffect = Fx.none;
-				shootSound = Sounds.shoot;
-				bullet = new BasicBulletType(2.8f, 9f){{
-					width = 7f;
-					height = 9f;
-					lifetime = 55f;
-					backColor = lightColor = hitColor = JadeColor.resin;
-					frontColor = Color.white;
-					shootEffect = Fx.shootSmall;
-					hitEffect = despawnEffect = Fx.hitBulletSmall;
-					smokeEffect = Fx.none;
-				}};
-			}});
+		//A Scavenger that took the wings of a flyer it helped shoot down.
+		scavengerFlying = new NHUnitType("scavenger-flying"){{
+			constructor = UnitEntity::create;
+			shapeScavenger(this);
+			flying = true;
+			hidden = true;
+			speed = 1.5f;
+			accel = 0.07f;
+			drag = 0.05f;
+			rotateSpeed = 5f;
+			engineOffset = 6f;
+			engineSize = 2.2f;
+			engineColor = JadeColor.resin;
 		}};
 
 		//Spores love water. A slow tank that soaks up a lot of damage and heals while it stands in water, and can wade through deep
@@ -454,8 +447,62 @@ public class JadeUnits{
 		}};
 
 		//Everything that can look after itself goes to a healer when idle and hurt. The Sporeling is a suicide unit: no point.
-		for(NHUnitType type : new NHUnitType[]{sprig, thornback, briarlord, wisp, luminar, verdance, gardener, scavenger, bogguard, mimic}){
+		for(NHUnitType type : new NHUnitType[]{sprig, thornback, briarlord, wisp, luminar, verdance, gardener, scavenger, scavengerAmphibious, scavengerFlying, bogguard, mimic}){
 			type.abilities.add(new HealSeekAbility());
 		}
+	}
+
+	/** Everything the three Scavenger kinds share: they are the same unit, only moving differently. */
+	private static void shapeScavenger(NHUnitType t){
+		t.outlineColor = JadeColor.outline;
+		t.health = 190f;
+		t.armor = 0f;
+		t.speed = 0.62f;
+		t.hitSize = 10f;
+		t.rotateSpeed = 3.4f;
+		t.mechStepParticles = true;
+		t.stepShake = 0.05f;
+		t.commands = Seq.with(UnitCommand.moveCommand, sacrificeCommand);
+		t.defaultCommand = UnitCommand.moveCommand;
+
+		t.abilities.add(new ScavengerAbility());
+
+		t.weapons.add(new Weapon(NewHorizon.name("scavenger-gun")){{
+			top = true;
+			mirror = false;
+			x = 0f;
+			y = 1f;
+			shootY = 5f;
+			reload = 26f;
+			recoil = 1.5f;
+			rotate = true;
+			rotateSpeed = 12f;
+			inaccuracy = 3f;
+			ejectEffect = Fx.none;
+			shootSound = Sounds.shoot;
+			bullet = new BasicBulletType(2.8f, 9f){{
+				width = 7f;
+				height = 9f;
+				lifetime = 55f;
+				backColor = lightColor = hitColor = JadeColor.resin;
+				frontColor = Color.white;
+				shootEffect = Fx.shootSmall;
+				hitEffect = despawnEffect = Fx.hitBulletSmall;
+				smokeEffect = Fx.none;
+			}};
+		}});
+	}
+
+	/** The kind of Scavenger that moves like the given one but also has what the {@code fly} / {@code swim} flags say, or null if that changes nothing. */
+	public static NHUnitType scavengerWith(mindustry.type.UnitType from, boolean fly, boolean swim){
+		if(from == scavengerFlying) return null;
+		if(fly) return scavengerFlying;
+		if(swim && from == scavenger) return scavengerAmphibious;
+		return null;
+	}
+
+	/** Whether the type is any of the Scavenger kinds. */
+	public static boolean isScavenger(mindustry.type.UnitType type){
+		return type == scavenger || type == scavengerAmphibious || type == scavengerFlying;
 	}
 }

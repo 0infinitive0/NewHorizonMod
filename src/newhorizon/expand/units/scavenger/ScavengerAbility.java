@@ -82,45 +82,69 @@ public class ScavengerAbility extends Ability{
 
 		//Whatever a victim carries may come from any mod. If a weapon or ability cannot be taken or improved for any reason, it
 		//is skipped: stealing must never raise an error.
-		if(!weaponRecipes.isEmpty() && rand.chance(Scavenging.weaponChance)){
-			try{
-				String recipe = ScavengeRecipes.canonical(weaponRecipes.get(rand.random(weaponRecipes.size - 1)));
-				int owned = weapons.indexOf(recipe);
-				if(owned >= 0){
-					//Weapons are unique: taking the same gun again makes the one it already has better.
-					String stat = upgradeWeapon(unit, owned, rand);
-					if(stat != null){
-						loot.upgradedWeapon = recipe;
-						loot.upgradedStat = stat;
-					}
-				}else if(addWeapon(unit, recipe)){
-					loot.weapon = recipe;
-				}
-			}catch(RuntimeException ignored){
-			}
-		}
-		if(!abilityRecipes.isEmpty() && rand.chance(Scavenging.abilityChance)){
-			try{
-				String recipe = abilityRecipes.get(rand.random(abilityRecipes.size - 1));
-				int owned = abilities.indexOf(recipe);
-				if(owned >= 0){
-					//Abilities are unique too: taking one it already has makes it stronger.
-					String stat = upgradeAbility(unit, owned, rand);
-					if(stat != null){
-						loot.upgradedAbility = recipe;
-						loot.upgradedAbilityStat = stat;
-					}
-				}else if(addAbility(unit, recipe)){
-					loot.ability = recipe;
-				}
-			}catch(RuntimeException ignored){
-			}
-		}
+		if(!weaponRecipes.isEmpty() && rand.chance(Scavenging.weaponChance)) stealWeapon(unit, weaponRecipes, rand, loot);
+		if(!abilityRecipes.isEmpty() && rand.chance(Scavenging.abilityChance)) stealAbility(unit, abilityRecipes, rand, loot);
 
 		save(unit);
 		JadeFx.leafBurst.at(unit.x, unit.y);
-		if(loot.weapon != null || loot.ability != null || loot.upgradedWeapon != null || loot.upgradedAbility != null) JadeFx.pollenBurst.at(unit.x, unit.y);
+		if(gained(loot)) JadeFx.pollenBurst.at(unit.x, unit.y);
 		return loot;
+	}
+
+	/**
+	 * A friendly unit given up: its owner takes one random weapon and one random ability of its kind, no dice. Nothing else is taken, and
+	 * no kill is counted. Like stealing, a gun or ability it already has is improved instead.
+	 */
+	public Loot sacrifice(Unit unit, Seq<String> weaponRecipes, Seq<String> abilityRecipes, Rand rand){
+		if(!restored) restore(unit);
+		Loot loot = new Loot();
+		if(!weaponRecipes.isEmpty()) stealWeapon(unit, weaponRecipes, rand, loot);
+		if(!abilityRecipes.isEmpty()) stealAbility(unit, abilityRecipes, rand, loot);
+
+		save(unit);
+		if(gained(loot)) JadeFx.pollenBurst.at(unit.x, unit.y);
+		return loot;
+	}
+
+	/** Whether the outcome holds anything: a new weapon or ability, or an improvement. */
+	public static boolean gained(Loot loot){
+		return loot.weapon != null || loot.ability != null || loot.upgradedWeapon != null || loot.upgradedAbility != null;
+	}
+
+	protected void stealWeapon(Unit unit, Seq<String> recipes, Rand rand, Loot loot){
+		try{
+			String recipe = ScavengeRecipes.canonical(recipes.get(rand.random(recipes.size - 1)));
+			int owned = weapons.indexOf(recipe);
+			if(owned >= 0){
+				//Weapons are unique: taking the same gun again makes the one it already has better.
+				String stat = upgradeWeapon(unit, owned, rand);
+				if(stat != null){
+					loot.upgradedWeapon = recipe;
+					loot.upgradedStat = stat;
+				}
+			}else if(addWeapon(unit, recipe)){
+				loot.weapon = recipe;
+			}
+		}catch(RuntimeException ignored){
+		}
+	}
+
+	protected void stealAbility(Unit unit, Seq<String> recipes, Rand rand, Loot loot){
+		try{
+			String recipe = recipes.get(rand.random(recipes.size - 1));
+			int owned = abilities.indexOf(recipe);
+			if(owned >= 0){
+				//Abilities are unique too: taking one it already has makes it stronger.
+				String stat = upgradeAbility(unit, owned, rand);
+				if(stat != null){
+					loot.upgradedAbility = recipe;
+					loot.upgradedAbilityStat = stat;
+				}
+			}else if(addAbility(unit, recipe)){
+				loot.ability = recipe;
+			}
+		}catch(RuntimeException ignored){
+		}
 	}
 
 	/** Steals health and armor. Max health grows by the same amount the unit is healed by. */
