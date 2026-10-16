@@ -13,6 +13,7 @@ import math
 import os
 
 import numpy as np
+import random
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 SS = 4
@@ -30,6 +31,9 @@ JADE_L = (180, 245, 214)
 JADE_D = (29, 107, 83)
 POLLEN = (246, 216, 107)
 INFECT = (155, 217, 74)
+WATER = (96, 176, 226)
+WATER_D = (46, 104, 160)
+MOSS = (88, 140, 70)
 INFECT_D = (74, 122, 36)
 RESIN = (217, 165, 58)
 RESIN_D = (140, 95, 30)
@@ -396,6 +400,66 @@ def blk_clinic():
     head.save(BLOCK_DIR, "verdant-clinic")
 
 
+def blk_spore_walls():
+    """Spore walls: a mossy, pulpy plate studded with spore pods."""
+    for size, name in ((1, "bloom-wall"), (2, "bloom-wall-large")):
+        px = 32 * size
+        c = Canvas(px, px)
+        c.part(rrect(1, 1, px - 1, px - 1, 4), (38, 62, 44), light=MOSS, dark=HULL_D)
+        c.part(rrect(4, 4, px - 4, px - 4, 3), lerp(MOSS, JADE_D, 0.35), light=lerp(MOSS, WHITE, 0.25), dark=(30, 52, 38), rim=0.7)
+        for i in range(size * size * 3):
+            r = random.Random(i * 7 + size)
+            cx, cy = 7 + r.random() * (px - 14), 7 + r.random() * (px - 14)
+            rad = 2.0 + r.random() * 2.2
+            c.circle(cx, cy, rad, lerp(INFECT, MOSS, 0.4), light=lerp(INFECT, WHITE, 0.55), dark=INFECT_D, rim=0.7)
+        for i in range(size):
+            leaf(c, 8 + i * 32, px - 5, 9, 5, -20 + 40 * (i % 2), base=JADE_D, light=JADE, dark=HULL_D)
+        c.outline()
+        c.save(BLOCK_DIR, name)
+
+
+def blk_waterwheel():
+    """Spore Waterwheel: a stone basin (the block) with a paddle wheel on top (-rotor, spun by the game)."""
+    c = Canvas(64, 64)
+    plate(c, 64)
+    c.part(rrect(8, 8, 56, 56, 6), WATER_D, light=WATER, dark=(30, 66, 110), rim=0.6)
+    c.part(ellipse(32, 32, 18, 18, 36), (36, 78, 128), light=WATER_D, dark=(24, 50, 90), rim=0.7, alpha=190)
+    c.outline()
+    c.save(BLOCK_DIR, "spore-waterwheel")
+
+    r = Canvas(64, 64)
+    for a in range(0, 360, 45):
+        leaf(r, 32, 32, 22, 11, a, base=JADE, light=JADE_L, dark=JADE_D)
+    r.circle(32, 32, 7, HULL, light=HULL_L, dark=HULL_D)
+    r.circle(32, 32, 3, WATER, light=WHITE, dark=WATER_D, rim=0.8)
+    r.outline()
+    r.save(BLOCK_DIR, "spore-waterwheel-rotor")
+
+
+def unit_bogguard():
+    """Bulky tank: a domed shell with water-lily plates and a wet sheen, and a mossy underside (-base, -leg)."""
+    px = 64
+    c = Canvas(px, px)
+    cx = cy = px / 2
+    c.part(mirror([(cx + 8, cy - 22), (cx + 18, cy - 12), (cx + 20, cy + 8), (cx + 12, cy + 22)], cx), HULL, light=HULL_L, dark=HULL_D)
+    c.part(ellipse(cx, cy, 17, 21, 36), MOSS, light=lerp(MOSS, WHITE, 0.3), dark=JADE_D)
+    for a in range(0, 360, 60):
+        leaf(c, cx, cy, 16, 9, a + 30, base=JADE_D, light=JADE, dark=HULL_D)
+    c.part(ellipse(cx, cy - 2, 9, 12, 28), JADE, light=JADE_L, dark=JADE_D)
+    c.glow(cx, cy - 4, 6, WATER, 150)
+    c.circle(cx, cy - 4, 3.6, WATER, light=WHITE, dark=WATER_D, rim=0.8)
+    c.save(UNIT_DIR, "bogguard")
+
+    base = Canvas(px, px)
+    base.part(ellipse(cx, cy, 14, 10, 28), HULL, light=HULL_L, dark=HULL_D)
+    base.save(UNIT_DIR, "bogguard-base")
+
+    leg = Canvas(px, px)
+    leg.part(rrect(cx - 5, cy - 2, cx + 5, cy + 20, 3), HULL, light=HULL_L, dark=HULL_D)
+    leg.part(ellipse(cx, cy + 20, 7, 5, 24), MOSS, light=lerp(MOSS, WHITE, 0.3), dark=JADE_D)
+    leg.save(UNIT_DIR, "bogguard-leg")
+
+
 def blk_unit_blocks():
     for name, px in (("jade-nursery", 96), ("verdant-cultivator", 96), ("grove-cultivator", 160)):
         c = Canvas(px, px)
@@ -569,6 +633,7 @@ def units():
     unit_gardener()
     unit_herbalist()
     unit_scavenger()
+    unit_bogguard()
     unit_air("wisp", 32, 32, 12)
     unit_air("luminar", 56, 60, 24)
     unit_air("verdance", 96, 108, 44)
@@ -619,6 +684,8 @@ def main():
     blk_turrets()
     blk_catapult()
     blk_clinic()
+    blk_spore_walls()
+    blk_waterwheel()
     blk_unit_blocks()
     units()
     print("wrote %d sprites" % len(generated))

@@ -3,6 +3,7 @@ package newhorizon.content.jade;
 import arc.graphics.Color;
 import mindustry.ai.UnitCommand;
 import mindustry.content.Fx;
+import mindustry.content.StatusEffects;
 import mindustry.entities.abilities.EnergyFieldAbility;
 import mindustry.entities.bullet.BasicBulletType;
 import mindustry.entities.abilities.RepairFieldAbility;
@@ -17,6 +18,7 @@ import newhorizon.NewHorizon;
 import newhorizon.expand.units.ai.HealerAI;
 import newhorizon.expand.units.ai.SporelingAI;
 import newhorizon.expand.units.ablility.HealSeekAbility;
+import newhorizon.expand.units.ablility.WaterRegenAbility;
 import newhorizon.expand.units.scavenger.ScavengerAbility;
 import newhorizon.expand.units.ai.gardener.GardenerAI;
 import newhorizon.expand.units.ai.gardener.GardenerAbility;
@@ -35,7 +37,7 @@ public class JadeUnits{
 		sprig, thornback, briarlord,
 		wisp, luminar, verdance,
 		sporeling,
-		gardener, herbalist, scavenger;
+		gardener, herbalist, scavenger, bogguard;
 
 	/** Reach of the Herbalist's repair aura, also used by units deciding whether they have arrived. */
 	public static final float herbalistHealRange = 80f;
@@ -394,8 +396,42 @@ public class JadeUnits{
 			}});
 		}};
 
+		//Spores love water. A slow tank that soaks up a lot of damage and heals while it stands in water, and can wade through deep
+		//water without drowning.
+		bogguard = new NHUnitType("bogguard"){{
+			constructor = MechUnit::create;
+			outlineColor = JadeColor.outline;
+			ammoType = new ItemAmmoType(JadeItems.verdantResin);
+
+			health = 2600f;
+			armor = 12f;
+			speed = 0.36f;
+			hitSize = 17f;
+			rotateSpeed = 2.4f;
+			canDrown = false;
+			mechStepParticles = true;
+			stepShake = 0.15f;
+			mechLandShake = 3f;
+			immunities.add(StatusEffects.wet);
+
+			abilities.add(new WaterRegenAbility());
+
+			weapons.add(new Weapon(NewHorizon.name("thornback-thorn")){{
+				top = false;
+				x = 11f;
+				y = 1f;
+				reload = 38f;
+				recoil = 2.5f;
+				shoot = new ShootSpread(2, 9f);
+				inaccuracy = 3f;
+				ejectEffect = Fx.none;
+				shootSound = Sounds.shotgun;
+				bullet = JadeBullets.thornSpread;
+			}});
+		}};
+
 		//Everything that can look after itself goes to a healer when idle and hurt. The Sporeling is a suicide unit: no point.
-		for(NHUnitType type : new NHUnitType[]{sprig, thornback, briarlord, wisp, luminar, verdance, gardener, scavenger}){
+		for(NHUnitType type : new NHUnitType[]{sprig, thornback, briarlord, wisp, luminar, verdance, gardener, scavenger, bogguard}){
 			type.abilities.add(new HealSeekAbility());
 		}
 	}

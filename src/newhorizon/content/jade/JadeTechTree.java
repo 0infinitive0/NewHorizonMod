@@ -18,7 +18,9 @@ public class JadeTechTree{
 				});
 			});
 
-			node(JadeBlocks.sporeFurnace);
+			node(JadeBlocks.sporeFurnace, () -> {
+				node(JadeBlocks.sporeWaterwheel);
+			});
 
 			node(JadeBlocks.silkLoom, () -> {
 				node(JadeBlocks.bloomConservatory);
@@ -27,6 +29,9 @@ public class JadeTechTree{
 				});
 				node(JadeBlocks.jadeWall, () -> {
 					node(JadeBlocks.jadeWallLarge);
+					node(JadeBlocks.sporeWall, () -> {
+						node(JadeBlocks.sporeWallLarge);
+					});
 				});
 			});
 
@@ -50,6 +55,7 @@ public class JadeTechTree{
 				node(JadeUnits.gardener, () -> {});
 				node(JadeUnits.herbalist, () -> {});
 				node(JadeUnits.scavenger, () -> {});
+				node(JadeUnits.bogguard, () -> {});
 				node(JadeUnits.sporeling, () -> {
 					node(JadeBlocks.sporeCatapult);
 				});

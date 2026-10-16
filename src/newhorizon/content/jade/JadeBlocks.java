@@ -21,15 +21,16 @@ import mindustry.world.draw.DrawDefault;
 import mindustry.world.draw.DrawMulti;
 import mindustry.world.draw.DrawRegion;
 import newhorizon.expand.block.defence.RegrowthWall;
+import newhorizon.expand.block.defence.SporeWall;
 
 import static mindustry.type.ItemStack.with;
 
 public class JadeBlocks{
 	public static Block
 		resinTapper, silkLoom, bloomConservatory,
-		sporeFurnace,
+		sporeFurnace, sporeWaterwheel,
 		thornSpitter, briarLance, canopyMortar, sporeCatapult,
-		jadeWall, jadeWallLarge, lifebloomPylon,
+		jadeWall, jadeWallLarge, sporeWall, sporeWallLarge, lifebloomPylon,
 		jadeNursery, verdantCultivator, groveCultivator,
 		verdantClinic;
 
@@ -86,6 +87,18 @@ public class JadeBlocks{
 			generateEffect = JadeFx.leafBurst;
 			ambientSound = Sounds.bioLoop;
 			ambientSoundVolume = 0.06f;
+		}};
+
+		//Spores love water: this turns a steady flow of it into power, no fuel needed. One mechanical pump on water feeds about one.
+		sporeWaterwheel = new ConsumeGenerator("spore-waterwheel"){{
+			requirements(Category.power, with(Items.copper, 80, Items.lead, 70, Items.graphite, 40, JadeItems.verdantResin, 30));
+			size = 2;
+			health = 340;
+			powerProduction = 2.6f;
+			consumeLiquid(Liquids.water, 0.12f);
+			generateEffect = JadeFx.leafBurst;
+			effectChance = 0.02f;
+			drawer = new DrawMulti(new DrawDefault(), new DrawRegion("-rotor", 3f, true));
 		}};
 
 		//Turrets
@@ -190,6 +203,19 @@ public class JadeBlocks{
 			regrowEffect = JadeFx.leafBurst;
 		}};
 
+		sporeWall = new SporeWall("bloom-wall"){{
+			requirements(Category.defense, with(Items.sporePod, 6, JadeItems.verdantResin, 3));
+			health = 1100;
+			armor = 3f;
+		}};
+
+		sporeWallLarge = new SporeWall("bloom-wall-large"){{
+			requirements(Category.defense, ItemStack.mult(sporeWall.requirements, 4));
+			size = 2;
+			health = 1100 * 4;
+			armor = 3f;
+		}};
+
 		lifebloomPylon = new MendProjector("lifebloom-pylon"){{
 			requirements(Category.effect, with(Items.lead, 50, Items.silicon, 40, Items.titanium, 25, JadeItems.jadeSilk, 30));
 			size = 2;
@@ -233,7 +259,8 @@ public class JadeBlocks{
 				new UnitFactory.UnitPlan(JadeUnits.sporeling, 60f * 8f, with(Items.silicon, 10, JadeItems.verdantResin, 20)),
 				new UnitFactory.UnitPlan(JadeUnits.gardener, 60f * 18f, with(Items.silicon, 30, Items.lead, 20, JadeItems.verdantResin, 25)),
 				new UnitFactory.UnitPlan(JadeUnits.herbalist, 60f * 16f, with(Items.silicon, 30, Items.lead, 25, JadeItems.verdantResin, 20)),
-				new UnitFactory.UnitPlan(JadeUnits.scavenger, 60f * 14f, with(Items.silicon, 20, Items.lead, 15, JadeItems.verdantResin, 15))
+				new UnitFactory.UnitPlan(JadeUnits.scavenger, 60f * 14f, with(Items.silicon, 20, Items.lead, 15, JadeItems.verdantResin, 15)),
+				new UnitFactory.UnitPlan(JadeUnits.bogguard, 60f * 40f, with(Items.silicon, 70, Items.lead, 60, Items.titanium, 50, JadeItems.verdantResin, 70, JadeItems.jadeSilk, 20))
 			);
 		}};
 
