@@ -12,7 +12,9 @@ import mindustry.gen.UnitEntity;
 import mindustry.type.Weapon;
 import mindustry.type.ammo.ItemAmmoType;
 import newhorizon.NewHorizon;
+import newhorizon.expand.units.ai.HealerAI;
 import newhorizon.expand.units.ai.SporelingAI;
+import newhorizon.expand.units.ablility.HealSeekAbility;
 import newhorizon.expand.units.ai.gardener.GardenerAI;
 import newhorizon.expand.units.ai.gardener.GardenerAbility;
 import newhorizon.expand.units.unitType.NHUnitType;
@@ -30,10 +32,13 @@ public class JadeUnits{
 		sprig, thornback, briarlord,
 		wisp, luminar, verdance,
 		sporeling,
-		gardener;
+		gardener, herbalist;
+
+	/** Reach of the Herbalist's repair aura, also used by units deciding whether they have arrived. */
+	public static final float herbalistHealRange = 80f;
 
 	/** The Gardener's own command: it picks {@link GardenerAI} so a player-team Gardener learns instead of standing around. */
-	public static UnitCommand gardenCommand;
+	public static UnitCommand gardenCommand, healCommand;
 
 	public static void load(){
 		sprig = new NHUnitType("sprig"){{
@@ -313,5 +318,39 @@ public class JadeUnits{
 
 			abilities.add(new GardenerAbility());
 		}};
+
+		healCommand = new UnitCommand("nh-heal", "add", u -> new HealerAI());
+
+		//Support flier that goes to whoever is hurt most and heals them with an aura.
+		herbalist = new NHUnitType("herbalist"){{
+			constructor = UnitEntity::create;
+			aiController = HealerAI::new;
+			commands = new UnitCommand[]{UnitCommand.moveCommand, healCommand};
+			defaultCommand = healCommand;
+			outlineColor = JadeColor.outline;
+			ammoType = new ItemAmmoType(JadeItems.verdantResin);
+
+			flying = true;
+			health = 380f;
+			armor = 1f;
+			speed = 2.6f;
+			accel = 0.07f;
+			drag = 0.05f;
+			rotateSpeed = 5f;
+			hitSize = 11f;
+			engineOffset = 6f;
+			engineSize = 2.4f;
+			engineColor = JadeColor.pollen;
+
+			abilities.add(
+				new RepairFieldAbility(30f, 60f, herbalistHealRange),
+				new StatusFieldAbility(JadeStatus.regrowth, 60f * 4f, 60f * 3f, herbalistHealRange)
+			);
+		}};
+
+		//Everything that can look after itself goes to a healer when idle and hurt. The Sporeling is a suicide unit: no point.
+		for(NHUnitType type : new NHUnitType[]{sprig, thornback, briarlord, wisp, luminar, verdance, gardener}){
+			type.abilities.add(new HealSeekAbility());
+		}
 	}
 }

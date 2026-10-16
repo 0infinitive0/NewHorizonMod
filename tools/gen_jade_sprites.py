@@ -376,6 +376,26 @@ def blk_catapult():
     c.save(BLOCK_DIR, "spore-catapult")
 
 
+def blk_clinic():
+    """Verdant Clinic: a plate (-base) with a rotating bloom emitter head (points up)."""
+    base = Canvas(64, 64)
+    plate(base, 64)
+    base.circle(32, 32, 13, HULL_D, rim=0.6)
+    base.outline()
+    base.save(BLOCK_DIR, "verdant-clinic-base")
+
+    head = Canvas(64, 64)
+    head.part(rrect(28, 8, 36, 34, 2.5), HULL_L, light=lerp(HULL_L, WHITE, 0.35), dark=HULL_D)
+    head.part([(26, 12), (32, 2), (38, 12)], JADE, light=JADE_L, dark=JADE_D)
+    head.circle(32, 34, 10, JADE_D, light=JADE, dark=HULL_D)
+    for a in range(0, 360, 72):
+        leaf(head, 32, 34, 10, 5, a + 36, base=JADE, light=JADE_L, dark=JADE_D)
+    head.glow(32, 34, 7, JADE_L, 140)
+    head.circle(32, 34, 3.2, WHITE, light=WHITE, dark=JADE_L, rim=0.9, shine=1.0)
+    head.outline()
+    head.save(BLOCK_DIR, "verdant-clinic")
+
+
 def blk_unit_blocks():
     for name, px in (("jade-nursery", 96), ("verdant-cultivator", 96), ("grove-cultivator", 160)):
         c = Canvas(px, px)
@@ -474,6 +494,20 @@ def unit_gardener():
     c.save(UNIT_DIR, "gardener")
 
 
+def unit_herbalist():
+    """Flying healer: a soft round body with two big petal wings and a glowing heart."""
+    w, h = 44, 46
+    c = Canvas(w, h)
+    cx = w / 2
+    for sgn in (-1, 1):
+        leaf(c, cx + sgn * 5, 26, 20, 13, sgn * 75, base=JADE_L, light=WHITE, dark=JADE)
+        leaf(c, cx + sgn * 4, 30, 14, 8, sgn * 125, base=JADE, light=JADE_L, dark=JADE_D)
+    c.part(ellipse(cx, 24, 7, 11, 30), HULL, light=HULL_L, dark=HULL_D)
+    c.glow(cx, 24, 7, RESIN, 120)
+    c.part([(cx - 3, 22), (cx - 1, 20), (cx, 21), (cx + 1, 20), (cx + 3, 22), (cx, 28)], (230, 90, 100), light=(255, 170, 170), dark=(150, 40, 60))
+    c.save(UNIT_DIR, "herbalist")
+
+
 def unit_air(name, w, h, wing, accent=POLLEN):
     c = Canvas(w, h)
     cx = w / 2
@@ -503,6 +537,7 @@ def units():
     unit_mech("briarlord", 80, 2.5)
     unit_sporeling()
     unit_gardener()
+    unit_herbalist()
     unit_air("wisp", 32, 32, 12)
     unit_air("luminar", 56, 60, 24)
     unit_air("verdance", 96, 108, 44)
@@ -552,6 +587,7 @@ def main():
     blk_pylon()
     blk_turrets()
     blk_catapult()
+    blk_clinic()
     blk_unit_blocks()
     units()
     print("wrote %d sprites" % len(generated))

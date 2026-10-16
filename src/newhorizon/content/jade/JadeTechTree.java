@@ -22,7 +22,9 @@ public class JadeTechTree{
 
 			node(JadeBlocks.silkLoom, () -> {
 				node(JadeBlocks.bloomConservatory);
-				node(JadeBlocks.lifebloomPylon);
+				node(JadeBlocks.lifebloomPylon, () -> {
+					node(JadeBlocks.verdantClinic);
+				});
 				node(JadeBlocks.jadeWall, () -> {
 					node(JadeBlocks.jadeWallLarge);
 				});
@@ -46,6 +48,7 @@ public class JadeTechTree{
 					});
 				});
 				node(JadeUnits.gardener, () -> {});
+				node(JadeUnits.herbalist, () -> {});
 				node(JadeUnits.sporeling, () -> {
 					node(JadeBlocks.sporeCatapult);
 				});

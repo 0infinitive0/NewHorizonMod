@@ -14,6 +14,7 @@ import mindustry.world.blocks.defense.turrets.PowerTurret;
 import mindustry.world.blocks.power.ConsumeGenerator;
 import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.blocks.units.Reconstructor;
+import mindustry.world.blocks.units.RepairTurret;
 import mindustry.world.blocks.units.UnitFactory;
 import mindustry.world.consumers.ConsumeItemFlammable;
 import mindustry.world.draw.DrawDefault;
@@ -29,7 +30,8 @@ public class JadeBlocks{
 		sporeFurnace,
 		thornSpitter, briarLance, canopyMortar, sporeCatapult,
 		jadeWall, jadeWallLarge, lifebloomPylon,
-		jadeNursery, verdantCultivator, groveCultivator;
+		jadeNursery, verdantCultivator, groveCultivator,
+		verdantClinic;
 
 	public static void load(){
 		//Resource chain: spore pods -> resin -> silk -> everbloom core
@@ -203,17 +205,34 @@ public class JadeBlocks{
 			consumeItem(JadeItems.jadeSilk).boost();
 		}};
 
+		//Heals units, ground and air, in range. Idle damaged Jade units walk here on their own (HealSeekAbility).
+		verdantClinic = new RepairTurret("verdant-clinic"){{
+			requirements(Category.units, with(Items.lead, 60, Items.silicon, 50, Items.graphite, 30, JadeItems.jadeSilk, 20));
+			size = 2;
+			health = 480;
+			repairSpeed = 1.6f;
+			repairRadius = 125f;
+			powerUse = 2.5f;
+			length = 5f;
+			beamWidth = 0.9f;
+			pulseRadius = 5f;
+			laserColor = JadeColor.jadeLight;
+			laserTopColor = JadeColor.jade;
+			acceptCoolant = false;
+		}};
+
 		//Unit production
 		jadeNursery = new UnitFactory("jade-nursery"){{
 			requirements(Category.units, with(Items.copper, 80, Items.lead, 70, Items.silicon, 60, JadeItems.verdantResin, 40));
 			size = 3;
 			health = 800;
 			consumePower(1.4f);
-			plans.add(
+			plans.addAll(
 				new UnitFactory.UnitPlan(JadeUnits.sprig, 60f * 12f, with(Items.silicon, 18, JadeItems.verdantResin, 12)),
 				new UnitFactory.UnitPlan(JadeUnits.wisp, 60f * 14f, with(Items.silicon, 22, Items.lead, 10, JadeItems.verdantResin, 14)),
 				new UnitFactory.UnitPlan(JadeUnits.sporeling, 60f * 8f, with(Items.silicon, 10, JadeItems.verdantResin, 20)),
-				new UnitFactory.UnitPlan(JadeUnits.gardener, 60f * 18f, with(Items.silicon, 30, Items.lead, 20, JadeItems.verdantResin, 25))
+				new UnitFactory.UnitPlan(JadeUnits.gardener, 60f * 18f, with(Items.silicon, 30, Items.lead, 20, JadeItems.verdantResin, 25)),
+				new UnitFactory.UnitPlan(JadeUnits.herbalist, 60f * 16f, with(Items.silicon, 30, Items.lead, 25, JadeItems.verdantResin, 20))
 			);
 		}};
 
