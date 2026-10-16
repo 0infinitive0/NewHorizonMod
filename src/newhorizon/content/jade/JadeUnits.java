@@ -1,8 +1,10 @@
 package newhorizon.content.jade;
 
+import arc.graphics.Color;
 import mindustry.ai.UnitCommand;
 import mindustry.content.Fx;
 import mindustry.entities.abilities.EnergyFieldAbility;
+import mindustry.entities.bullet.BasicBulletType;
 import mindustry.entities.abilities.RepairFieldAbility;
 import mindustry.entities.abilities.StatusFieldAbility;
 import mindustry.entities.pattern.ShootSpread;
@@ -15,6 +17,7 @@ import newhorizon.NewHorizon;
 import newhorizon.expand.units.ai.HealerAI;
 import newhorizon.expand.units.ai.SporelingAI;
 import newhorizon.expand.units.ablility.HealSeekAbility;
+import newhorizon.expand.units.scavenger.ScavengerAbility;
 import newhorizon.expand.units.ai.gardener.GardenerAI;
 import newhorizon.expand.units.ai.gardener.GardenerAbility;
 import newhorizon.expand.units.unitType.NHUnitType;
@@ -32,7 +35,7 @@ public class JadeUnits{
 		sprig, thornback, briarlord,
 		wisp, luminar, verdance,
 		sporeling,
-		gardener, herbalist;
+		gardener, herbalist, scavenger;
 
 	/** Reach of the Herbalist's repair aura, also used by units deciding whether they have arrived. */
 	public static final float herbalistHealRange = 80f;
@@ -348,8 +351,51 @@ public class JadeUnits{
 			);
 		}};
 
+		//Starts as a weak little thing with a duo-like gun. Every enemy it helps destroy makes it tougher, and now and then
+		//it walks away with a weapon or ability of the victim. See ScavengerAbility and Scavenging.
+		scavenger = new NHUnitType("scavenger"){{
+			constructor = MechUnit::create;
+			outlineColor = JadeColor.outline;
+			ammoType = new ItemAmmoType(JadeItems.verdantResin);
+
+			health = 190f;
+			armor = 0f;
+			speed = 0.62f;
+			hitSize = 10f;
+			rotateSpeed = 3.4f;
+			mechStepParticles = true;
+			stepShake = 0.05f;
+
+			abilities.add(new ScavengerAbility());
+
+			weapons.add(new Weapon(NewHorizon.name("scavenger-gun")){{
+				top = true;
+				mirror = false;
+				x = 0f;
+				y = 1f;
+				shootY = 5f;
+				reload = 26f;
+				recoil = 1.5f;
+				rotate = true;
+				rotateSpeed = 12f;
+				inaccuracy = 3f;
+				ejectEffect = Fx.none;
+				shootSound = Sounds.shoot;
+				bullet = new BasicBulletType(2.8f, 9f){{
+					width = 7f;
+					height = 9f;
+					lifetime = 55f;
+					backColor = lightColor = hitColor = JadeColor.resin;
+					frontColor = Color.white;
+					shootEffect = Fx.shootSmall;
+					hitEffect = despawnEffect = Fx.hitBulletSmall;
+					smokeEffect = Fx.none;
+				}};
+			}});
+		}};
+
 		//Everything that can look after itself goes to a healer when idle and hurt. The Sporeling is a suicide unit: no point.
-		for(NHUnitType type : new NHUnitType[]{sprig, thornback, briarlord, wisp, luminar, verdance, gardener}){
+		for(NHUnitType type : new NHUnitType[]{sprig, thornback, briarlord, wisp, luminar, verdance, gardener, scavenger}){
 			type.abilities.add(new HealSeekAbility());
 		}
 	}

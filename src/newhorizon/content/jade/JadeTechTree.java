@@ -49,6 +49,7 @@ public class JadeTechTree{
 				});
 				node(JadeUnits.gardener, () -> {});
 				node(JadeUnits.herbalist, () -> {});
+				node(JadeUnits.scavenger, () -> {});
 				node(JadeUnits.sporeling, () -> {
 					node(JadeBlocks.sporeCatapult);
 				});

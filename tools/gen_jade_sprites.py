@@ -508,6 +508,36 @@ def unit_herbalist():
     c.save(UNIT_DIR, "herbalist")
 
 
+def unit_scavenger():
+    """Scrappy mech: a hull patched together from mismatched plates, with a stubby gun (-gun)."""
+    px = 36
+    c = Canvas(px, px)
+    cx = cy = px / 2
+    c.part(mirror([(cx + 4, cy - 11), (cx + 9, cy - 5), (cx + 9, cy + 7), (cx + 5, cy + 12)], cx), HULL, light=HULL_L, dark=HULL_D)
+    # mismatched scavenged plates
+    c.part([(cx - 9, cy - 4), (cx - 3, cy - 7), (cx - 2, cy + 1), (cx - 8, cy + 3)], RESIN, light=lerp(RESIN, WHITE, 0.45), dark=RESIN_D)
+    c.part([(cx + 2, cy + 1), (cx + 9, cy - 1), (cx + 8, cy + 8), (cx + 3, cy + 7)], JADE_D, light=JADE, dark=HULL_D)
+    c.part([(cx - 6, cy + 5), (cx - 1, cy + 4), (cx - 1, cy + 11), (cx - 5, cy + 10)], (150, 150, 160), light=(210, 210, 220), dark=(90, 90, 100))
+    c.line([(cx - 9, cy - 4), (cx - 3, cy - 7)], (30, 30, 30), 0.8)
+    c.glow(cx, cy - 7, 4, POLLEN, 130)
+    c.circle(cx, cy - 7, 2.2, POLLEN, light=WHITE, rim=0.8)
+    c.save(UNIT_DIR, "scavenger")
+
+    base = Canvas(px, px)
+    base.part(ellipse(cx, cy, 8, 6, 24), HULL, light=HULL_L, dark=HULL_D)
+    base.save(UNIT_DIR, "scavenger-base")
+
+    leg = Canvas(px, px)
+    leg.part(rrect(cx - 3, cy - 2, cx + 3, cy + 12, 2), HULL, light=HULL_L, dark=HULL_D)
+    leg.part(ellipse(cx, cy + 12, 4, 3, 20), RESIN_D, light=RESIN, dark=HULL_D)
+    leg.save(UNIT_DIR, "scavenger-leg")
+
+    gun = Canvas(10, 18)
+    gun.part(rrect(2.5, 5, 7.5, 16, 1.5), HULL, light=HULL_L, dark=HULL_D)
+    gun.part([(2, 6), (5, 0.5), (8, 6)], RESIN, light=lerp(RESIN, WHITE, 0.5), dark=RESIN_D)
+    gun.save(UNIT_DIR, "scavenger-gun")
+
+
 def unit_air(name, w, h, wing, accent=POLLEN):
     c = Canvas(w, h)
     cx = w / 2
@@ -538,6 +568,7 @@ def units():
     unit_sporeling()
     unit_gardener()
     unit_herbalist()
+    unit_scavenger()
     unit_air("wisp", 32, 32, 12)
     unit_air("luminar", 56, 60, 24)
     unit_air("verdance", 96, 108, 44)

@@ -1,6 +1,7 @@
 package newhorizon.content.jade;
 
 import newhorizon.expand.units.ai.gardener.GardenerMind;
+import newhorizon.expand.units.scavenger.Scavenging;
 
 /**
  * The Jade Accord: a bio-tech faction that grows its arsenal from spore pods instead of smelting it.
@@ -19,5 +20,6 @@ public class JadeFaction{
 		JadeInfection.load();
 		JadeBlocks.load();
 		GardenerMind.instance.init();
+		Scavenging.init();
 	}
 }

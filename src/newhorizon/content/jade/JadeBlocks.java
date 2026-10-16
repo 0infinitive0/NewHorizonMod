@@ -232,7 +232,8 @@ public class JadeBlocks{
 				new UnitFactory.UnitPlan(JadeUnits.wisp, 60f * 14f, with(Items.silicon, 22, Items.lead, 10, JadeItems.verdantResin, 14)),
 				new UnitFactory.UnitPlan(JadeUnits.sporeling, 60f * 8f, with(Items.silicon, 10, JadeItems.verdantResin, 20)),
 				new UnitFactory.UnitPlan(JadeUnits.gardener, 60f * 18f, with(Items.silicon, 30, Items.lead, 20, JadeItems.verdantResin, 25)),
-				new UnitFactory.UnitPlan(JadeUnits.herbalist, 60f * 16f, with(Items.silicon, 30, Items.lead, 25, JadeItems.verdantResin, 20))
+				new UnitFactory.UnitPlan(JadeUnits.herbalist, 60f * 16f, with(Items.silicon, 30, Items.lead, 25, JadeItems.verdantResin, 20)),
+				new UnitFactory.UnitPlan(JadeUnits.scavenger, 60f * 14f, with(Items.silicon, 20, Items.lead, 15, JadeItems.verdantResin, 15))
 			);
 		}};
 
