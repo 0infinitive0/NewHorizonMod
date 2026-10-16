@@ -173,6 +173,13 @@ public class NewHorizon extends Mod{
 		registerModBinding();
 		Events.on(ClientLoadEvent.class, e -> {
 			Core.app.post(NHUI::init);
+			Core.app.post(() -> {
+				try{
+					newhorizon.util.ui.UnitInfoTooltip.init();
+				}catch(Throwable t){
+					Log.err("Unit info panel failed to load", t);
+				}
+			});
 			updateServer();
 			fetchNewRelease();
 			showNewDialog();
