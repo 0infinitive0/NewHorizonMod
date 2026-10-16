@@ -43,12 +43,42 @@ public final class ScavengeRecipes{
 		return !(ability instanceof ScavengerAbility || ability instanceof HealSeekAbility || ability instanceof GardenerAbility);
 	}
 
+	/**
+	 * One recipe per distinct gun. A mirrored gun is two weapons in the type (left and right), but it is one gun: both halves
+	 * resolve to the recipe of the first, so stealing either half is stealing the same weapon.
+	 */
 	public static Seq<String> weaponRecipes(UnitType type){
 		Seq<String> out = new Seq<>();
 		for(int i = 0; i < type.weapons.size; i++){
-			if(!isSuicide(type.weapons.get(i))) out.add("wu:" + type.name + ":" + i);
+			if(isSuicide(type.weapons.get(i))) continue;
+			String recipe = "wu:" + type.name + ":" + canonicalIndex(type, i);
+			if(!out.contains(recipe)) out.add(recipe);
 		}
 		return out;
+	}
+
+	/** Index of the first weapon of the type that is the same gun as weapon {@code i}. */
+	private static int canonicalIndex(UnitType type, int i){
+		Weapon w = type.weapons.get(i);
+		for(int j = 0; j < i; j++){
+			Weapon other = type.weapons.get(j);
+			if(other.name.equals(w.name) && other.bullet == w.bullet) return j;
+		}
+		return i;
+	}
+
+	/** The recipe in its one canonical spelling, so that two spellings of the same gun are recognised as equal. */
+	public static String canonical(String recipe){
+		String[] p = recipe.split(":", 3);
+		if(p.length != 3 || !p[0].equals("wu")) return recipe;
+		try{
+			UnitType type = (UnitType)Vars.content.getByName(ContentType.unit, p[1]);
+			int idx = Integer.parseInt(p[2]);
+			if(type == null || idx < 0 || idx >= type.weapons.size) return recipe;
+			return "wu:" + type.name + ":" + canonicalIndex(type, idx);
+		}catch(RuntimeException e){
+			return recipe;
+		}
 	}
 
 	public static Seq<String> weaponRecipes(Block block){

@@ -26,6 +26,8 @@ public class Scavenging{
 	public static float minSteal = 0.05f, maxSteal = 0.20f;
 	/** Chance, per kill, to also steal one of the victim's weapons / abilities. */
 	public static float weaponChance = 0.08f, abilityChance = 0.04f;
+	/** Stealing a weapon it already owns improves that weapon's damage or fire rate by this much (one stat per steal). */
+	public static float upgradeStep = 0.10f;
 	/** A hit counts towards a kill for this long. */
 	public static float participationSeconds = 120f;
 	public static Rand rand = new Rand();
