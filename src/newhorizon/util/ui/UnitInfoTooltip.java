@@ -3,9 +3,11 @@ package newhorizon.util.ui;
 import arc.Core;
 import arc.Events;
 import arc.graphics.Color;
+import arc.input.KeyCode;
 import arc.math.Mathf;
 import arc.math.geom.Vec2;
 import arc.scene.event.Touchable;
+import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.Table;
 import arc.struct.ObjectIntMap;
 import arc.struct.ObjectMap;
@@ -23,6 +25,7 @@ import mindustry.entities.abilities.Ability;
 import mindustry.entities.abilities.StatusFieldAbility;
 import mindustry.entities.bullet.BulletType;
 import mindustry.entities.units.WeaponMount;
+import mindustry.gen.Icon;
 import mindustry.gen.Legsc;
 import mindustry.gen.Tex;
 import mindustry.gen.Unit;
@@ -39,17 +42,26 @@ import newhorizon.expand.units.scavenger.ScavengerAbility;
 import static mindustry.Vars.tilesize;
 
 /**
- * Hold the unit info key ({@link NHKeyBinding#unitInfo}, I by default) with the cursor on a unit and a panel shows what it is: health,
- * armor and speed, every weapon it carries and every ability it has.
- * It reads the unit itself rather than its type, so what a Scavenger has stolen or a Mimic has become is what shows up. Anything from
+ * Hold the unit info key ({@link NHKeyBinding#unitInfo}, I by default) and click a unit to pin a panel for it: its health, armor and
+ * speed, every weapon it carries and every ability it has. The panel is docked at the edge of the screen (the arrow button moves it
+ * to the other side), scrolls when it is long, keeps following the unit's numbers live, and stays until it is closed with the cross
+ * or another unit is picked.
+ *
+ * <p>It reads the unit itself rather than its type, so what a Scavenger has stolen or a Mimic has become is what shows up. Anything from
  * any mod is listed the same way. The key can be changed in the controls, and the whole thing turned off in the New Horizon settings.
  *
  * <p>{@link #describe} builds the contents as plain lines and is independent of the interface.
  */
 public class UnitInfoTooltip{
+	private static final String DOCK_SETTING = "nh_unit_info_dock_right";
+	/** Width of the panel's contents. */
+	private static final float contentWidth = 330f;
+
 	private static Table panel;
+	private static Unit pinned;
 	private static int signature;
-	private static boolean visible, broken;
+	private static float describedAt = -1000f;
+	private static boolean broken, dockRight = true;
 
 	/** Everything the panel says about a unit. */
 	public static class Info{
@@ -65,19 +77,14 @@ public class UnitInfoTooltip{
 	public static void init(){
 		if(Vars.headless || Vars.mobile || panel != null) return;
 
+		dockRight = Core.settings.getBool(DOCK_SETTING, true);
 		panel = new Table();
-		panel.touchable = Touchable.disabled;
+		panel.touchable = Touchable.enabled;
 		panel.visible = false;
 		Core.scene.add(panel);
 		//Driven from the frame update rather than from the panel itself, so it does not depend on the panel being drawn.
 		Events.run(EventType.Trigger.update, UnitInfoTooltip::tick);
-		Log.info("Unit info panel ready: hold the Unit info key (I by default) over a unit.");
-	}
-
-	/** Whether the player is asking for the panel right now. */
-	private static boolean wanted(){
-		return Core.settings.getBool(NHSetting.UNIT_INFO, true) && Vars.state.isGame() && Vars.player != null
-			&& NHKeyBinding.unitInfo != null && Core.input.keyDown(NHKeyBinding.unitInfo) && !Core.scene.hasField();
+		Log.info("Unit info panel ready: hold the Unit info key (I by default) and click a unit.");
 	}
 
 	private static void tick(){
@@ -87,37 +94,65 @@ public class UnitInfoTooltip{
 		}catch(Throwable t){
 			//A bug in a purely informative panel must never take the game down: report it once and switch the panel off.
 			broken = true;
-			hide();
+			close();
 			Log.err("Unit info panel failed and was switched off", t);
 		}
 	}
 
 	private static void update(){
-		Unit unit = wanted() ? hovered() : null;
-		if(unit == null){
-			hide();
+		if(!Core.settings.getBool(NHSetting.UNIT_INFO, true) || !Vars.state.isGame() || Vars.player == null){
+			close();
 			return;
 		}
 
-		Info info = describe(unit);
-		if(!visible || info.signature != signature){
-			signature = info.signature;
-			rebuild(unit, info);
+		if(NHKeyBinding.unitInfo != null && Core.input.keyDown(NHKeyBinding.unitInfo) && Core.input.keyTap(KeyCode.mouseLeft) && !Core.scene.hasField()){
+			Unit picked = hovered();
+			if(picked != null && picked != pinned) open(picked);
 		}
-		visible = true;
+
+		if(pinned == null) return;
+
+		//The lists only change when something is stolen, copied or found, so ten times a second is plenty.
+		if(Time.time - describedAt > 6f && alive(pinned)){
+			describedAt = Time.time;
+			Info info = describe(pinned);
+			if(info.signature != signature || panel.getChildren().isEmpty()){
+				signature = info.signature;
+				rebuild(pinned, info);
+			}
+		}
+
 		panel.visible = true;
 		panel.toFront();
-
-		Vec2 at = Core.scene.screenToStageCoordinates(Tmp.v1.set(Core.input.mouse()));
 		panel.pack();
-		float x = Math.min(at.x + 22f, Core.scene.getWidth() - panel.getWidth() - 4f);
-		float y = Math.max(at.y - 22f, panel.getHeight() + 4f);
-		panel.setPosition(x, y, Align.topLeft);
+		float w = Core.scene.getWidth(), h = Core.scene.getHeight();
+		//Below the minimap on the right, below the wave and event panels on the left.
+		float top = h - h * (dockRight ? 0.20f : 0.24f);
+		panel.setPosition(dockRight ? w - 4f : 4f, top, dockRight ? Align.topRight : Align.topLeft);
 	}
 
-	private static void hide(){
-		visible = false;
+	private static boolean alive(Unit unit){
+		return unit.isValid() && !unit.dead();
+	}
+
+	/** Pins the panel to a unit. */
+	public static void open(Unit unit){
+		pinned = unit;
+		signature = Integer.MIN_VALUE;
+		describedAt = -1000f;
+	}
+
+	/** Closes the panel. */
+	public static void close(){
+		pinned = null;
 		if(panel != null) panel.visible = false;
+	}
+
+	private static void toggleDock(){
+		dockRight = !dockRight;
+		Core.settings.put(DOCK_SETTING, dockRight);
+		signature = Integer.MIN_VALUE;
+		describedAt = -1000f;
 	}
 
 	/** The unit under the cursor, if any: the closest one whose body is within a few pixels of it. Units hidden by fog do not count. */
@@ -152,32 +187,41 @@ public class UnitInfoTooltip{
 			head.table(names -> {
 				names.left();
 				names.add(info.name).color(info.teamColor).left().row();
-				names.add(info.kind + "  [lightgray]" + info.team).left();
-			});
-		}).left().row();
+				names.label(() -> info.kind + "  [lightgray]" + info.team + (alive(unit) ? "" : "  [scarlet]" + Core.bundle.get("nh.unitinfo.destroyed"))).left();
+			}).growX();
+			head.button(dockRight ? Icon.left : Icon.right, Styles.cleari, UnitInfoTooltip::toggleDock).size(30f).padLeft(8f);
+			head.button(Icon.cancel, Styles.cleari, UnitInfoTooltip::close).size(30f).padLeft(2f);
+		}).width(contentWidth).left().row();
 
 		panel.image().color(Color.gray).height(2f).growX().padTop(4f).padBottom(4f).row();
 
-		//Values that change while you look at them are read every frame.
-		panel.label(() -> Core.bundle.format("nh.unitinfo.health", fixed(unit.health), fixed(unit.maxHealth), (int)Mathf.clamp(unit.healthf() * 100f, 0f, 999f))).left().row();
-		panel.label(() -> unit.shield > 0.5f ? Core.bundle.format("nh.unitinfo.shield", fixed(unit.shield)) : "").left().row();
-		for(String line : info.stats){
-			panel.add(line).left().row();
-		}
-		panel.label(() -> statusLine(unit)).left().wrap().width(260f).row();
+		Table body = new Table();
+		body.left().defaults().left();
 
-		section("nh.unitinfo.weapons", info.weapons);
-		section("nh.unitinfo.abilities", info.abilities);
+		//Values that change while you look at them are read every frame.
+		body.label(() -> Core.bundle.format("nh.unitinfo.health", fixed(unit.health), fixed(unit.maxHealth), (int)Mathf.clamp(unit.healthf() * 100f, 0f, 999f))).left().row();
+		body.label(() -> unit.shield > 0.5f ? Core.bundle.format("nh.unitinfo.shield", fixed(unit.shield)) : "").left().row();
+		for(String line : info.stats){
+			body.add(line).left().row();
+		}
+		body.label(() -> statusLine(unit)).left().wrap().width(contentWidth - 20f).row();
+
+		section(body, "nh.unitinfo.weapons", info.weapons);
+		section(body, "nh.unitinfo.abilities", info.abilities);
+
+		ScrollPane pane = new ScrollPane(body, Styles.noBarPane);
+		pane.setScrollingDisabled(true, false);
+		panel.add(pane).width(contentWidth).maxHeight(Math.max(160f, Core.scene.getHeight() * 0.5f - 60f)).left().row();
 	}
 
-	private static void section(String titleKey, Seq<String> lines){
-		panel.add(Core.bundle.get(titleKey)).color(mindustry.graphics.Pal.accent).left().padTop(6f).row();
+	private static void section(Table body, String titleKey, Seq<String> lines){
+		body.add(Core.bundle.get(titleKey)).color(mindustry.graphics.Pal.accent).left().padTop(6f).row();
 		if(lines.isEmpty()){
-			panel.add("[lightgray]" + Core.bundle.get("nh.unitinfo.none")).left().row();
+			body.add("[lightgray]" + Core.bundle.get("nh.unitinfo.none")).left().row();
 			return;
 		}
 		for(String line : lines){
-			panel.add(line).left().wrap().width(280f).row();
+			body.add(line).left().wrap().width(contentWidth - 20f).padBottom(3f).row();
 		}
 	}
 

@@ -125,10 +125,19 @@ public class ScavengerAbility extends Ability{
 
 	/** Steals health and armor. Max health grows by the same amount the unit is healed by. */
 	protected void boost(Unit unit, float hp, float armor){
+		boost(unit, hp, armor, true);
+	}
+
+	/**
+	 * @param heal whether the unit is also healed by the stolen health. Not when the loot is restored after loading: the unit's
+	 * saved health already contains it, and healing again would leave it with twice its maximum.
+	 */
+	protected void boost(Unit unit, float hp, float armor, boolean heal){
 		hpBonus += hp;
 		armorBonus += armor;
 		unit.maxHealth += hp;
-		unit.health += hp;
+		if(heal) unit.health += hp;
+		unit.health = Math.min(unit.health, unit.maxHealth);
 		unit.armor += armor;
 	}
 
@@ -301,8 +310,8 @@ public class ScavengerAbility extends Ability{
 			String key = part.substring(0, eq), val = part.substring(eq + 1);
 			try{
 				switch(key){
-					case "hp": boost(unit, Math.max(0f, Float.parseFloat(val)), 0f); break;
-					case "armor": boost(unit, 0f, Math.max(0f, Float.parseFloat(val))); break;
+					case "hp": boost(unit, Math.max(0f, Float.parseFloat(val)), 0f, false); break;
+					case "armor": boost(unit, 0f, Math.max(0f, Float.parseFloat(val)), false); break;
 					case "kills": kills = Math.max(0, Integer.parseInt(val)); break;
 					case "w": for(String r : val.split(",")) if(!r.isEmpty()) addWeapon(unit, r); break;
 					case "u":
