@@ -23,14 +23,44 @@ public class GridUtil {
     public static ObjectMap<String, GridData> unitGridsMap;
 
     public static void init(){
+        //Mindustry v8 throws away the atlas pixmaps once icons are created, so the grids can no longer be read here:
+        //they are collected while the icons are created (see register), anything missing falls back to a filled grid.
+        if(unitGridsMap == null) unitGridsMap = new ObjectMap<>();
+    }
 
-        if (headless) return;
-        unitGridsMap = new ObjectMap<>(content.units().size);
-        for (UnitType unit : content.units()) {
-            unitGridsMap.put(unit.name, GridUtil.getGridData(unit.fullIcon));
+    /** Reads the grid of a unit from its sprite. Only works while icons are being created, call it from createIcons. */
+    public static void register(UnitType type){
+        if(headless) return;
+        if(unitGridsMap == null) unitGridsMap = new ObjectMap<>();
+        try{
+            TextureRegion region = Core.atlas.find(type.name);
+            if(region.found()) unitGridsMap.put(type.name, getGridData(region));
+        }catch(Throwable ignored){
+            //no pixmap available: gridOf falls back to a filled grid
         }
     }
 
+    /** The grid of a unit: from its sprite if it was read in time, otherwise one as large as its icon with every cell filled. */
+    public static GridData gridOf(UnitType type){
+        if(unitGridsMap == null) unitGridsMap = new ObjectMap<>();
+        GridData grid = unitGridsMap.get(type.name);
+        if(grid == null){
+            grid = filledGrid(type.fullIcon);
+            unitGridsMap.put(type.name, grid);
+        }
+        return grid;
+    }
+
+    public static GridData filledGrid(TextureRegion region){
+        int widthStep = Math.max(1, Mathf.ceil((float)region.width / GRID_LEN));
+        int heightStep = Math.max(1, Mathf.ceil((float)region.height / GRID_LEN));
+        IntSeq points = new IntSeq();
+        points.setSize(widthStep * heightStep);
+        for(int i = 0; i < points.size; i++) points.set(i, 1);
+
+        float padLeft = (widthStep * GRID_LEN - region.width) / 2f, padBot = (heightStep * GRID_LEN - region.height) / 2f;
+        return new GridData(points, widthStep, heightStep, padLeft, padBot);
+    }
 
     public static GridData getGridData(TextureRegion region){
 

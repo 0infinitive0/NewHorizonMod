@@ -16,7 +16,6 @@ import mindustry.graphics.Pal;
 import mindustry.type.Item;
 import mindustry.type.ItemSeq;
 import mindustry.type.ItemStack;
-import mindustry.ui.ItemImage;
 import mindustry.ui.Styles;
 import mindustry.world.meta.StatUnit;
 
@@ -31,7 +30,14 @@ public class ItemDisplay extends Table{
     }
 
     public ItemDisplay(Item item, int amount, boolean showName){
-        add(new mindustry.ui.ItemImage(new ItemStack(item, amount)));
+        arc.scene.ui.layout.Stack stack = new arc.scene.ui.layout.Stack();
+        stack.add(new arc.scene.ui.Image(item.uiIcon).setScaling(arc.util.Scaling.fit));
+        if(amount > 0){
+            Table amountTable = new Table().left().bottom();
+            amountTable.add(amount >= 1000 ? (amount / 1000) + "k" : String.valueOf(amount)).style(Styles.outlineLabel);
+            stack.add(amountTable);
+        }
+        add(stack).size(32f);
         if(showName) add(item.localizedName).padLeft(4 + amount > 99 ? 4 : 0);
 
         this.item = item;

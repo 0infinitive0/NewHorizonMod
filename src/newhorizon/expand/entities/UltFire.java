@@ -116,7 +116,7 @@ public class UltFire extends Fire{
 		warmup += Time.delta;
 		animation %= 40.0F;
 		if (!Vars.headless) {
-			Vars.control.sound.loop(Sounds.fire, this, 0.07F);
+			Vars.control.sound.loop(Sounds.loopFire, this, 0.07F);
 		}
 		
 		float speedMultiplier = 1.0F + Math.max(Vars.state.envAttrs.get(Attribute.water) * 10.0F, 0.0F);
@@ -149,7 +149,7 @@ public class UltFire extends Fire{
 				
 				if ((damageTimer += Time.delta) >= 40.0F) {
 					damageTimer = 0.0F;
-					Puddlec p = Puddles.get(tile);
+					Puddle p = Puddles.get(tile);
 					puddleFlammability = p != null ? p.getFlammability() / 3.0F : 0.0F;
 					if (damage) {
 						entity.damage(10);
@@ -190,7 +190,6 @@ public class UltFire extends Fire{
 			Groups.all.remove(this);
 			Groups.sync.remove(this);
 			Groups.draw.remove(this);
-			Groups.fire.remove(this);
 			removeEffect();
 			
 			if (Vars.net.client()) {

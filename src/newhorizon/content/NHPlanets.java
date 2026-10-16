@@ -77,14 +77,13 @@ public class NHPlanets{
 			);
 			
 			clearSectorOnLose = true;
-			allowWaveSimulation = true;
 			allowLaunchSchematics = false;
 			allowLaunchLoadout = false;
 			
 			ruleSetter = r -> {
 				r.waveTeam = Team.malis;
 				r.placeRangeCheck = false;
-				r.showSpawns = true;
+				r.hideSpawns = false;
 				r.waveSpacing = 80 * Time.toSeconds;
 				r.initialWaveSpacing = 8f * Time.toMinutes;
 				if(r.sector != null && r.sector.preset == null)r.winWave = 150;
@@ -109,7 +108,7 @@ public class NHPlanets{
 				
 				
 				teamRule = r.teams.get(r.waveTeam);
-				teamRule.infiniteAmmo = teamRule.infiniteResources = true;
+				teamRule.infiniteResources = true;
 			};
 			
 			generator = new NHPlanetGenerator();
@@ -174,14 +173,13 @@ public class NHPlanets{
 			
 			
 			clearSectorOnLose = true;
-			allowWaveSimulation = true;
 			allowLaunchSchematics = false;
 			allowLaunchLoadout = true;
 			
 			ruleSetter = r -> {
 				r.waveTeam = Team.malis;
 				r.placeRangeCheck = false;
-				r.showSpawns = true;
+				r.hideSpawns = false;
 				r.waveSpacing = 80 * Time.toSeconds;
 				r.initialWaveSpacing = 8f * Time.toMinutes;
 				if(r.sector.preset == null)r.winWave = 150;
@@ -196,7 +194,7 @@ public class NHPlanets{
 				teamRule.blockHealthMultiplier = 1.25f;
 				
 				teamRule = r.teams.get(r.waveTeam);
-				teamRule.infiniteAmmo = teamRule.infiniteResources = true;
+				teamRule.infiniteResources = true;
 			};
 			
 			defaultEnv = Env.terrestrial;
@@ -252,9 +250,9 @@ public class NHPlanets{
 				}
 				
 				@Override
-				public Color getColor(Vec3 position){
+				public void getColor(Vec3 position, Color out){
 					double height = Math.pow(Simplex.noise3d(1, octaves, persistence, scl, position.x, position.y, position.z), pow) * mag;
-					return Tmp.c1.set(colors[Mathf.clamp((int)(height * colors.length), 0, colors.length - 1)]).mul(colorScale);
+					out.set(colors[Mathf.clamp((int)(height * colors.length), 0, colors.length - 1)]).mul(colorScale);
 				}
 				
 			}, divisions, Shaders.unlit);
@@ -298,10 +296,8 @@ public class NHPlanets{
 		}
 		
 		@Override
-		public Color getColor(Vec3 position){
-			Block block = getBlock(position);
-			
-			return Pal.gray;
+		public void getColor(Vec3 position, Color out){
+			out.set(Pal.gray);
 		}
 		
 		@Override
@@ -609,7 +605,7 @@ public class NHPlanets{
 			tiles.getn(spawnX, spawnY).setFloor(Blocks.coreZone.asFloor());
 			
 			state.rules.waves = true;
-			state.rules.showSpawns = true;
+			state.rules.hideSpawns = false;
 			state.rules.onlyDepositCore = false;
 			state.rules.fog = false;
 			

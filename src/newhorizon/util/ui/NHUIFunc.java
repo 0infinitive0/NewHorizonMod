@@ -211,7 +211,7 @@ public class NHUIFunc{
 		table.table(bt -> {
 			bt.left().defaults().padRight(3).left();
 			
-			StatValues.ammo(ObjectMap.of(UnitTypes.block, type), 0, false).display(bt);
+			StatValues.ammo(ObjectMap.of(UnitTypes.block, type), false, false).display(bt);
 		}).padTop(-9).left().get().background(Tex.underline);
 		
 		table.row();

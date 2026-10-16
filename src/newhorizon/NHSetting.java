@@ -27,7 +27,8 @@ public class NHSetting{
 			START_LOG = "nh_hide_starting_log",
 			EXPERIMENTAL = "nh_experimental",
 			TERRAIN_MODE = "nh_terrain_mode",
-			DEBUG_PANEL = "nh_debug_panel";
+			DEBUG_PANEL = "nh_debug_panel",
+			UNIT_INFO = "nh_unit_info";
 	
 	public static boolean enableEffectDetail = true;
 	
@@ -44,7 +45,8 @@ public class NHSetting{
 			new BoolSetting(START_LOG, false, false),
 			new BoolSetting(EXPERIMENTAL, false, true),
 			new BoolSetting(TERRAIN_MODE, false, true),
-			new BoolSetting(DEBUG_PANEL, false, true)
+			new BoolSetting(DEBUG_PANEL, false, true),
+			new BoolSetting(UNIT_INFO, true, false)
 		);
 		
 		all.each(SettingKey::setDefault);

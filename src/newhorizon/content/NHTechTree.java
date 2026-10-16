@@ -10,6 +10,7 @@ import newhorizon.content.blocks.DefenseBlock;
 import newhorizon.content.blocks.ProductionBlocks;
 import newhorizon.content.blocks.SpecialBlock;
 import newhorizon.content.blocks.TurretBlock;
+import newhorizon.content.jade.JadeTechTree;
 import newhorizon.expand.units.unitType.NHUnitType;
 
 import static mindustry.content.TechTree.*;
@@ -55,6 +56,8 @@ public class NHTechTree{
 					node(ProductionBlocks.refineModule);
 				});
 			});
+
+			JadeTechTree.load();
 
 			node(NHBlocks.zetaGenerator, () -> {
 				node(NHBlocks.hyperGenerator);

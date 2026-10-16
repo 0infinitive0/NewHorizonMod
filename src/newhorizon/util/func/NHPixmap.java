@@ -68,6 +68,7 @@ public class NHPixmap{
 	}
 	
 	public static void createIcons(MultiPacker packer, UnitType type){
+		GridUtil.register(type);
 		if(!Vars.headless && isDebugging()){
 			TextureAtlas.AtlasRegion t = (TextureAtlas.AtlasRegion)type.region;
 			

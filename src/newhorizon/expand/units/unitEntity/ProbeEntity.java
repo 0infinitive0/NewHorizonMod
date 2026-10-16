@@ -76,7 +76,7 @@ public class ProbeEntity extends UnitEntity{
 	
 	protected static final Vec2 tmpVec = new Vec2();
 	
-	public SoundLoop scanSound = new SoundLoop(Sounds.bioLoop, 0.9f);
+	public SoundLoop scanSound = new SoundLoop(Sounds.loopBio, 0.9f);
 	
 	//[0, 1]
 	public float scanProgress = 0;

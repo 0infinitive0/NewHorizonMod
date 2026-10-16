@@ -105,7 +105,7 @@ public class NHRegister{
 			
 			//Fuck erekir on the server
 			if(Vars.headless){
-				if(Vars.state.rules.hiddenBuildItems.equals(ObjectSet.with(Planets.erekir.hiddenItems))){
+				if(Vars.state.rules.planet == Planets.erekir){
 					Groups.player.each(p -> p.sendMessage("No Pure Erekir On The Server!!!"));
 					
 					Groups.build.each(b -> Time.run(Mathf.random(60, 600), b::kill));

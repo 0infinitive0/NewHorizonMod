@@ -142,7 +142,7 @@ public class WarpRift extends NHBaseEntity implements Rotc, Teamc, Syncc {
 
     public void effect(){
         if (headless) return;
-        GridData grid = GridUtil.unitGridsMap.get(unitType.name);
+        GridData grid = GridUtil.gridOf(unitType);
 
         for (int gy = grid.height - 1; gy > 0; gy--){
             for (int gx = 0; gx < grid.width; gx++){
@@ -261,7 +261,6 @@ public class WarpRift extends NHBaseEntity implements Rotc, Teamc, Syncc {
         return null;
     }
 
-    @Override
     public boolean isSyncHidden(Player player) {
         return false;
     }

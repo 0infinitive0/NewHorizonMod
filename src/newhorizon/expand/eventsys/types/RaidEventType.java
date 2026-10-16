@@ -89,7 +89,7 @@ public class RaidEventType extends TargetableEventType{
 		while(b == null && times < 1024 && all.any()){
 			int index = rand.random(all.size - 1);
 			b = all.get(index);
-			if(b.proximity().size < 3 || b.block.health < 1600 || b.isPayload()){
+			if(b.proximity.size < 3 || b.block.health < 1600 || b.isPayload()){
 				all.remove(index);
 				b = null;
 			}

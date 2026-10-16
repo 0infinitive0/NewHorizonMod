@@ -21,33 +21,24 @@ import static newhorizon.util.graphic.DrawFunc.sinScl;
 public interface Linkablec extends Buildingc, Ranged{
 	Seq<Building> tmpSeq = new Seq<>(1);
 	
-	@Override default boolean onConfigureBuildTapped(Building other){
-		if (this == other || linkPos() == other.pos()) {
-			configure(Tmp.p1.set(-1, -1));
-			return false;
-		}
-		if (other.within(this, range()) && other.team == team()) {
-			configure(Point2.unpack(other.pos()));
-			return false;
-		}
-		return true;
-	}
+	/** The building this interface is mixed into: all implementors are building classes. */
+	default Building building(){ return (Building)this; }
 	
 	default void drawLink(@Nullable Seq<Building> builds){
 		Draw.reset();
 		if(builds == null){
 			if(linkValid(link())){
 				Draw.color(getLinkColor());
-				Drawf.circles(getX(), getY(), block().size / 2f * tilesize + Mathf.absin(Time.time * sinScl, 6f, 1f), getLinkColor());
-				DrawFunc.link(this, link(), getLinkColor());
+				Drawf.circles(building().x, building().y, building().block.size / 2f * tilesize + Mathf.absin(Time.time * sinScl, 6f, 1f), getLinkColor());
+				DrawFunc.link(building(), link(), getLinkColor());
 			}
 		}else if(builds.size > 0){
 			Draw.color(getLinkColor());
-			Drawf.circles(getX(), getY(), block().size / 2f * tilesize + Mathf.absin(Time.time * sinScl, 6f, 1f), getLinkColor());
+			Drawf.circles(building().x, building().y, building().block.size / 2f * tilesize + Mathf.absin(Time.time * sinScl, 6f, 1f), getLinkColor());
 			
 			for(Building b : builds){
 				if(!linkValid(b))continue;
-				DrawFunc.link(this, b, getLinkColor());
+				DrawFunc.link(building(), b, getLinkColor());
 			}
 		}
 		

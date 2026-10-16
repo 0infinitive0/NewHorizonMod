@@ -30,7 +30,7 @@ public class SineWaveEnergySource extends WaveEnergyState{
 	
 	@Override public float getAveEnergy(){return getAmp() / Mathf.sqrt2;}
 	
-	public float getAmp(){return amplitude * (constantOutput ? 1 : src.efficiency());}
+	public float getAmp(){return amplitude * (constantOutput ? 1 : src.efficiency);}
 	
 	@Override public float getCurrentEnergy(){return totalEnergy;}
 	
