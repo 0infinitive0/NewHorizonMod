@@ -1,9 +1,11 @@
 package newhorizon.expand.units.unitType;
 
+import mindustry.graphics.MultiPacker;
 import mindustry.type.ItemStack;
 import mindustry.type.UnitType;
 import mindustry.type.Weapon;
 import newhorizon.content.NHItems;
+import newhorizon.util.func.GridUtil;
 
 public class NHUnitType extends UnitType {
     public NHUnitType(String name) {
@@ -21,6 +23,12 @@ public class NHUnitType extends UnitType {
             }
         }
         fogRadius = maxWeaponRange / 8;
+    }
+
+    @Override
+    public void createIcons(MultiPacker packer) {
+        super.createIcons(packer);
+        GridUtil.register(this);
     }
 
     public void setRequirements(ItemStack[] stacks) {
