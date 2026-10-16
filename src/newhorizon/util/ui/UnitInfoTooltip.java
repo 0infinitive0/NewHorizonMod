@@ -1,6 +1,7 @@
 package newhorizon.util.ui;
 
 import arc.Core;
+import arc.Events;
 import arc.graphics.Color;
 import arc.math.Mathf;
 import arc.math.geom.Vec2;
@@ -10,11 +11,13 @@ import arc.struct.ObjectIntMap;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.Align;
+import arc.util.Log;
 import arc.util.Scaling;
 import arc.util.Strings;
 import arc.util.Time;
 import arc.util.Tmp;
 import mindustry.Vars;
+import mindustry.game.EventType;
 import mindustry.entities.Units;
 import mindustry.entities.abilities.Ability;
 import mindustry.entities.abilities.StatusFieldAbility;
@@ -28,6 +31,7 @@ import mindustry.type.StatusEffect;
 import mindustry.type.UnitType;
 import mindustry.type.Weapon;
 import mindustry.ui.Styles;
+import newhorizon.NHKeyBinding;
 import newhorizon.NHSetting;
 import newhorizon.expand.units.scavenger.AbilityStats;
 import newhorizon.expand.units.scavenger.ScavengerAbility;
@@ -35,21 +39,17 @@ import newhorizon.expand.units.scavenger.ScavengerAbility;
 import static mindustry.Vars.tilesize;
 
 /**
- * Hover a unit for a moment and a panel shows what it is: health, armor and speed, every weapon it carries and every ability it has.
+ * Hold the unit info key ({@link NHKeyBinding#unitInfo}, I by default) with the cursor on a unit and a panel shows what it is: health,
+ * armor and speed, every weapon it carries and every ability it has.
  * It reads the unit itself rather than its type, so what a Scavenger has stolen or a Mimic has become is what shows up. Anything from
- * any mod is listed the same way. Turn it off in the New Horizon settings.
+ * any mod is listed the same way. The key can be changed in the controls, and the whole thing turned off in the New Horizon settings.
  *
  * <p>{@link #describe} builds the contents as plain lines and is independent of the interface.
  */
 public class UnitInfoTooltip{
-	/** Time the cursor has to rest on a unit before the panel appears, in ticks. */
-	public static final float hoverDelay = 12f;
-
 	private static Table panel;
-	private static Unit shown;
-	private static float hoverTime;
 	private static int signature;
-	private static boolean visible;
+	private static boolean visible, broken;
 
 	/** Everything the panel says about a unit. */
 	public static class Info{
@@ -67,31 +67,37 @@ public class UnitInfoTooltip{
 
 		panel = new Table();
 		panel.touchable = Touchable.disabled;
-		panel.visible(() -> visible);
-		panel.update(UnitInfoTooltip::update);
+		panel.visible = false;
 		Core.scene.add(panel);
+		//Driven from the frame update rather than from the panel itself, so it does not depend on the panel being drawn.
+		Events.run(EventType.Trigger.update, UnitInfoTooltip::tick);
+		Log.info("Unit info panel ready: hold the Unit info key (I by default) over a unit.");
+	}
+
+	/** Whether the player is asking for the panel right now. */
+	private static boolean wanted(){
+		return Core.settings.getBool(NHSetting.UNIT_INFO, true) && Vars.state.isGame() && Vars.player != null
+			&& NHKeyBinding.unitInfo != null && Core.input.keyDown(NHKeyBinding.unitInfo) && !Core.scene.hasField();
+	}
+
+	private static void tick(){
+		if(panel == null || broken) return;
+		try{
+			update();
+		}catch(Throwable t){
+			//A bug in a purely informative panel must never take the game down: report it once and switch the panel off.
+			broken = true;
+			hide();
+			Log.err("Unit info panel failed and was switched off", t);
+		}
 	}
 
 	private static void update(){
-		if(!Core.settings.getBool(NHSetting.UNIT_INFO, true) || !Vars.state.isGame() || Vars.player == null
-			|| Core.scene.hasMouse() || Vars.control.input.isPlacing()){
-			hide();
-			return;
-		}
-
-		Unit unit = hovered();
+		Unit unit = wanted() ? hovered() : null;
 		if(unit == null){
 			hide();
 			return;
 		}
-
-		if(unit != shown){
-			shown = unit;
-			hoverTime = 0f;
-			visible = false;
-		}
-		hoverTime += Time.delta;
-		if(hoverTime < hoverDelay) return;
 
 		Info info = describe(unit);
 		if(!visible || info.signature != signature){
@@ -99,6 +105,8 @@ public class UnitInfoTooltip{
 			rebuild(unit, info);
 		}
 		visible = true;
+		panel.visible = true;
+		panel.toFront();
 
 		Vec2 at = Core.scene.screenToStageCoordinates(Tmp.v1.set(Core.input.mouse()));
 		panel.pack();
@@ -109,19 +117,18 @@ public class UnitInfoTooltip{
 
 	private static void hide(){
 		visible = false;
-		shown = null;
-		hoverTime = 0f;
+		if(panel != null) panel.visible = false;
 	}
 
-	/** The unit under the cursor, if any: the closest one whose body the cursor is over. Units hidden by fog do not count. */
+	/** The unit under the cursor, if any: the closest one whose body is within a few pixels of it. Units hidden by fog do not count. */
 	private static Unit hovered(){
 		Vec2 world = Core.input.mouseWorld();
 		float mx = world.x, my = world.y;
 		Unit[] best = {null};
 		float[] bestDst = {Float.MAX_VALUE};
-		Units.nearby(mx - 48f, my - 48f, 96f, 96f, u -> {
+		Units.nearby(mx - 64f, my - 64f, 128f, 128f, u -> {
 			if(!u.isValid() || u.dead() || u.inFogTo(Vars.player.team())) return;
-			float reach = u.hitSize / 2f + 4f;
+			float reach = u.hitSize / 2f + 14f;
 			float dst = u.dst2(mx, my);
 			if(dst <= reach * reach && dst < bestDst[0]){
 				best[0] = u;
