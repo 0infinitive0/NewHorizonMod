@@ -45,7 +45,7 @@ public class JadeUnits{
 	public static final float herbalistHealRange = 80f;
 
 	/** The Gardener's own command: it picks {@link GardenerAI} so a player-team Gardener learns instead of standing around. */
-	public static UnitCommand gardenCommand, healCommand, mimicCommand;
+	public static UnitCommand gardenCommand, healCommand, mimicCommand, huntCommand;
 
 	public static void load(){
 		sprig = new NHUnitType("sprig"){{
@@ -260,10 +260,17 @@ public class JadeUnits{
 			);
 		}};
 
+		//Hunt is the default command. A click on the ground or on an enemy while it is selected only guides it while it is idle
+		//instead of switching it to plain moving, so it keeps hunting anything in reach (SporelingAI).
+		huntCommand = new UnitCommand("nh-hunt", "units", u -> new SporelingAI());
+		huntCommand.switchToMove = false;
+
 		//Suicide unit. Whatever it infects bursts into more Sporelings when it dies, see JadeInfection.
 		sporeling = new NHUnitType("sporeling"){{
 			constructor = MechUnit::create;
 			aiController = SporelingAI::new;
+			commands = Seq.with(huntCommand, UnitCommand.moveCommand);
+			defaultCommand = huntCommand;
 			outlineColor = JadeColor.outline;
 
 			health = 110f;
@@ -273,8 +280,6 @@ public class JadeUnits{
 			targetAir = false;
 			//Sporelings burst out in swarms (one per 100 max health of the host), which the normal unit cap would cull.
 			useUnitCap = false;
-			//Swarm unit: always hunts on its own. The default controller for player teams is CommandAI, which just stands still.
-			playerControllable = false;
 			mechSideSway = 0.25f;
 			mechStepParticles = false;
 

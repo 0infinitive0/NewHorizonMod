@@ -18,10 +18,14 @@ public class HealerAI extends AIController{
 	public float hoverDst = 26f;
 
 	protected Unit patient;
+	/** Own search timer: the base class spends {@link #retarget()} on its own targeting every frame. */
+	protected float searchTimer = 0f;
 
 	@Override
 	public void updateMovement(){
-		if(retarget()){
+		searchTimer -= Time.delta;
+		if(searchTimer <= 0f){
+			searchTimer = 30f;
 			patient = findPatient();
 		}
 		if(patient != null && (patient.dead() || !patient.damaged() || !patient.isAdded())){

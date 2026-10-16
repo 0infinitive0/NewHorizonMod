@@ -18,6 +18,7 @@ public class MimicAI extends AIController{
 	public float skipTime = 60f * 6f;
 
 	private Unit prey;
+	private float searchTimer = 0f;
 	private final IntFloatMap skipped = new IntFloatMap();
 
 	@Override
@@ -26,7 +27,9 @@ public class MimicAI extends AIController{
 			prey = null;
 		}
 
-		if(prey == null || retarget()){
+		searchTimer -= Time.delta;
+		if(prey == null || searchTimer <= 0f){
+			searchTimer = 30f;
 			prey = findPrey();
 		}
 		if(prey == null) return;
