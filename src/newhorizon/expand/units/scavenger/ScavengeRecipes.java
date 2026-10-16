@@ -123,6 +123,7 @@ public final class ScavengeRecipes{
 				BulletType bullet = turretBullet((Turret)block, p[2]);
 				if(bullet == null || bullet.killShooter) return null;
 				w = fromTurret((Turret)block, bullet);
+				hideSprite(w);
 			}
 			if(w == null) return null;
 
@@ -229,6 +230,8 @@ public final class ScavengeRecipes{
 
 	/** Stolen unit weapons keep their owner's art, which is far too big on the Scavenger: do not draw it. */
 	private static void hideSprite(Weapon w){
+		//A weapon that was never loaded has no regions at all, and drawing it dies on the first null one.
+		w.parts = new arc.struct.Seq<>();
 		if(Core.atlas == null) return;
 		TextureRegion clear = Core.atlas.find("clear");
 		w.region = clear;
