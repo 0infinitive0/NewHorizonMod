@@ -271,7 +271,8 @@ public class JadeBlocks{
 			range = 170f;
 			consumePower(1.2f);
 			consumeLiquid(Liquids.water, 0.2f);
-			itemDuration = 60f * 4f;
+			itemDuration = 60f * 12f;
+			itemCapacity = 40;
 			pulseEffect = JadeFx.bloomRing(JadeColor.infection, 170f);
 		}};
 

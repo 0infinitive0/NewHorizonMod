@@ -44,7 +44,7 @@ public class ContagionSpire extends Block{
 	/** Duration passed to the status. Infested never times out, so this only matters for other effects given here. */
 	public float statusDuration = 60f * 10f;
 	/** Ticks one spore pod keeps it running. */
-	public float itemDuration = 60f * 4f;
+	public float itemDuration = 60f * 12f;
 	/** The item it burns. */
 	public Item fuel = Items.sporePod;
 	public Effect pulseEffect = null;
@@ -57,7 +57,7 @@ public class ContagionSpire extends Block{
 		hasPower = true;
 		hasItems = true;
 		hasLiquids = true;
-		itemCapacity = 10;
+		itemCapacity = 40;
 		group = BlockGroup.projectors;
 		envEnabled |= mindustry.world.meta.Env.space;
 	}
