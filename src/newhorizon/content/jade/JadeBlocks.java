@@ -22,13 +22,14 @@ import mindustry.world.draw.DrawMulti;
 import mindustry.world.draw.DrawRegion;
 import newhorizon.expand.block.defence.RegrowthWall;
 import newhorizon.expand.block.defence.SporeWall;
+import newhorizon.expand.block.distribution.LiquidMassDriver;
 
 import static mindustry.type.ItemStack.with;
 
 public class JadeBlocks{
 	public static Block
 		resinTapper, silkLoom, bloomConservatory,
-		sporeFurnace, sporeWaterwheel,
+		sporeFurnace, sporeWaterwheel, liquidMassDriver,
 		thornSpitter, briarLance, canopyMortar, sporeCatapult,
 		jadeWall, jadeWallLarge, sporeWall, sporeWallLarge, lifebloomPylon,
 		jadeNursery, verdantCultivator, groveCultivator,
@@ -99,6 +100,19 @@ public class JadeBlocks{
 			generateEffect = JadeFx.leafBurst;
 			effectChance = 0.02f;
 			drawer = new DrawMulti(new DrawDefault(), new DrawRegion("-rotor", 3f, true));
+		}};
+
+		//Fires liquid in bolts to a linked driver, over anything in between. Needs a pump on one end and a conduit on the other.
+		liquidMassDriver = new LiquidMassDriver("liquid-mass-driver"){{
+			requirements(Category.liquid, with(Items.titanium, 125, Items.silicon, 75, Items.metaglass, 125, JadeItems.jadeSilk, 40));
+			size = 3;
+			health = 640;
+			range = 440f;
+			reload = 120f;
+			payload = 600f;
+			minDistribute = 100f;
+			liquidCapacity = 1800f;
+			consumePower(1.75f);
 		}};
 
 		//Turrets

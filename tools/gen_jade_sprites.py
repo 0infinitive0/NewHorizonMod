@@ -436,6 +436,34 @@ def blk_waterwheel():
     r.save(BLOCK_DIR, "spore-waterwheel-rotor")
 
 
+def blk_liquid_driver():
+    """Liquid Mass Driver: a plate with an open tank (-base, -liquid is the tank, tinted by the game) and a rotating nozzle (points up)."""
+    base = Canvas(96, 96)
+    plate(base, 96, radius=7)
+    base.part(rrect(14, 14, 82, 82, 8), HULL_D, light=HULL, dark=(20, 32, 28), rim=0.5)
+    base.part(ellipse(48, 48, 29, 29, 40), (24, 44, 40), light=HULL, dark=(14, 24, 22), rim=0.45)
+    for a in range(0, 360, 90):
+        leaf(base, 48, 48, 40, 9, a + 45, base=JADE_D, light=JADE, dark=HULL_D)
+    base.outline()
+    base.save(BLOCK_DIR, "liquid-mass-driver-base")
+
+    tank = Canvas(96, 96)
+    tank.part(ellipse(48, 48, 27, 27, 40), WHITE, light=WHITE, dark=(200, 215, 220), rim=1.0, shine=1.0)
+    tank.save(BLOCK_DIR, "liquid-mass-driver-liquid")
+
+    head = Canvas(96, 96)
+    head.part(rrect(37, 6, 59, 56, 5), HULL_L, light=lerp(HULL_L, WHITE, 0.35), dark=HULL_D)
+    head.part(rrect(41, 2, 55, 22, 3), JADE, light=JADE_L, dark=JADE_D)
+    head.part(rrect(43, 4, 53, 14, 2), WATER_D, light=WATER, dark=(24, 50, 90), rim=0.6)
+    head.circle(48, 56, 17, HULL, light=HULL_L, dark=HULL_D)
+    for a in range(0, 360, 60):
+        leaf(head, 48, 56, 15, 6, a + 30, base=JADE, light=JADE_L, dark=JADE_D)
+    head.glow(48, 56, 9, WATER, 150)
+    head.circle(48, 56, 5, WATER, light=WHITE, dark=WATER_D, rim=0.8)
+    head.outline()
+    head.save(BLOCK_DIR, "liquid-mass-driver")
+
+
 def unit_bogguard():
     """Bulky tank: a domed shell with water-lily plates and a wet sheen, and a mossy underside (-base, -leg)."""
     px = 64
@@ -686,6 +714,7 @@ def main():
     blk_clinic()
     blk_spore_walls()
     blk_waterwheel()
+    blk_liquid_driver()
     blk_unit_blocks()
     units()
     print("wrote %d sprites" % len(generated))

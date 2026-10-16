@@ -19,7 +19,9 @@ public class JadeTechTree{
 			});
 
 			node(JadeBlocks.sporeFurnace, () -> {
-				node(JadeBlocks.sporeWaterwheel);
+				node(JadeBlocks.sporeWaterwheel, () -> {
+					node(JadeBlocks.liquidMassDriver);
+				});
 			});
 
 			node(JadeBlocks.silkLoom, () -> {
