@@ -1,6 +1,7 @@
 package newhorizon.content.jade;
 
 import mindustry.content.Fx;
+import mindustry.gen.Unit;
 import mindustry.type.StatusEffect;
 
 public class JadeStatus{
@@ -13,6 +14,12 @@ public class JadeStatus{
 	 * {@link JadeInfection}) or is healed back to full health. Deals damage over time.
 	 */
 	public static StatusEffect infested;
+	/**
+	 * Worn by a unit a Mimic turned into. Never times out. Holds the unit's health and armor at the Mimic's: the unit has the
+	 * weapons and abilities of its new type, but not its toughness. Enforced every frame, so it also survives saving and loading,
+	 * as a unit's statuses are saved with it.
+	 */
+	public static StatusEffect mimicked;
 
 	public static void load(){
 		bloom = new StatusEffect("bloom"){{
@@ -40,5 +47,26 @@ public class JadeStatus{
 			effect = Fx.sporeSlowed;
 			effectChance = 0.12f;
 		}};
+
+		mimicked = new StatusEffect("mimicked"){
+			{
+				color = JadeColor.jadeLight;
+				permanent = true;
+				effect = JadeFx.leafBurst;
+				effectChance = 0.015f;
+			}
+
+			@Override
+			public void update(Unit unit, float time){
+				super.update(unit, time);
+
+				float health = newhorizon.expand.units.mimic.Mimicry.health();
+				if(unit.maxHealth != health){
+					unit.maxHealth = health;
+					unit.health = Math.min(unit.health, health);
+				}
+				unit.armor = newhorizon.expand.units.mimic.Mimicry.armor();
+			}
+		};
 	}
 }

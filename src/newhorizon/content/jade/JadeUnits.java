@@ -16,6 +16,8 @@ import mindustry.type.Weapon;
 import mindustry.type.ammo.ItemAmmoType;
 import newhorizon.NewHorizon;
 import newhorizon.expand.units.ai.HealerAI;
+import newhorizon.expand.units.ai.MimicAI;
+import newhorizon.expand.units.mimic.MimicAbility;
 import newhorizon.expand.units.ai.SporelingAI;
 import newhorizon.expand.units.ablility.HealSeekAbility;
 import newhorizon.expand.units.ablility.WaterRegenAbility;
@@ -37,13 +39,13 @@ public class JadeUnits{
 		sprig, thornback, briarlord,
 		wisp, luminar, verdance,
 		sporeling,
-		gardener, herbalist, scavenger, bogguard;
+		gardener, herbalist, scavenger, bogguard, mimic;
 
 	/** Reach of the Herbalist's repair aura, also used by units deciding whether they have arrived. */
 	public static final float herbalistHealRange = 80f;
 
 	/** The Gardener's own command: it picks {@link GardenerAI} so a player-team Gardener learns instead of standing around. */
-	public static UnitCommand gardenCommand, healCommand;
+	public static UnitCommand gardenCommand, healCommand, mimicCommand;
 
 	public static void load(){
 		sprig = new NHUnitType("sprig"){{
@@ -430,8 +432,36 @@ public class JadeUnits{
 			}});
 		}};
 
+		mimicCommand = new UnitCommand("nh-mimic", "copy", u -> new MimicAI());
+
+		//No weapons. Next to any other unit, friendly or enemy, it turns into that kind of unit for good: all its weapons and
+		//abilities, but only the health and armor stated here. See Mimicry. Pilot it and hold fire to copy the unit you aim at.
+		mimic = new NHUnitType("mimic"){{
+			constructor = UnitEntity::create;
+			aiController = MimicAI::new;
+			commands = new UnitCommand[]{UnitCommand.moveCommand, mimicCommand};
+			defaultCommand = UnitCommand.moveCommand;
+			outlineColor = JadeColor.outline;
+			ammoType = new ItemAmmoType(JadeItems.verdantResin);
+
+			flying = true;
+			health = 600f;
+			armor = 4f;
+			speed = 2.6f;
+			accel = 0.07f;
+			drag = 0.05f;
+			rotateSpeed = 5.5f;
+			hitSize = 11f;
+			engineOffset = 5f;
+			engineSize = 2.2f;
+			engineColor = JadeColor.jadeLight;
+			isEnemy = false;
+
+			abilities.add(new MimicAbility());
+		}};
+
 		//Everything that can look after itself goes to a healer when idle and hurt. The Sporeling is a suicide unit: no point.
-		for(NHUnitType type : new NHUnitType[]{sprig, thornback, briarlord, wisp, luminar, verdance, gardener, scavenger, bogguard}){
+		for(NHUnitType type : new NHUnitType[]{sprig, thornback, briarlord, wisp, luminar, verdance, gardener, scavenger, bogguard, mimic}){
 			type.abilities.add(new HealSeekAbility());
 		}
 	}

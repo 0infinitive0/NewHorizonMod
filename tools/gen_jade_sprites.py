@@ -224,6 +224,14 @@ def status_icons():
     i.outline()
     i.save(STATUS_DIR, "infested")
 
+    m = Canvas(32, 32)
+    m.part(ellipse(11, 16, 8, 11, 28), JADE, light=JADE_L, dark=JADE_D)
+    m.part(ellipse(21, 16, 8, 11, 28), POLLEN, light=WHITE, dark=RESIN, alpha=235)
+    m.glow(16, 16, 5, WHITE, 150)
+    m.circle(16, 16, 3, WHITE, light=WHITE, dark=JADE_L, rim=0.9, shine=1.0)
+    m.outline()
+    m.save(STATUS_DIR, "mimicked")
+
 
 # ---------------------------------------------------------------------------------------------
 # Blocks
@@ -601,6 +609,22 @@ def unit_gardener():
     c.save(UNIT_DIR, "gardener")
 
 
+def unit_mimic():
+    """Mimic: a blank, shimmering petal body with a two-tone face (half jade, half pollen) and leaf fins."""
+    w = h = 44
+    c = Canvas(w, h)
+    cx = cy = w / 2
+    for sgn in (-1, 1):
+        leaf(c, cx + sgn * 4, cy + 2, 17, 8, sgn * 70, base=JADE_D, light=JADE, dark=HULL_D)
+    c.part(ellipse(cx, cy, 9, 14, 34), HULL, light=HULL_L, dark=HULL_D)
+    c.part([(cx, cy - 13), (cx - 7, cy - 2), (cx, cy + 5)], JADE, light=JADE_L, dark=JADE_D)
+    c.part([(cx, cy - 13), (cx + 7, cy - 2), (cx, cy + 5)], POLLEN, light=WHITE, dark=RESIN)
+    c.glow(cx, cy - 2, 6, WHITE, 150)
+    c.circle(cx, cy - 2, 2.8, WHITE, light=WHITE, dark=JADE_L, rim=0.9, shine=1.0)
+    c.circle(cx, cy + 9, 2.6, JADE_L, light=WHITE, dark=JADE, rim=0.8)
+    c.save(UNIT_DIR, "mimic")
+
+
 def unit_herbalist():
     """Flying healer: a soft round body with two big petal wings and a glowing heart."""
     w, h = 44, 46
@@ -674,6 +698,7 @@ def units():
     unit_mech("briarlord", 80, 2.5)
     unit_sporeling()
     unit_gardener()
+    unit_mimic()
     unit_herbalist()
     unit_scavenger()
     unit_bogguard()

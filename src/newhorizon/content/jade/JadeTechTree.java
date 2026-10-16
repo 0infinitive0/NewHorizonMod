@@ -58,6 +58,7 @@ public class JadeTechTree{
 				node(JadeUnits.herbalist, () -> {});
 				node(JadeUnits.scavenger, () -> {});
 				node(JadeUnits.bogguard, () -> {});
+					node(JadeUnits.mimic, () -> {});
 				node(JadeUnits.sporeling, () -> {
 					node(JadeBlocks.sporeCatapult);
 					node(JadeBlocks.contagionSpire);
