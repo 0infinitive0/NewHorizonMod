@@ -269,10 +269,12 @@ public class JadeBlocks{
 			size = 2;
 			health = 520;
 			range = 170f;
-			consumePower(1.2f);
-			consumeLiquid(Liquids.water, 0.2f);
+			//Power, water and spores each have a store sized so that a full block runs 8 minutes, until all are empty together.
 			itemDuration = 60f * 12f;
 			itemCapacity = 40;
+			waterUse = 0.2f;
+			powerUse = 1.2f;
+			chargeRate = 6f;
 			pulseEffect = JadeFx.bloomRing(JadeColor.infection, 170f);
 		}};
 
