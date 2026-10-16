@@ -218,9 +218,12 @@ public class ScavengerAbility extends Ability{
 		return base != null && (base.damage > 0f || base.splashDamage > 0f || base.lightningDamage > 0f);
 	}
 
-	/** Fire rate can be improved until the weapon reaches {@link #minReload}. */
+	/**
+	 * Fire rate can be improved until the weapon reaches {@link #minReload}. Not for a beam held on as long as it has a target, which
+	 * never waits for its reload.
+	 */
 	protected static boolean canUpgradeFireRate(Weapon weapon){
-		return weapon.reload > minReload + 0.001f;
+		return weapon.reload > minReload + 0.001f && !weapon.alwaysContinuous;
 	}
 
 	protected int damageUpgrades(int index){

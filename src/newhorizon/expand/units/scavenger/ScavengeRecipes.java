@@ -116,6 +116,8 @@ public final class ScavengeRecipes{
 				w = type.weapons.get(idx).copy();
 				w.mirror = false;
 				w.otherSide = -1;
+				//A beam weapon fires a pulse and then waits out its reload. Stolen, it holds the beam for as long as it has a target.
+				if(w.continuous) w.alwaysContinuous = true;
 				hideSprite(w);
 			}else if(p[0].equals("wb")){
 				Block block = (Block)Vars.content.getByName(ContentType.block, p[1]);
