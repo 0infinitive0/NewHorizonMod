@@ -10,6 +10,7 @@ import arc.math.geom.Point2;
 import arc.struct.Seq;
 import mindustry.Vars;
 import mindustry.graphics.Drawf;
+import mindustry.graphics.MultiPacker;
 import mindustry.world.Tile;
 import mindustry.world.blocks.environment.Floor;
 import newhorizon.content.NHContent;
@@ -56,28 +57,41 @@ public class ArmorFloor extends Floor{
 		super.init();
 		
 		if(drawLiquidLight && !Vars.headless){
-			colors = new Color[variants];
+			//The colours are read from the sprites in createIcons: Mindustry v8 only lets pixmaps be read there.
+			int size = Math.max(1, (int)Math.sqrt(variants));
+			colors = new Color[size * size];
+			for(int i = 0; i < colors.length; i++) colors[i] = new Color(1f, 1f, 1f, 1f);
+		}
+	}
+	
+	@Override
+	public void createIcons(MultiPacker packer){
+		super.createIcons(packer);
+		
+		if(!drawLiquidLight || Vars.headless || colors == null) return;
+		
+		for(int i = 0; i < colors.length; i++){
+			TextureRegion region = Core.atlas.find(variants > 0 ? name + (i + 1) : name);
+			if(!region.found()) continue;
 			
-			for(int i = 0; i < variants; i++){
-				collectedColors.clear();
-				
-				PixmapRegion image = Core.atlas.getPixmap(variantRegions[i]);
-				for(int x = 1; x < image.width; x += scanStep){
-					for(int y = 1; y < image.height; y += scanStep){
-						tmpColor.set(image.get(x, y));
-						float bright = 0.2126f * tmpColor.r + 0.7152f * tmpColor.g + 0.0722f * tmpColor.b;
-						if(bright < 0.6f)continue;
-						collectedColors.add(tmpColor.cpy().a(bright));
-					}
+			collectedColors.clear();
+			
+			PixmapRegion image = Core.atlas.getPixmap(region);
+			for(int x = 1; x < image.width; x += scanStep){
+				for(int y = 1; y < image.height; y += scanStep){
+					tmpColor.set(image.get(x, y));
+					float bright = 0.2126f * tmpColor.r + 0.7152f * tmpColor.g + 0.0722f * tmpColor.b;
+					if(bright < 0.6f)continue;
+					collectedColors.add(tmpColor.cpy().a(bright));
 				}
-				
-				colors[i] = new Color(
-						collectedColors.sumf(c -> c.r),
-						collectedColors.sumf(c -> c.g),
-						collectedColors.sumf(c -> c.b),
-						collectedColors.sumf(c -> Mathf.curve(c.a, 0.2f, 1.23f))
-				);
 			}
+			
+			colors[i] = new Color(
+					collectedColors.sumf(c -> c.r),
+					collectedColors.sumf(c -> c.g),
+					collectedColors.sumf(c -> c.b),
+					collectedColors.sumf(c -> Mathf.curve(c.a, 0.2f, 1.23f))
+			);
 		}
 	}
 	
