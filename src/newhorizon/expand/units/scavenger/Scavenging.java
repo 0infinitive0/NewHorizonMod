@@ -98,13 +98,25 @@ public class Scavenging{
 	public static void unitDied(Unit victim){
 		Participants p = victims.remove(victim);
 		if(p == null) return;
-		payOut(p, victim.team, victim.maxHealth, victim.armor, ScavengeRecipes.weaponRecipes(victim.type), ScavengeRecipes.abilityRecipes(victim.type));
+		//A victim from another mod may have unusual weapons or abilities. If they cannot be listed, only health and armor are taken.
+		Seq<String> weapons = new Seq<>(), abilities = new Seq<>();
+		try{
+			weapons = ScavengeRecipes.weaponRecipes(victim.type);
+			abilities = ScavengeRecipes.abilityRecipes(victim.type);
+		}catch(RuntimeException ignored){
+		}
+		payOut(p, victim.team, victim.maxHealth, victim.armor, weapons, abilities);
 	}
 
 	public static void buildingDied(Building victim){
 		Participants p = victims.remove(victim);
 		if(p == null) return;
-		payOut(p, victim.team, victim.maxHealth(), victim.block.armor, ScavengeRecipes.weaponRecipes(victim.block), new Seq<>());
+		Seq<String> weapons = new Seq<>();
+		try{
+			weapons = ScavengeRecipes.weaponRecipes(victim.block);
+		}catch(RuntimeException ignored){
+		}
+		payOut(p, victim.team, victim.maxHealth(), victim.block.armor, weapons, new Seq<>());
 	}
 
 	private static void payOut(Participants p, Team victimTeam, float maxHealth, float armor, Seq<String> weapons, Seq<String> abilities){

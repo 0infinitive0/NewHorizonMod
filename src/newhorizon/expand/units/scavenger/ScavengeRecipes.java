@@ -62,7 +62,7 @@ public final class ScavengeRecipes{
 		Weapon w = type.weapons.get(i);
 		for(int j = 0; j < i; j++){
 			Weapon other = type.weapons.get(j);
-			if(other.name.equals(w.name) && other.bullet == w.bullet) return j;
+			if(java.util.Objects.equals(other.name, w.name) && other.bullet == w.bullet) return j;
 		}
 		return i;
 	}
@@ -150,6 +150,42 @@ public final class ScavengeRecipes{
 			Ability a = type.abilities.get(idx).copy();
 			a.init(owner);
 			return a;
+		}catch(RuntimeException e){
+			return null;
+		}
+	}
+
+	/**
+	 * The original bullet of a weapon recipe: the very object the victim's own weapon uses, not a copy. Upgrades are counted
+	 * from its values, and it must never be modified.
+	 */
+	public static BulletType baseBullet(String recipe){
+		String[] p = recipe.split(":", 3);
+		if(p.length != 3) return null;
+		try{
+			if(p[0].equals("wu")){
+				UnitType type = (UnitType)Vars.content.getByName(ContentType.unit, p[1]);
+				int idx = Integer.parseInt(p[2]);
+				return type == null || idx < 0 || idx >= type.weapons.size ? null : type.weapons.get(idx).bullet;
+			}
+			if(p[0].equals("wb")){
+				Block block = (Block)Vars.content.getByName(ContentType.block, p[1]);
+				return block instanceof Turret ? turretBullet((Turret)block, p[2]) : null;
+			}
+		}catch(RuntimeException e){
+			return null;
+		}
+		return null;
+	}
+
+	/** The unit type's own ability a recipe refers to, with its base stats. It must never be modified. */
+	public static Ability abilityTemplate(String recipe){
+		String[] p = recipe.split(":", 3);
+		if(p.length != 3 || !p[0].equals("au")) return null;
+		try{
+			UnitType type = (UnitType)Vars.content.getByName(ContentType.unit, p[1]);
+			int idx = Integer.parseInt(p[2]);
+			return type == null || idx < 0 || idx >= type.abilities.size ? null : type.abilities.get(idx);
 		}catch(RuntimeException e){
 			return null;
 		}

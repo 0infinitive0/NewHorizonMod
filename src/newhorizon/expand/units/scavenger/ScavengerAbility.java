@@ -39,6 +39,8 @@ public class ScavengerAbility extends Ability{
 	public Seq<String> abilities = new Seq<>();
 	/** Upgrades of stolen weapons, in order: weapon index followed by d (damage) or f (fire rate). */
 	public Seq<String> upgrades = new Seq<>();
+	/** Upgrades of stolen abilities, in order: ability index, a dot, and the name of the stat. */
+	public Seq<String> abilityUpgrades = new Seq<>();
 
 	protected boolean restored;
 
@@ -46,7 +48,7 @@ public class ScavengerAbility extends Ability{
 	public static class Loot{
 		public float hp, armor;
 		/** Recipe of a weapon newly added, of one that was upgraded, and which stat it was. */
-		public String weapon, upgradedWeapon, upgradedStat, ability;
+		public String weapon, upgradedWeapon, upgradedStat, ability, upgradedAbility, upgradedAbilityStat;
 	}
 
 	/**
@@ -59,6 +61,7 @@ public class ScavengerAbility extends Ability{
 		copy.weapons = new Seq<>(weapons);
 		copy.abilities = new Seq<>(abilities);
 		copy.upgrades = new Seq<>(upgrades);
+		copy.abilityUpgrades = new Seq<>(abilityUpgrades);
 		return copy;
 	}
 
@@ -77,28 +80,46 @@ public class ScavengerAbility extends Ability{
 		loot.armor = Math.max(0f, victimArmor) * rand.random(Scavenging.minSteal, Scavenging.maxSteal);
 		boost(unit, loot.hp, loot.armor);
 
+		//Whatever a victim carries may come from any mod. If a weapon or ability cannot be taken or improved for any reason, it
+		//is skipped: stealing must never raise an error.
 		if(!weaponRecipes.isEmpty() && rand.chance(Scavenging.weaponChance)){
-			String recipe = ScavengeRecipes.canonical(weaponRecipes.get(rand.random(weaponRecipes.size - 1)));
-			int owned = weapons.indexOf(recipe);
-			if(owned >= 0){
-				//Weapons are unique: taking the same gun again makes the one it already has better.
-				String stat = upgradeWeapon(unit, owned, rand);
-				if(stat != null){
-					loot.upgradedWeapon = recipe;
-					loot.upgradedStat = stat;
+			try{
+				String recipe = ScavengeRecipes.canonical(weaponRecipes.get(rand.random(weaponRecipes.size - 1)));
+				int owned = weapons.indexOf(recipe);
+				if(owned >= 0){
+					//Weapons are unique: taking the same gun again makes the one it already has better.
+					String stat = upgradeWeapon(unit, owned, rand);
+					if(stat != null){
+						loot.upgradedWeapon = recipe;
+						loot.upgradedStat = stat;
+					}
+				}else if(addWeapon(unit, recipe)){
+					loot.weapon = recipe;
 				}
-			}else if(addWeapon(unit, recipe)){
-				loot.weapon = recipe;
+			}catch(RuntimeException ignored){
 			}
 		}
 		if(!abilityRecipes.isEmpty() && rand.chance(Scavenging.abilityChance)){
-			String recipe = abilityRecipes.get(rand.random(abilityRecipes.size - 1));
-			if(addAbility(unit, recipe)) loot.ability = recipe;
+			try{
+				String recipe = abilityRecipes.get(rand.random(abilityRecipes.size - 1));
+				int owned = abilities.indexOf(recipe);
+				if(owned >= 0){
+					//Abilities are unique too: taking one it already has makes it stronger.
+					String stat = upgradeAbility(unit, owned, rand);
+					if(stat != null){
+						loot.upgradedAbility = recipe;
+						loot.upgradedAbilityStat = stat;
+					}
+				}else if(addAbility(unit, recipe)){
+					loot.ability = recipe;
+				}
+			}catch(RuntimeException ignored){
+			}
 		}
 
 		save(unit);
 		JadeFx.leafBurst.at(unit.x, unit.y);
-		if(loot.weapon != null || loot.ability != null || loot.upgradedWeapon != null) JadeFx.pollenBurst.at(unit.x, unit.y);
+		if(loot.weapon != null || loot.ability != null || loot.upgradedWeapon != null || loot.upgradedAbility != null) JadeFx.pollenBurst.at(unit.x, unit.y);
 		return loot;
 	}
 
@@ -113,55 +134,148 @@ public class ScavengerAbility extends Ability{
 
 	/** Adds a weapon the unit does not have yet. Refuses one it already owns (see {@link #upgradeWeapon}). */
 	public boolean addWeapon(Unit unit, String recipe){
-		recipe = ScavengeRecipes.canonical(recipe);
-		if(weapons.size >= maxWeapons || weapons.contains(recipe)) return false;
-		Weapon weapon = ScavengeRecipes.weapon(recipe);
-		if(weapon == null) return false;
+		try{
+			recipe = ScavengeRecipes.canonical(recipe);
+			if(weapons.size >= maxWeapons || weapons.contains(recipe)) return false;
+			Weapon weapon = ScavengeRecipes.weapon(recipe);
+			if(weapon == null) return false;
 
-		WeaponMount[] mounts = Arrays.copyOf(unit.mounts, unit.mounts.length + 1);
-		mounts[mounts.length - 1] = new WeaponMount(weapon);
-		unit.mounts = mounts;
-		weapons.add(recipe);
-		return true;
+			WeaponMount[] mounts = Arrays.copyOf(unit.mounts, unit.mounts.length + 1);
+			mounts[mounts.length - 1] = new WeaponMount(weapon);
+			unit.mounts = mounts;
+			weapons.add(recipe);
+			return true;
+		}catch(RuntimeException e){
+			return false;
+		}
 	}
 
 	/**
 	 * Improves one random stat of an owned weapon: its damage or its fire rate, by {@link Scavenging#upgradeStep}.
-	 * Fire rate stops at {@link #minReload}; once it has, only damage is left to improve.
+	 * Only stats that can really be improved are considered: damage needs a bullet with some damage to scale, and fire rate stops at
+	 * {@link #minReload}. If neither can be improved, or anything goes wrong (unusual content from another mod), nothing happens and
+	 * nothing is recorded.
 	 *
-	 * @return which stat was improved, or null if nothing could be
+	 * @return which stat was improved, or null if the weapon was skipped
 	 */
 	public String upgradeWeapon(Unit unit, int index, Rand rand){
-		int mount = unit.type.weapons.size + index;
-		if(index < 0 || index >= weapons.size || mount >= unit.mounts.length) return null;
+		try{
+			int mount = unit.type.weapons.size + index;
+			if(index < 0 || index >= weapons.size || mount >= unit.mounts.length) return null;
 
-		boolean canSpeedUp = unit.mounts[mount].weapon.reload > minReload + 0.001f;
-		boolean damage = !canSpeedUp || rand.chance(0.5f);
-		applyUpgrade(unit, index, damage);
-		upgrades.add(index + (damage ? "d" : "f"));
-		return damage ? "damage" : "fire rate";
-	}
+			boolean canDamage = canUpgradeDamage(ScavengeRecipes.baseBullet(weapons.get(index)));
+			boolean canSpeedUp = canUpgradeFireRate(unit.mounts[mount].weapon);
+			if(!canDamage && !canSpeedUp) return null;
 
-	/**
-	 * The stolen weapon's bullet is the very object the victim's own weapon uses. Raising its damage in place would strengthen
-	 * every such unit and turret in the game, so the upgrade works on a private copy.
-	 */
-	protected void applyUpgrade(Unit unit, int index, boolean damage){
-		Weapon weapon = unit.mounts[unit.type.weapons.size + index].weapon;
-		float k = 1f + Scavenging.upgradeStep;
-		if(damage){
-			BulletType bullet = weapon.bullet.copy();
-			bullet.damage *= k;
-			bullet.splashDamage *= k;
-			if(bullet.lightningDamage > 0f) bullet.lightningDamage *= k;
-			weapon.bullet = bullet;
-		}else{
-			weapon.reload = Math.max(minReload, weapon.reload / k);
+			boolean damage = canDamage && (!canSpeedUp || rand.chance(0.5f));
+			if(!applyUpgrade(unit, index, damage)) return null;
+			upgrades.add(index + (damage ? "d" : "f"));
+			return damage ? "damage" : "fire rate";
+		}catch(RuntimeException e){
+			return null;
 		}
 	}
 
+	/**
+	 * Damage is additive from the weapon's <i>base</i> bullet: after n damage upgrades it is {@code base * (1 + step * n)}, not
+	 * compounded. The base is the very object the victim's own weapon uses, so it is never touched: raising its damage in
+	 * place would strengthen every such unit and turret in the game. The weapon gets a private copy instead.
+	 *
+	 * <p>Must be called before the upgrade is added to {@link #upgrades}: the count of earlier ones decides n.
+	 *
+	 * @return whether anything was applied; nothing is recorded for an upgrade that was not
+	 */
+	protected boolean applyUpgrade(Unit unit, int index, boolean damage){
+		Weapon weapon = unit.mounts[unit.type.weapons.size + index].weapon;
+		if(damage){
+			BulletType base = ScavengeRecipes.baseBullet(weapons.get(index));
+			if(!canUpgradeDamage(base)) return false;
+
+			float k = 1f + Scavenging.upgradeStep * (damageUpgrades(index) + 1);
+			BulletType bullet = base.copy();
+			bullet.damage = base.damage * k;
+			bullet.splashDamage = base.splashDamage * k;
+			if(base.lightningDamage > 0f) bullet.lightningDamage = base.lightningDamage * k;
+			weapon.bullet = bullet;
+		}else{
+			if(!canUpgradeFireRate(weapon)) return false;
+			weapon.reload = Math.max(minReload, weapon.reload / (1f + Scavenging.upgradeStep));
+		}
+		return true;
+	}
+
+	/** Damage can only be improved if the bullet has some damage of its own to scale. */
+	protected static boolean canUpgradeDamage(BulletType base){
+		return base != null && (base.damage > 0f || base.splashDamage > 0f || base.lightningDamage > 0f);
+	}
+
+	/** Fire rate can be improved until the weapon reaches {@link #minReload}. */
+	protected static boolean canUpgradeFireRate(Weapon weapon){
+		return weapon.reload > minReload + 0.001f;
+	}
+
+	protected int damageUpgrades(int index){
+		int n = 0;
+		for(String u : upgrades){
+			if(u.equals(index + "d")) n++;
+		}
+		return n;
+	}
+
+	/**
+	 * Improves one random stat of an owned ability by {@link Scavenging#upgradeStep} of its base value (see {@link AbilityStats}).
+	 *
+	 * @return the name of the stat that was improved, or null if the ability has none left to improve
+	 */
+	public String upgradeAbility(Unit unit, int index, Rand rand){
+		try{
+			int slot = unit.type.abilities.size + index;
+			if(index < 0 || index >= abilities.size || slot >= unit.abilities.length) return null;
+
+			Ability owned = unit.abilities[slot], template = ScavengeRecipes.abilityTemplate(abilities.get(index));
+			if(template == null) return null;
+
+			//Only stats that would really change: this skips abilities with nothing to improve (all of another mod's own kinds).
+			Seq<AbilityStats.Stat> options = new Seq<>();
+			for(AbilityStats.Stat stat : AbilityStats.of(owned)){
+				float next = stat.value(AbilityStats.get(template, stat.field), abilityUpgradeCount(index, stat.field) + 1, Scavenging.upgradeStep);
+				if(next != AbilityStats.get(owned, stat.field)) options.add(stat);
+			}
+			if(options.isEmpty()) return null;
+
+			AbilityStats.Stat stat = options.get(rand.random(options.size - 1));
+			if(!applyAbilityUpgrade(unit, index, stat.field)) return null;
+			abilityUpgrades.add(index + "." + stat.field);
+			return stat.field;
+		}catch(RuntimeException e){
+			return null;
+		}
+	}
+
+	/** Like {@link #applyUpgrade}: call before the upgrade is recorded, and record it only if this returns true. */
+	protected boolean applyAbilityUpgrade(Unit unit, int index, String field){
+		int slot = unit.type.abilities.size + index;
+		if(index < 0 || index >= abilities.size || slot >= unit.abilities.length) return false;
+
+		Ability owned = unit.abilities[slot], template = ScavengeRecipes.abilityTemplate(abilities.get(index));
+		AbilityStats.Stat stat = template == null ? null : AbilityStats.find(owned, field);
+		if(stat == null) return false;
+
+		AbilityStats.set(owned, field, stat.value(AbilityStats.get(template, field), abilityUpgradeCount(index, field) + 1, Scavenging.upgradeStep));
+		return true;
+	}
+
+	protected int abilityUpgradeCount(int index, String field){
+		int n = 0;
+		for(String u : abilityUpgrades){
+			if(u.equals(index + "." + field)) n++;
+		}
+		return n;
+	}
+
+	/** Adds an ability the unit does not have yet. Refuses one it already owns (see {@link #upgradeAbility}). */
 	public boolean addAbility(Unit unit, String recipe){
-		if(abilities.size >= maxAbilities) return false;
+		if(abilities.size >= maxAbilities || abilities.contains(recipe)) return false;
 		Ability ability = ScavengeRecipes.ability(recipe, unit.type);
 		if(ability == null) return false;
 
@@ -175,7 +289,7 @@ public class ScavengerAbility extends Ability{
 	//---------------------------------------------------------------- persistence
 
 	public String serialize(){
-		return "v1;hp=" + hpBonus + ";armor=" + armorBonus + ";kills=" + kills + ";w=" + weapons.toString(",") + ";u=" + upgrades.toString(",") + ";a=" + abilities.toString(",");
+		return "v1;hp=" + hpBonus + ";armor=" + armorBonus + ";kills=" + kills + ";w=" + weapons.toString(",") + ";u=" + upgrades.toString(",") + ";a=" + abilities.toString(",") + ";s=" + abilityUpgrades.toString(",");
 	}
 
 	/** Rebuilds the loot from text. Anything that no longer resolves is simply dropped. Never throws. */
@@ -199,13 +313,28 @@ public class ScavengerAbility extends Ability{
 								int idx = Integer.parseInt(r.substring(0, r.length() - 1));
 								char stat = r.charAt(r.length() - 1);
 								if(idx < 0 || idx >= weapons.size || (stat != 'd' && stat != 'f')) continue;
-								applyUpgrade(unit, idx, stat == 'd');
-								upgrades.add(r);
+								if(applyUpgrade(unit, idx, stat == 'd')) upgrades.add(r);
 							}catch(RuntimeException ignored){
 							}
 						}
 						break;
 					case "a": for(String r : val.split(",")) if(!r.isEmpty()) addAbility(unit, r); break;
+					case "s":
+						for(String r : val.split(",")){
+							//One bad entry must not cost the good ones after it.
+							try{
+								int dot = r.indexOf('.');
+								if(dot < 1) continue;
+								int idx = Integer.parseInt(r.substring(0, dot));
+								String field = r.substring(dot + 1);
+								if(idx < 0 || idx >= abilities.size) continue;
+								Ability owned = unit.abilities[unit.type.abilities.size + idx];
+								if(AbilityStats.find(owned, field) == null) continue;
+								if(applyAbilityUpgrade(unit, idx, field)) abilityUpgrades.add(r);
+							}catch(RuntimeException ignored){
+							}
+						}
+						break;
 					default: break;
 				}
 			}catch(RuntimeException ignored){
