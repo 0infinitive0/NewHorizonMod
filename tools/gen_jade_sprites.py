@@ -459,6 +459,21 @@ def unit_sporeling():
     leg.save(UNIT_DIR, "sporeling-leg")
 
 
+def unit_gardener():
+    """Flying builder: a round body with four leaf rotors and a glowing build tip."""
+    w = h = 44
+    c = Canvas(w, h)
+    cx = cy = w / 2
+    for a in (45, 135, 225, 315):
+        leaf(c, cx, cy, 17, 8, a, base=JADE_D, light=JADE, dark=HULL_D)
+    c.part(ellipse(cx, cy, 8, 10, 30), HULL, light=HULL_L, dark=HULL_D)
+    c.part(mirror([(cx + 3, cy - 12), (cx + 6, cy - 5), (cx + 5, cy + 3)], cx), JADE, light=JADE_L, dark=JADE_D)
+    c.glow(cx, cy - 12, 5, POLLEN, 150)
+    c.circle(cx, cy - 12, 2.6, POLLEN, light=WHITE, rim=0.8)
+    c.circle(cx, cy + 2, 3, JADE_L, light=WHITE, dark=JADE, rim=0.8)
+    c.save(UNIT_DIR, "gardener")
+
+
 def unit_air(name, w, h, wing, accent=POLLEN):
     c = Canvas(w, h)
     cx = w / 2
@@ -487,6 +502,7 @@ def units():
     unit_mech("thornback", 48, 1.5)
     unit_mech("briarlord", 80, 2.5)
     unit_sporeling()
+    unit_gardener()
     unit_air("wisp", 32, 32, 12)
     unit_air("luminar", 56, 60, 24)
     unit_air("verdance", 96, 108, 44)

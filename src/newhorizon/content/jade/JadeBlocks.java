@@ -212,7 +212,8 @@ public class JadeBlocks{
 			plans.add(
 				new UnitFactory.UnitPlan(JadeUnits.sprig, 60f * 12f, with(Items.silicon, 18, JadeItems.verdantResin, 12)),
 				new UnitFactory.UnitPlan(JadeUnits.wisp, 60f * 14f, with(Items.silicon, 22, Items.lead, 10, JadeItems.verdantResin, 14)),
-				new UnitFactory.UnitPlan(JadeUnits.sporeling, 60f * 8f, with(Items.silicon, 10, JadeItems.verdantResin, 20))
+				new UnitFactory.UnitPlan(JadeUnits.sporeling, 60f * 8f, with(Items.silicon, 10, JadeItems.verdantResin, 20)),
+				new UnitFactory.UnitPlan(JadeUnits.gardener, 60f * 18f, with(Items.silicon, 30, Items.lead, 20, JadeItems.verdantResin, 25))
 			);
 		}};
 

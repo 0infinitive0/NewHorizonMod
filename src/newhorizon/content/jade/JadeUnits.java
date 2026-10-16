@@ -1,5 +1,6 @@
 package newhorizon.content.jade;
 
+import mindustry.ai.UnitCommand;
 import mindustry.content.Fx;
 import mindustry.entities.abilities.EnergyFieldAbility;
 import mindustry.entities.abilities.RepairFieldAbility;
@@ -12,6 +13,8 @@ import mindustry.type.Weapon;
 import mindustry.type.ammo.ItemAmmoType;
 import newhorizon.NewHorizon;
 import newhorizon.expand.units.ai.SporelingAI;
+import newhorizon.expand.units.ai.gardener.GardenerAI;
+import newhorizon.expand.units.ai.gardener.GardenerAbility;
 import newhorizon.expand.units.unitType.NHUnitType;
 
 /**
@@ -26,7 +29,11 @@ public class JadeUnits{
 	public static NHUnitType
 		sprig, thornback, briarlord,
 		wisp, luminar, verdance,
-		sporeling;
+		sporeling,
+		gardener;
+
+	/** The Gardener's own command: it picks {@link GardenerAI} so a player-team Gardener learns instead of standing around. */
+	public static UnitCommand gardenCommand;
 
 	public static void load(){
 		sprig = new NHUnitType("sprig"){{
@@ -276,6 +283,35 @@ public class JadeUnits{
 				mirror = false;
 				bullet = JadeBullets.sporelingBlast;
 			}});
+		}};
+
+		gardenCommand = new UnitCommand("nh-gardener", "hammer", u -> new GardenerAI());
+
+		//A builder that learns: starts as a plain BuilderAI and evolves with experience, see GardenerMind.
+		gardener = new NHUnitType("gardener"){{
+			constructor = UnitEntity::create;
+			aiController = GardenerAI::new;
+			commands = new UnitCommand[]{UnitCommand.moveCommand, gardenCommand, UnitCommand.assistCommand};
+			defaultCommand = gardenCommand;
+			outlineColor = JadeColor.outline;
+			ammoType = new ItemAmmoType(JadeItems.verdantResin);
+
+			flying = true;
+			health = 420f;
+			armor = 2f;
+			speed = 2.3f;
+			accel = 0.06f;
+			drag = 0.05f;
+			rotateSpeed = 5f;
+			hitSize = 12f;
+			engineOffset = 6f;
+			engineSize = 2.4f;
+			engineColor = JadeColor.jadeLight;
+
+			buildSpeed = 1.1f;
+			itemCapacity = 30;
+
+			abilities.add(new GardenerAbility());
 		}};
 	}
 }

@@ -1,5 +1,7 @@
 package newhorizon.content.jade;
 
+import newhorizon.expand.units.ai.gardener.GardenerMind;
+
 /**
  * The Jade Accord: a bio-tech faction that grows its arsenal from spore pods instead of smelting it.
  * Everything it fires leaves targets {@link JadeStatus#bloom blooming}; its support units and walls regrow.
@@ -16,5 +18,6 @@ public class JadeFaction{
 		JadeBullets.loadPods();
 		JadeInfection.load();
 		JadeBlocks.load();
+		GardenerMind.instance.init();
 	}
 }

@@ -34,6 +34,7 @@ import newhorizon.content.*;
 import newhorizon.content.blocks.DefenseBlock;
 import newhorizon.content.blocks.DistributionBlock;
 import newhorizon.content.jade.JadeFaction;
+import newhorizon.expand.units.ai.gardener.GardenerMind;
 import newhorizon.expand.NHVars;
 import newhorizon.expand.entities.EntityRegister;
 import newhorizon.expand.entities.WorldEvent;
@@ -193,6 +194,27 @@ public class NewHorizon extends Mod{
 
 	@Override
 	public void registerClientCommands(CommandHandler handler) {
+		handler.<Player>register("gardener", "[reset|teach] [xp]", "Show what the Jade Gardeners have learned. 'reset' wipes it, 'teach <xp>' grants experience (Admin Only).", (args, player) -> {
+			GardenerMind mind = GardenerMind.instance;
+			if(args.length == 0){
+				player.sendMessage(mind.report());
+			}else if(!player.admin()){
+				player.sendMessage("[VIOLET]Admin Only");
+			}else if(args[0].equals("reset")){
+				mind.reset(true);
+				player.sendMessage("[accent]The Gardeners forgot everything. Back to Seedling.");
+			}else if(args[0].equals("teach") && args.length == 2){
+				try{
+					mind.addXp(Float.parseFloat(args[1]));
+					player.sendMessage(mind.report());
+				}catch(NumberFormatException e){
+					player.sendMessage("[VIOLET]Undefined<Number>");
+				}
+			}else{
+				player.sendMessage("[VIOLET]Usage: /gardener [reset|teach <xp>]");
+			}
+		});
+
 		handler.<Player>register("applystatus", "Apply a status to player's unit", (args, player) -> {
 			if (!player.admin()) {
 				player.sendMessage("[VIOLET]Admin Only");
