@@ -27,7 +27,7 @@ import java.util.Arrays;
  */
 public class ScavengerAbility extends Ability{
 	/** Weapons and abilities pile up, but not without end: every mount costs time on every frame. */
-	public static final int maxWeapons = 32, maxAbilities = 16;
+	public static final int maxWeapons = 50, maxAbilities = 16;
 	public static final String TAG = "nh-scavenger-";
 	/** A weapon can never fire faster than this (ticks between shots), however often it is upgraded. */
 	public static final float minReload = 4f;
