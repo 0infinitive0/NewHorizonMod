@@ -128,6 +128,11 @@ public class MultiNukeLauncher extends NukeLauncher{
 			return ((rows - 1) / 2f - slot / columnsNow()) * rowSpacing;
 		}
 
+		/** Whether the core has enough of one of the upgrade's items. */
+		protected boolean affords(ItemStack stack){
+			return Vars.state.rules.infiniteResources || (team.core() != null && team.core().items.has(stack.item, stack.amount));
+		}
+
 		public boolean canUpgrade(){
 			if(capacity >= maxSlots) return false;
 			if(Vars.state.rules.infiniteResources) return true;
@@ -280,9 +285,22 @@ public class MultiNukeLauncher extends NukeLauncher{
 			table.row();
 			table.table(Styles.black6, t -> {
 				t.margin(8f);
-				StringBuilder cost = new StringBuilder();
-				for(ItemStack stack : upgradeCost) cost.append(cost.length() == 0 ? "" : ", ").append(stack.amount).append(' ').append(stack.item.localizedName);
-				t.label(() -> capacity >= maxSlots ? Core.bundle.format("nh.nuke.upgrade.max", capacity) : Core.bundle.format("nh.nuke.upgrade.info", capacity, capacity + 1, cost)).width(260f).wrap().row();
+				//Only the next step: the slot count it leads to, and what that costs (in red where the core is short).
+				int[] shown = {-1};
+				t.table(c -> {}).update(c -> {
+					if(shown[0] == capacity) return;
+					shown[0] = capacity;
+					c.clear();
+					if(capacity >= maxSlots){
+						c.add(Core.bundle.format("nh.nuke.upgrade.max", capacity));
+						return;
+					}
+					c.add(Core.bundle.format("nh.nuke.upgrade.info", capacity, capacity + 1)).padRight(10f);
+					for(ItemStack stack : upgradeCost){
+						c.image(stack.item.uiIcon).size(24f);
+						c.label(() -> (affords(stack) ? "" : "[scarlet]") + stack.amount).padLeft(3f).padRight(8f);
+					}
+				}).left().padBottom(6f).row();
 				t.button(Core.bundle.get("nh.nuke.upgrade"), Styles.defaultt, () -> configure(2)).size(256f, 40f).disabled(b -> !canUpgrade());
 			});
 		}
