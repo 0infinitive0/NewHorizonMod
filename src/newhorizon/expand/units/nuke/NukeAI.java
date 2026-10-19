@@ -27,7 +27,7 @@ public class NukeAI extends AIController{
 	private Unit targetUnit;
 	private float lastDst = Float.MAX_VALUE;
 	/** Whether it has been getting closer to the target, and whether the target was given to it rather than guessed. */
-	private boolean closing, explicitAim;
+	protected boolean closing, explicitAim;
 
 	@Override
 	public void updateMovement(){

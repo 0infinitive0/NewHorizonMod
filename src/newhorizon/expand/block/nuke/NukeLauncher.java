@@ -96,6 +96,8 @@ public class NukeLauncher extends PayloadBlock{
 		public BlockUnitc unit;
 		/** Heading in degrees. */
 		public float angle = 90f;
+		/** Where it is trying to point: the pilot's cursor, the map target, or just where it already points. */
+		public float wanted = 90f;
 		/** The target picked on the map. */
 		public Vec2 target = new Vec2();
 		public boolean hasTarget;
@@ -171,7 +173,7 @@ public class NukeLauncher extends PayloadBlock{
 			if(!arrived || efficiency <= 0.5f) return;
 
 			//Turn like a turret: to the pilot's cursor while someone controls it, otherwise to the map target, otherwise stay.
-			float wanted = angle;
+			wanted = angle;
 			if(piloted()) wanted = angleTo(unit().aimX(), unit().aimY());
 			else if(hasTarget) wanted = angleTo(target.x, target.y);
 			angle = Angles.moveToward(angle, wanted, turnSpeed * edelta());
@@ -205,7 +207,12 @@ public class NukeLauncher extends PayloadBlock{
 
 		public boolean canLaunch(){
 			return loaded() && isArmed() && payVector.isZero(0.5f) && efficiency > 0.5f && cooldown <= 0f
-				&& Math.abs(Angles.angleDist(payRotation, angle)) <= aimTolerance && Units.canCreate(team, loadedUnit().type);
+				&& aimed() && Units.canCreate(team, loadedUnit().type);
+		}
+
+		/** Whether the heading has got to where it is meant to point. */
+		public boolean aimed(){
+			return Math.abs(Angles.angleDist(angle, wanted)) <= aimTolerance;
 		}
 
 		/** Sends the loaded nuke off along the heading, at the target if there is one. Only the server makes the unit; every side empties the launcher. */
@@ -226,7 +233,17 @@ public class NukeLauncher extends PayloadBlock{
 			Sounds.shootMissileLarge.at(x, y, 1f, 0.8f);
 			if(Vars.net.client()) return true;
 
-			nuke.set(x + Angles.trnsx(angle, size * tilesize / 2f), y + Angles.trnsy(angle, size * tilesize / 2f));
+			send(nuke, 0f, aim);
+			return true;
+		}
+
+		/**
+		 * Puts a nuke into the world at the muzzle, {@code lateral} units to the side of the centre line, flying along the heading or at the
+		 * target. Server side: the other peers only see the unit arrive.
+		 */
+		protected void send(Unit nuke, float lateral, Vec2 aim){
+			float reach = size * tilesize / 2f;
+			nuke.set(x + Angles.trnsx(angle, reach) + Angles.trnsx(angle + 90f, lateral), y + Angles.trnsy(angle, reach) + Angles.trnsy(angle + 90f, lateral));
 			nuke.rotation = angle;
 			nuke.vel.trns(angle, nuke.type.speed * 0.6f);
 			nuke.add();
@@ -247,7 +264,6 @@ public class NukeLauncher extends PayloadBlock{
 				controller = (AIController)current;
 			}
 			if(aim != null) controller.commandPosition(aim);
-			return true;
 		}
 
 		@Override
@@ -333,6 +349,7 @@ public class NukeLauncher extends PayloadBlock{
 		public void read(Reads read, byte revision){
 			super.read(read, revision);
 			angle = read.f();
+			wanted = angle;
 			hasTarget = read.bool();
 			target.set(read.f(), read.f());
 			armSwitch = read.bool();

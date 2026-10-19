@@ -28,7 +28,8 @@ public class NukeBlast{
 
 		if(active){
 			warhead.visual(x, y);
-			Effect.shake(warhead.damage > 0f ? 14f : 5f, warhead.damage > 0f ? 90f : 30f, x, y);
+			if(warhead.radius < 100f) Effect.shake(3f, 20f, x, y);
+			else Effect.shake(warhead.damage > 0f ? 14f : 5f, warhead.damage > 0f ? 90f : 30f, x, y);
 			Sounds.explosion.at(x, y, 0.7f, 2.6f);
 			if(warhead.damage > 0f) Fx.dynamicExplosion.at(x, y, warhead.radius / 24f);
 		}else{
@@ -47,6 +48,7 @@ public class NukeBlast{
 		}else{
 			//An inactive nuke's blast is stopped by walls like any explosion.
 			Damage.damage(Team.derelict, x, y, Warhead.inactiveRadius, Warhead.inactiveDamage, false, true, true);
+			warhead.inactiveSpecial(x, y, unit.team, unit);
 		}
 	}
 

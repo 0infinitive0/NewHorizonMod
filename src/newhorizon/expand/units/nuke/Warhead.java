@@ -21,6 +21,7 @@ import newhorizon.content.nuke.NukeBlocks;
 import newhorizon.content.nuke.NukeBullets;
 import newhorizon.content.nuke.NukeFx;
 import newhorizon.content.nuke.NukeStatus;
+import newhorizon.content.nuke.NukeUnits;
 import newhorizon.expand.block.chronos.TemporalDisable;
 import newhorizon.expand.bullets.nuke.ZoneBulletType;
 
@@ -38,7 +39,7 @@ public abstract class Warhead{
 	public static Warhead
 		explosive, incendiary, radiation, emp,
 		psychic, gravity, spatial, shockwave, cluster, wall, temporal, infantry, overload,
-		laser, swarm, storm;
+		laser, swarm, storm, decoy, mini;
 	public static final Seq<Warhead> all = new Seq<>();
 
 	public final String name;
@@ -70,6 +71,12 @@ public abstract class Warhead{
 	public void detonate(float x, float y, Team team, Unit nuke){
 		if(damage > 0f) Damage.damage(Team.derelict, x, y, radius, damage, true, true, true);
 		special(x, y, team, nuke);
+	}
+
+	/**
+	 * What an inactive nuke of this kind does when it is destroyed, on top of the plain inactive blast. Nothing for most kinds. Server side.
+	 */
+	public void inactiveSpecial(float x, float y, Team team, Unit nuke){
 	}
 
 	/** What the blast does beyond its damage. {@code team} is the nuke's own. Server side only. */
@@ -317,6 +324,26 @@ public abstract class Warhead{
 			}
 		};
 
+		//A tough bait that breaks into three mini nukes, which fly off at whatever is near. The blast itself hurts nothing.
+		decoy = new Warhead("decoy", Color.valueOf("c3ccd8"), 60f, 0f){
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+				split(x, y, team);
+			}
+
+			@Override
+			public void inactiveSpecial(float x, float y, Team team, Unit nuke){
+				split(x, y, team);
+			}
+		};
+
+		//What a decoy breaks into: a small blast of its own, nothing else.
+		mini = new Warhead("mini", Color.valueOf("ffb347"), 46f, 150f){
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+			}
+		};
+
 		//Carries units, which come out where it goes off. It hurts nothing.
 		infantry = new Warhead("infantry", Color.valueOf("57b36b"), 120f, 0f){
 			@Override
@@ -340,6 +367,23 @@ public abstract class Warhead{
 				}
 			}
 		};
+	}
+
+	/** How many mini nukes a decoy breaks into. */
+	public static final int pieces = 3;
+
+	/** Sends {@link #pieces} mini nukes, of the given team, out from the point in all directions. Server side. */
+	public static void split(float x, float y, Team team){
+		float start = Mathf.random(360f);
+		for(int i = 0; i < pieces; i++){
+			float a = start + i * 360f / pieces;
+			Unit u = NukeUnits.mini.create(team);
+			u.set(x + Mathf.cosDeg(a) * 6f, y + Mathf.sinDeg(a) * 6f);
+			u.rotation = a;
+			u.vel.trns(a, u.type.speed * 0.8f);
+			u.controller(u.type.createController(u));
+			u.add();
+		}
 	}
 
 	/** How many lasers the laser nuke fires. */

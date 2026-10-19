@@ -13,6 +13,7 @@ import mindustry.gen.UnitEntity;
 import mindustry.type.UnitType;
 import mindustry.world.Block;
 import newhorizon.expand.units.nuke.DetonateAI;
+import newhorizon.expand.units.nuke.MiniNukeAI;
 import newhorizon.expand.units.nuke.NukeAI;
 import newhorizon.expand.units.nuke.NukeAbility;
 import newhorizon.expand.units.nuke.WallStance;
@@ -43,7 +44,10 @@ public class NukeUnits{
 		overload, overloadActive,
 		laser, laserActive,
 		swarm, swarmActive,
-		storm, stormActive;
+		storm, stormActive,
+		decoy, decoyActive;
+	/** What a decoy breaks into. Never built or launched, and not a part of any unit cap. */
+	public static NHUnitType mini;
 
 	/** The Strike command (the default of an active nuke) flies it at the target; Detonate sets it off at once. */
 	public static UnitCommand strikeCommand, detonateCommand;
@@ -122,6 +126,11 @@ public class NukeUnits{
 		pair(laser, laserActive);
 		pair(swarm, swarmActive);
 		pair(storm, stormActive);
+
+		decoy = nuke(Warhead.decoy, false);
+		decoyActive = nuke(Warhead.decoy, true);
+		pair(decoy, decoyActive);
+		mini = nuke(Warhead.mini, true);
 	}
 
 	private static void pair(NHUnitType off, NHUnitType on){
@@ -187,7 +196,32 @@ public class NukeUnits{
 				stances = new Seq<>(wallStances);
 			}
 
-			abilities.add(new NukeAbility(warhead, active));
+			//A decoy is bait: far tougher than any other nuke, in both forms.
+			if(warhead == Warhead.decoy){
+				health = 1400f;
+				armor = 15f;
+				hitSize = 16f;
+			}
+
+			//A mini nuke: small, quick and short-lived, it finds its own target and nobody commands it.
+			if(warhead == Warhead.mini){
+				health = 30f;
+				speed = 5f;
+				rotateSpeed = 4f;
+				hitSize = 7f;
+				engineOffset = 5f;
+				engineSize = 2.2f;
+				playerControllable = false;
+				useUnitCap = false;
+				allowedInPayloads = false;
+				aiController = MiniNukeAI::new;
+				commands = new Seq<>();
+				defaultCommand = null;
+			}
+
+			NukeAbility ability = new NukeAbility(warhead, active);
+			if(warhead == Warhead.mini) ability.fuel = 60f * 5f;
+			abilities.add(ability);
 		}};
 		warheads.put(type, warhead);
 		return type;
