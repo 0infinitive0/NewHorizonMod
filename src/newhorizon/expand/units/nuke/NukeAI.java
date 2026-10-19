@@ -11,34 +11,45 @@ import mindustry.gen.Unit;
 /**
  * Flies an active nuke at its target and detonates it. The target is a point or a unit the player gave (through the launcher, or a
  * click with the strike command); with none it heads for the nearest enemy core, or straight ahead. The nuke explodes when it
- * reaches the target, when it has passed it, or as soon as it comes close to anything of the enemy's on the way.
+ * reaches the target or when it has passed it. Only a nuke with no target of its own also explodes as soon as it comes close to anything
+ * of the enemy's: one that was given a target flies to it, past everything else.
  *
  * <p>An active nuke turns very slowly: it cannot swing round for a second try, so it has to be aimed.
  */
 public class NukeAI extends AIController{
 	/** The fuse: how close an enemy has to be for the nuke to go off, besides its own size. */
 	public float proximity = 26f;
-	/** Reaching this close to the target sets it off, and so does moving away from the target while this close. */
-	public float arrival = 40f, passedRange = 170f;
+	/** Reaching this close to the target sets it off. */
+	public float arrival = 40f;
 
 	private final Vec2 tmp = new Vec2(), aimPoint = new Vec2();
 	private Vec2 targetPos;
 	private Unit targetUnit;
 	private float lastDst = Float.MAX_VALUE;
+	/** Whether it has been getting closer to the target, and whether the target was given to it rather than guessed. */
+	private boolean closing, explicitAim;
 
 	@Override
 	public void updateMovement(){
 		NukeAbility ability = abilityOf(unit);
 		if(ability == null || !ability.active) return;
 
-		if(fused(ability)) return;
+		boolean aimed = aim(aimPoint);
 
-		if(aim(aimPoint)){
+		//A nuke that was given a target flies to it, past whatever else is in the way. Only one with nothing to aim at (launched by hand, or
+		//heading for the nearest core on its own) goes off on the first enemy it meets.
+		if(!(aimed && explicitAim) && fused(ability)) return;
+
+		if(aimed){
 			float dst = unit.dst(aimPoint);
-			if(dst < arrival || (dst < passedRange && dst > lastDst + 0.01f)){
+			//Going off as it flies past only makes sense if the target is inside the blast.
+			float passed = Math.max(arrival, ability.warhead.radius * 0.9f);
+			if(dst < arrival || (closing && dst < passed && dst > lastDst + 0.01f)){
 				ability.detonate(unit);
 				return;
 			}
+			//It only counts as having passed the target after it has been getting closer: one that starts out pointing away turns first.
+			if(lastDst != Float.MAX_VALUE && dst < lastDst - 0.01f) closing = true;
 			lastDst = dst;
 			unit.movePref(tmp.set(aimPoint).sub(unit).setLength(unit.speed()));
 		}else{
@@ -53,6 +64,7 @@ public class NukeAI extends AIController{
 	 * one), and last the nearest enemy core.
 	 */
 	protected boolean aim(Vec2 out){
+		explicitAim = true;
 		if(targetUnit != null && targetUnit.isValid() && targetUnit.team != unit.team){
 			out.set(targetUnit);
 			return true;
@@ -72,6 +84,8 @@ public class NukeAI extends AIController{
 				return true;
 			}
 		}
+		//Nobody gave it anything: the nearest enemy core is only a heading.
+		explicitAim = false;
 		Building core = unit.closestEnemyCore();
 		if(core != null){
 			out.set(core);
@@ -104,6 +118,7 @@ public class NukeAI extends AIController{
 		targetPos = pos == null ? null : pos.cpy();
 		targetUnit = null;
 		lastDst = Float.MAX_VALUE;
+		closing = false;
 	}
 
 	/** A click on an enemy unit: fly at that one. */
@@ -113,6 +128,7 @@ public class NukeAI extends AIController{
 			targetUnit = (Unit)target;
 			targetPos = null;
 			lastDst = Float.MAX_VALUE;
+			closing = false;
 		}
 	}
 
