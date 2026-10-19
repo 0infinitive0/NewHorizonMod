@@ -53,6 +53,19 @@ public class NukeFx{
 			Draw.reset();
 		}),
 
+		/** Rings drawn inwards, for a pull. */
+		pullRing = new Effect(60f, 1200f, e -> {
+			float r = e.rotation;
+			Draw.z(Layer.effect + 2f);
+			Draw.color(Color.white, e.color, e.fin());
+			for(int i = 0; i < 3; i++){
+				float f = Mathf.clamp(e.fin() * 1.3f - i * 0.1f);
+				Lines.stroke(Math.max(1f, r * 0.03f) * (1f - f * 0.6f));
+				Lines.circle(e.x, e.y, r * (1f - f));
+			}
+			Draw.reset();
+		}),
+
 		/** The flash of a nuke leaving its launcher. */
 		launch = new Effect(40f, 300f, e -> {
 			Draw.color(Color.white, Color.orange, e.fin());

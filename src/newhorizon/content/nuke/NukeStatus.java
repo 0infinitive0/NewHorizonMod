@@ -9,6 +9,8 @@ public class NukeStatus{
 	public static StatusEffect irradiated;
 	/** Hit by an electromagnetic pulse: nearly stopped, weapons offline. */
 	public static StatusEffect empShock;
+	/** Frozen in time and disarmed: cannot move or shoot. */
+	public static StatusEffect temporalLock;
 
 	public static void load(){
 		irradiated = new StatusEffect("irradiated"){{
@@ -27,6 +29,16 @@ public class NukeStatus{
 			disarm = true;
 			effect = Fx.shootSmallSmoke;
 			effectChance = 0.1f;
+		}};
+
+		temporalLock = new StatusEffect("temporal-lock"){{
+			color = Color.valueOf("2b9bff");
+			speedMultiplier = 0f;
+			reloadMultiplier = 0f;
+			dragMultiplier = 5f;
+			disarm = true;
+			effect = Fx.freezing;
+			effectChance = 0.06f;
 		}};
 	}
 }

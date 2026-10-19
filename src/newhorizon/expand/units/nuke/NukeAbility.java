@@ -3,8 +3,11 @@ package newhorizon.expand.units.nuke;
 import arc.Core;
 import arc.util.Time;
 import mindustry.Vars;
+import mindustry.content.Blocks;
 import mindustry.entities.abilities.Ability;
 import mindustry.gen.Unit;
+import mindustry.world.Block;
+import mindustry.world.blocks.defense.Wall;
 
 /**
  * Makes a unit a nuke. It does nothing until it dies: whatever kills it (a shot, a command, running out of fuel, running into a
@@ -18,6 +21,25 @@ public class NukeAbility extends Ability{
 	public float fuel = 60f * 45f;
 
 	protected float age;
+
+	/** Which wall a wall nuke fills with: kept in the ability's data (which is saved with the unit) as the block's id; 0 means the default. */
+	public Block wallType(){
+		Block block = data > 0f ? Vars.content.block((int)data) : null;
+		return isWall(block) ? block : defaultWall();
+	}
+
+	public void wallType(Block block){
+		if(isWall(block)) data = block.id;
+	}
+
+	public static Block defaultWall(){
+		return Blocks.copperWall;
+	}
+
+	/** Only plain one-tile walls can be chosen. */
+	public static boolean isWall(Block block){
+		return block instanceof Wall && block.size == 1;
+	}
 
 	public NukeAbility(Warhead warhead, boolean active){
 		this.warhead = warhead;
