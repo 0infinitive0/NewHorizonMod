@@ -33,6 +33,7 @@ import mindustry.world.modules.ItemModule;
 import newhorizon.content.*;
 import newhorizon.content.blocks.DefenseBlock;
 import newhorizon.content.blocks.DistributionBlock;
+import newhorizon.content.chronos.ChronosFaction;
 import newhorizon.content.jade.JadeFaction;
 import newhorizon.expand.units.ai.gardener.GardenerMind;
 import newhorizon.expand.NHVars;
@@ -442,6 +443,7 @@ public class NewHorizon extends Mod{
 			Recipes.load();
 			NHBlocks.load();
 			JadeFaction.load();
+			ChronosFaction.load();
 			NHWeathers.load();
 			NHPlanets.load();
 			NHSectorPresents.load();
