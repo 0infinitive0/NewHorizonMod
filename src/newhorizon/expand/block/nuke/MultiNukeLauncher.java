@@ -314,11 +314,12 @@ public class MultiNukeLauncher extends NukeLauncher{
 			}
 			Draw.color();
 
+			//The ring turns with the heading, under the nukes so that the ones in the corners are not covered by it.
+			Draw.z(Layer.blockOver - 0.05f);
+			Draw.rect(topRegion, x, y, angle - 90f);
+
 			Draw.z(Layer.blockOver);
 			for(UnitPayload p : stored) p.draw();
-
-			Draw.z(Layer.blockOver + 0.1f);
-			Draw.rect(topRegion, x, y, angle - 90f);
 
 			if(loaded()){
 				Draw.z(Layer.blockOver + 0.2f);
