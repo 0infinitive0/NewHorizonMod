@@ -38,7 +38,7 @@ public abstract class Warhead{
 	public static Warhead
 		explosive, incendiary, radiation, emp,
 		psychic, gravity, spatial, shockwave, cluster, wall, temporal, infantry, overload,
-		laser, swarm;
+		laser, swarm, storm;
 	public static final Seq<Warhead> all = new Seq<>();
 
 	public final String name;
@@ -273,7 +273,7 @@ public abstract class Warhead{
 		laser = new Warhead("laser", Color.valueOf("f2f2f2"), 150f, 300f){
 			@Override
 			public void spawn(float x, float y, Team team, Unit nuke){
-				float start = Mathf.random(360f);
+				float start = nuke == null ? Mathf.random(360f) : (nuke.id * 97f) % 360f;
 				for(int i = 0; i < beams; i++){
 					NukeBullets.spinLaser.create(null, Team.derelict, x, y, start + i * 360f / beams);
 				}
@@ -290,6 +290,26 @@ public abstract class Warhead{
 			@Override
 			public void spawn(float x, float y, Team team, Unit nuke){
 				NukeBullets.swarmSpawner.create(null, team, x, y, 0f);
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+			}
+		};
+
+		//A tornado that drifts about for ten seconds: it drags units in, swings them round, carries them a short way and throws them outward,
+		//burning everything in reach and throwing the odd bolt of lightning. It hurts and moves everything, whichever side.
+		storm = new Warhead("storm", Color.valueOf("9bb7d4"), 170f, 0f){
+			@Override
+			public void visual(float x, float y){
+				NukeFx.pullRing.at(x, y, radius, color);
+			}
+
+			@Override
+			public void spawn(float x, float y, Team team, Unit nuke){
+				//Which way it drifts comes from the nuke, so that every side makes the same tornado.
+				float heading = nuke == null ? Mathf.random(360f) : (nuke.id * 137.5f) % 360f;
+				NukeBullets.tornado.create(null, Team.derelict, x, y, heading);
 			}
 
 			@Override

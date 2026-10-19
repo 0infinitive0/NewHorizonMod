@@ -11,6 +11,8 @@ public class NukeStatus{
 	public static StatusEffect empShock;
 	/** Frozen in time and disarmed: cannot move or shoot. */
 	public static StatusEffect temporalLock;
+	/** In a tornado: cannot walk or fly off on its own. */
+	public static StatusEffect tornadoCaught;
 
 	public static void load(){
 		irradiated = new StatusEffect("irradiated"){{
@@ -29,6 +31,13 @@ public class NukeStatus{
 			disarm = true;
 			effect = Fx.shootSmallSmoke;
 			effectChance = 0.1f;
+		}};
+
+		tornadoCaught = new StatusEffect("tornado-caught"){{
+			color = Color.valueOf("9bb7d4");
+			speedMultiplier = 0f;
+			show = false;
+			effect = Fx.none;
 		}};
 
 		temporalLock = new StatusEffect("temporal-lock"){{

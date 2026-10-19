@@ -7,6 +7,7 @@ import mindustry.entities.bullet.MissileBulletType;
 import newhorizon.expand.bullets.nuke.ForceZoneBulletType;
 import newhorizon.expand.bullets.nuke.SpinLaserBulletType;
 import newhorizon.expand.bullets.nuke.SwarmSpawnerBulletType;
+import newhorizon.expand.bullets.nuke.TornadoBulletType;
 import newhorizon.expand.bullets.nuke.ZoneBulletType;
 import newhorizon.expand.units.nuke.Warhead;
 
@@ -19,6 +20,8 @@ public class NukeBullets{
 	public static SpinLaserBulletType spinLaser;
 	public static BulletType swarmMissile;
 	public static SwarmSpawnerBulletType swarmSpawner;
+	/** The storm nuke's tornado. */
+	public static TornadoBulletType tornado;
 
 	public static void load(){
 		radiationZone = new ZoneBulletType(){{
@@ -101,6 +104,12 @@ public class NukeBullets{
 			waves = 3;
 			count = 120;
 			interval = 60f;
+		}};
+
+		tornado = new TornadoBulletType(){{
+			radius = 170f;
+			lifetime = 60f * 10f;
+			color = Color.valueOf("9bb7d4");
 		}};
 	}
 }
