@@ -34,6 +34,7 @@ import newhorizon.content.*;
 import newhorizon.content.blocks.DefenseBlock;
 import newhorizon.content.blocks.DistributionBlock;
 import newhorizon.content.chronos.ChronosFaction;
+import newhorizon.content.nuke.NukeContent;
 import newhorizon.content.jade.JadeFaction;
 import newhorizon.expand.units.ai.gardener.GardenerMind;
 import newhorizon.expand.NHVars;
@@ -444,6 +445,7 @@ public class NewHorizon extends Mod{
 			NHBlocks.load();
 			JadeFaction.load();
 			ChronosFaction.load();
+			NukeContent.load();
 			NHWeathers.load();
 			NHPlanets.load();
 			NHSectorPresents.load();

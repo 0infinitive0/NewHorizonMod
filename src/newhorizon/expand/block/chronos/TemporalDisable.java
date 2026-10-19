@@ -7,6 +7,7 @@ import arc.util.Time;
 import mindustry.game.EventType;
 import mindustry.gen.Building;
 import mindustry.world.blocks.defense.ForceProjector;
+import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.world.blocks.defense.turrets.Turret;
 import mindustry.world.blocks.power.PowerGenerator;
 import newhorizon.content.chronos.ChronosFx;
@@ -33,9 +34,19 @@ public class TemporalDisable{
 		return build != null && build.isValid() && (build.block instanceof Turret || build.block instanceof PowerGenerator || build.block instanceof ForceProjector);
 	}
 
+	/** What an electromagnetic pulse switches off: anything that runs on power, except cores. */
+	public static boolean canDisableAny(Building build){
+		return canDisable(build) || (build != null && build.isValid() && build.block.hasPower && !(build.block instanceof CoreBlock));
+	}
+
 	/** Switches the building off for {@code ticks}. A longer remaining time is kept. */
 	public static boolean disable(Building build, float ticks){
-		if(!canDisable(build)) return false;
+		return disable(build, ticks, false);
+	}
+
+	/** Like {@link #disable(Building, float)}; with {@code any} everything that runs on power can be switched off, not only turrets, generators and shields. */
+	public static boolean disable(Building build, float ticks, boolean any){
+		if(any ? !canDisableAny(build) : !canDisable(build)) return false;
 
 		float end = Time.time + ticks;
 		if(!until.containsKey(build) || until.get(build, 0f) < end) until.put(build, end);

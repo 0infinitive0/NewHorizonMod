@@ -11,6 +11,7 @@ import newhorizon.content.blocks.ProductionBlocks;
 import newhorizon.content.blocks.SpecialBlock;
 import newhorizon.content.blocks.TurretBlock;
 import newhorizon.content.chronos.ChronosTechTree;
+import newhorizon.content.nuke.NukeTechTree;
 import newhorizon.content.jade.JadeTechTree;
 import newhorizon.expand.units.unitType.NHUnitType;
 
@@ -60,6 +61,7 @@ public class NHTechTree{
 
 			JadeTechTree.load();
 			ChronosTechTree.load();
+			NukeTechTree.load();
 
 			node(NHBlocks.zetaGenerator, () -> {
 				node(NHBlocks.hyperGenerator);
@@ -324,5 +326,6 @@ public class NHTechTree{
 
 		//Chronos is available on every planet.
 		ChronosTechTree.loadOtherPlanets();
+		NukeTechTree.loadOtherPlanets();
 	}
 }
