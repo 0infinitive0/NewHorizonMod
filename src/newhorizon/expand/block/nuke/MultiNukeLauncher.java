@@ -33,14 +33,14 @@ import newhorizon.content.nuke.NukeUnits;
  * one. Everything else works like the single launcher: the same menu, the same map target, and a pilot overrides the target, holds fire
  * to arm and launch, and lets go to disarm (until the salvo has started: once the first nuke is away, the rest follow).
  *
- * <p>The magazine starts with {@link #slots} slots; each launcher can be upgraded from its menu, a slot at a time, for {@link #upgradeCost}
+ * <p>The magazine starts with {@link #slots} slots; each launcher can be upgraded from its menu, a slot at a time, for {@link #upgradeCosts}
  * out of the core, up to {@link #maxSlots}. The nukes sit in a grid, {@link #columns} across.
  */
 public class MultiNukeLauncher extends NukeLauncher{
 	/** How many nukes fit in a new launcher, and the most an upgraded one can hold. */
 	public int slots = 4, maxSlots = 20;
-	/** What one more slot costs, taken from the core. */
-	public ItemStack[] upgradeCost = {};
+	/** What each upgrade costs, taken from the core: entry 0 buys the first extra slot, and each tier asks for more than the one before. */
+	public ItemStack[][] upgradeCosts = {};
 	/** Nukes side by side in the magazine, and the distance between neighbours across and along the heading. */
 	public int columns = 5;
 	public float slotSpacing = 8.5f, rowSpacing = 10f;
@@ -133,16 +133,26 @@ public class MultiNukeLauncher extends NukeLauncher{
 			return Vars.state.rules.infiniteResources || (team.core() != null && team.core().items.has(stack.item, stack.amount));
 		}
 
+		/** Whether there is another tier to buy. */
+		public boolean upgradable(){
+			return capacity < maxSlots && capacity - slots < upgradeCosts.length;
+		}
+
+		/** The price of the next slot. */
+		public ItemStack[] nextCost(){
+			return upgradeCosts[capacity - slots];
+		}
+
 		public boolean canUpgrade(){
-			if(capacity >= maxSlots) return false;
+			if(!upgradable()) return false;
 			if(Vars.state.rules.infiniteResources) return true;
-			return team.core() != null && team.core().items.has(upgradeCost);
+			return team.core() != null && team.core().items.has(nextCost());
 		}
 
 		/** Adds a slot and takes its price from the core. Everyone runs it, so everyone takes the price from their copy of the core. */
 		public void upgrade(){
 			if(!canUpgrade()) return;
-			if(!Vars.state.rules.infiniteResources) team.core().items.remove(upgradeCost);
+			if(!Vars.state.rules.infiniteResources) team.core().items.remove(nextCost());
 			capacity++;
 		}
 
@@ -291,12 +301,12 @@ public class MultiNukeLauncher extends NukeLauncher{
 					if(shown[0] == capacity) return;
 					shown[0] = capacity;
 					c.clear();
-					if(capacity >= maxSlots){
+					if(!upgradable()){
 						c.add(Core.bundle.format("nh.nuke.upgrade.max", capacity));
 						return;
 					}
 					c.add(Core.bundle.format("nh.nuke.upgrade.info", capacity, capacity + 1)).padRight(10f);
-					for(ItemStack stack : upgradeCost){
+					for(ItemStack stack : nextCost()){
 						c.image(stack.item.uiIcon).size(24f);
 						c.label(() -> (affords(stack) ? "" : "[scarlet]") + stack.amount).padLeft(3f).padRight(8f);
 					}

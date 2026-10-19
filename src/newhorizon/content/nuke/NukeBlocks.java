@@ -2,6 +2,7 @@ package newhorizon.content.nuke;
 
 import mindustry.content.Items;
 import mindustry.type.Category;
+import mindustry.type.ItemStack;
 import mindustry.world.Block;
 import mindustry.world.blocks.units.UnitFactory;
 import mindustry.world.meta.BuildVisibility;
@@ -70,7 +71,13 @@ public class NukeBlocks{
 			consumePower(14f);
 			slots = 4;
 			maxSlots = 20;
-			upgradeCost = with(Items.silicon, 80, Items.graphite, 60, Items.thorium, 50, Items.surgeAlloy, 15);
+			//Every slot costs more than the one before, and from the fifth upgrade on phase fabric is wanted too.
+			upgradeCosts = new ItemStack[maxSlots - slots][];
+			for(int i = 0; i < upgradeCosts.length; i++){
+				upgradeCosts[i] = i < 4 ?
+					with(Items.silicon, 80 + 25 * i, Items.graphite, 60 + 20 * i, Items.thorium, 50 + 20 * i, Items.surgeAlloy, 15 + 8 * i) :
+					with(Items.silicon, 80 + 25 * i, Items.graphite, 60 + 20 * i, Items.thorium, 50 + 20 * i, Items.surgeAlloy, 15 + 8 * i, Items.phaseFabric, 10 * (i - 3));
+			}
 		}};
 	}
 }
