@@ -40,6 +40,7 @@ public class NukeBlocks{
 				new UnitFactory.UnitPlan(NukeUnits.cluster, 60f * 30f, with(Items.silicon, 80, Items.graphite, 120, Items.thorium, 40)),
 				new UnitFactory.UnitPlan(NukeUnits.wall, 60f * 25f, with(Items.silicon, 50, Items.graphite, 80, Items.thorium, 30)),
 				new UnitFactory.UnitPlan(NukeUnits.temporal, 60f * 40f, with(Items.silicon, 100, Items.phaseFabric, 40, Items.thorium, 40)),
+				new UnitFactory.UnitPlan(NukeUnits.overload, 60f * 40f, with(Items.silicon, 100, Items.graphite, 120, Items.thorium, 50, Items.surgeAlloy, 20)),
 				new UnitFactory.UnitPlan(NukeUnits.infantry, 60f * 25f, with(Items.silicon, 90, Items.graphite, 60, Items.thorium, 30))
 			);
 		}};

@@ -3,6 +3,7 @@ package newhorizon.content.nuke;
 import arc.graphics.Color;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
+import mindustry.Vars;
 import mindustry.ai.UnitCommand;
 import mindustry.entities.units.AIController;
 import mindustry.gen.PayloadUnit;
@@ -10,9 +11,11 @@ import mindustry.gen.Payloadc;
 import mindustry.gen.Unit;
 import mindustry.gen.UnitEntity;
 import mindustry.type.UnitType;
+import mindustry.world.Block;
 import newhorizon.expand.units.nuke.DetonateAI;
 import newhorizon.expand.units.nuke.NukeAI;
 import newhorizon.expand.units.nuke.NukeAbility;
+import newhorizon.expand.units.nuke.WallStance;
 import newhorizon.expand.units.nuke.Warhead;
 import newhorizon.expand.units.unitType.NHUnitType;
 
@@ -36,10 +39,14 @@ public class NukeUnits{
 		cluster, clusterActive,
 		wall, wallActive,
 		temporal, temporalActive,
-		infantry, infantryActive;
+		infantry, infantryActive,
+		overload, overloadActive;
 
 	/** The Strike command (the default of an active nuke) flies it at the target; Detonate sets it off at once. */
 	public static UnitCommand strikeCommand, detonateCommand;
+
+	/** One stance per wall a wall nuke can be set to. */
+	public static final Seq<WallStance> wallStances = new Seq<>();
 
 	/** Inactive nukes, in the order the builder lists them. */
 	public static final Seq<NHUnitType> inactive = new Seq<>();
@@ -50,6 +57,12 @@ public class NukeUnits{
 		inactive.clear();
 		counterpart.clear();
 		warheads.clear();
+		wallStances.clear();
+		for(Block block : Vars.content.blocks()){
+			if(NukeAbility.choosable(block)) wallStances.add(new WallStance(block));
+		}
+		//Only one wall can be picked at a time.
+		for(WallStance a : wallStances) for(WallStance b : wallStances) if(a != b) a.incompatibleStances.add(b);
 
 		strikeCommand = new UnitCommand("nh-nuke-strike", "commandAttack", u -> new NukeAI());
 		strikeCommand.switchToMove = false;
@@ -93,7 +106,10 @@ public class NukeUnits{
 		pair(cluster, clusterActive);
 		pair(wall, wallActive);
 		pair(temporal, temporalActive);
+		overload = nuke(Warhead.overload, false);
+		overloadActive = nuke(Warhead.overload, true);
 		pair(infantry, infantryActive);
+		pair(overload, overloadActive);
 	}
 
 	private static void pair(NHUnitType off, NHUnitType on){
@@ -147,11 +163,16 @@ public class NukeUnits{
 			}
 
 			if(warhead == Warhead.infantry){
-				payloadCapacity = tilesize * tilesize * 12f;
+				payloadCapacity = tilesize * tilesize * 60f;
 				//Passengers are loaded before it is armed and cannot be changed in flight.
 				if(!active){
 					commands = Seq.with(UnitCommand.moveCommand, UnitCommand.loadUnitsCommand, UnitCommand.unloadPayloadCommand);
 				}
+			}
+
+			//The wall is chosen with the unit's stance buttons, until the nuke is armed.
+			if(warhead == Warhead.wall && !active){
+				stances = new Seq<>(wallStances);
 			}
 
 			abilities.add(new NukeAbility(warhead, active));

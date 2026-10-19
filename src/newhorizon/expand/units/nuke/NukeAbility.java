@@ -4,10 +4,14 @@ import arc.Core;
 import arc.util.Time;
 import mindustry.Vars;
 import mindustry.content.Blocks;
+import mindustry.ai.types.CommandAI;
 import mindustry.entities.abilities.Ability;
 import mindustry.gen.Unit;
 import mindustry.world.Block;
+import mindustry.world.blocks.defense.Door;
 import mindustry.world.blocks.defense.Wall;
+import mindustry.world.meta.BuildVisibility;
+import newhorizon.content.nuke.NukeUnits;
 
 /**
  * Makes a unit a nuke. It does nothing until it dies: whatever kills it (a shot, a command, running out of fuel, running into a
@@ -21,6 +25,7 @@ public class NukeAbility extends Ability{
 	public float fuel = 60f * 45f;
 
 	protected float age;
+	protected WallStance appliedStance;
 
 	/** Which wall a wall nuke fills with: kept in the ability's data (which is saved with the unit) as the block's id; 0 means the default. */
 	public Block wallType(){
@@ -41,6 +46,11 @@ public class NukeAbility extends Ability{
 		return block instanceof Wall && block.size == 1;
 	}
 
+	/** The walls offered as stances: one-tile walls that can be built, without doors (a door is not a wall to fill a field with). */
+	public static boolean choosable(Block block){
+		return isWall(block) && !(block instanceof Door) && block.buildVisibility == BuildVisibility.shown;
+	}
+
 	public NukeAbility(Warhead warhead, boolean active){
 		this.warhead = warhead;
 		this.active = active;
@@ -48,10 +58,30 @@ public class NukeAbility extends Ability{
 
 	@Override
 	public void update(Unit unit){
+		if(warhead == Warhead.wall && !active) syncWallStance(unit);
 		if(!active || Vars.net.client()) return;
 
 		age += Time.delta;
 		if(age >= fuel || (unit.isPlayer() && unit.isShooting)) detonate(unit);
+	}
+
+	/**
+	 * The wall is picked with the stance buttons of the selected unit. When a different one is switched on, the nuke takes it. Between
+	 * switches anything else may change the wall, so this does not hold the nuke to the stance.
+	 */
+	protected void syncWallStance(Unit unit){
+		if(!(unit.controller() instanceof CommandAI)) return;
+		CommandAI commander = (CommandAI)unit.controller();
+		for(WallStance stance : NukeUnits.wallStances){
+			if(commander.hasStance(stance)){
+				if(stance != appliedStance){
+					appliedStance = stance;
+					wallType(stance.block);
+				}
+				return;
+			}
+		}
+		appliedStance = null;
 	}
 
 	/** Detonates an active nuke. Nothing for an inactive one. */

@@ -8,7 +8,6 @@ import arc.math.Angles;
 import arc.math.Mathf;
 import arc.math.geom.Vec2;
 import arc.scene.ui.layout.Table;
-import arc.struct.Seq;
 import arc.util.Time;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
@@ -28,9 +27,7 @@ import mindustry.graphics.Pal;
 import mindustry.type.UnitType;
 import mindustry.ui.Bar;
 import mindustry.ui.Styles;
-import mindustry.world.Block;
 import mindustry.world.blocks.ControlBlock;
-import mindustry.world.blocks.ItemSelection;
 import mindustry.world.blocks.payloads.Payload;
 import mindustry.world.blocks.payloads.PayloadBlock;
 import mindustry.world.blocks.payloads.UnitPayload;
@@ -38,9 +35,6 @@ import mindustry.world.meta.BlockGroup;
 import mindustry.world.meta.Env;
 import newhorizon.content.nuke.NukeFx;
 import newhorizon.content.nuke.NukeUnits;
-import newhorizon.expand.units.nuke.NukeAI;
-import newhorizon.expand.units.nuke.NukeAbility;
-import newhorizon.expand.units.nuke.Warhead;
 
 import static mindustry.Vars.tilesize;
 
@@ -81,7 +75,6 @@ public class NukeLauncher extends PayloadBlock{
 
 		config(Vec2.class, (NukeLauncherBuild b, Vec2 target) -> b.setTarget(target));
 		config(Boolean.class, (NukeLauncherBuild b, Boolean armed) -> b.armSwitch = armed);
-		config(Block.class, (NukeLauncherBuild b, Block wall) -> b.chooseWall(wall));
 		config(Integer.class, (NukeLauncherBuild b, Integer command) -> {
 			if(command == 0) b.launch();
 			else if(command == 1) b.hasTarget = false;
@@ -134,25 +127,6 @@ public class NukeLauncher extends PayloadBlock{
 			unit.tile(this);
 			unit.team(team);
 			return (Unit)unit;
-		}
-
-		/** Whether the loaded nuke is a wall nuke that can still be set to another wall: only while it is inactive. */
-		public boolean wallChoosable(){
-			Unit u = loadedUnit();
-			NukeAbility ability = u == null ? null : NukeAI.abilityOf(u);
-			return ability != null && ability.warhead == Warhead.wall && !ability.active;
-		}
-
-		public Block chosenWall(){
-			Unit u = loadedUnit();
-			NukeAbility ability = u == null ? null : NukeAI.abilityOf(u);
-			return ability == null ? NukeAbility.defaultWall() : ability.wallType();
-		}
-
-		/** Sets the wall a loaded, inactive wall nuke will fill with. Only one-tile walls are accepted. */
-		public void chooseWall(Block wall){
-			if(!wallChoosable() || !NukeAbility.isWall(wall)) return;
-			NukeAI.abilityOf(loadedUnit()).wallType(wall);
 		}
 
 		public Unit loadedUnit(){
@@ -283,13 +257,6 @@ public class NukeLauncher extends PayloadBlock{
 				t.defaults().left().padBottom(4f);
 
 				t.label(() -> statusText()).width(260f).wrap().row();
-
-				//A wall nuke can be set to the wall it will fill with, until it is armed.
-				t.collapser(w -> {
-					w.add(Core.bundle.get("nh.nuke.wall")).left().row();
-					Seq<Block> walls = Vars.content.blocks().select(b -> NukeAbility.isWall(b) && (b.unlockedNow() || b == NukeAbility.defaultWall()) && !b.isHidden());
-					ItemSelection.buildTable(w, walls, this::chosenWall, wall -> configure(wall), 6);
-				}, true, () -> wallChoosable()).growX().row();
 
 				t.table(row -> {
 					row.defaults().size(124f, 40f).pad(2f);

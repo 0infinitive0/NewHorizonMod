@@ -37,7 +37,7 @@ public abstract class Warhead{
 
 	public static Warhead
 		explosive, incendiary, radiation, emp,
-		psychic, gravity, spatial, shockwave, cluster, wall, temporal, infantry;
+		psychic, gravity, spatial, shockwave, cluster, wall, temporal, infantry, overload;
 	public static final Seq<Warhead> all = new Seq<>();
 
 	public final String name;
@@ -214,6 +214,36 @@ public abstract class Warhead{
 			}
 		};
 
+		//Every unit in reach explodes, whichever side it is on, in a blast of its own that does five times its health in damage.
+		overload = new Warhead("overload", Color.valueOf("ff4d6d"), 240f, 0f){
+			@Override
+			public void visual(float x, float y){
+				NukeFx.empPulse.at(x, y, radius, color);
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+				//What each unit is, as it is when the nuke goes off: the blasts that follow change all of it.
+				Seq<Unit> units = new Seq<>();
+				Units.nearby(x - radius, y - radius, radius * 2f, radius * 2f, u -> {
+					if(u != nuke && !u.dead() && u.within(x, y, radius + u.hitSize / 2f)) units.add(u);
+				});
+				float[][] spec = new float[units.size][];
+				for(int i = 0; i < units.size; i++){
+					Unit u = units.get(i);
+					spec[i] = new float[]{u.x, u.y, overloadRadius(u), u.health * 5f};
+				}
+
+				for(int i = 0; i < units.size; i++){
+					Unit u = units.get(i);
+					if(!u.dead()) u.kill();
+					float[] s = spec[i];
+					NukeFx.blast.at(s[0], s[1], s[2], color);
+					if(s[3] > 0f) Damage.damage(Team.derelict, s[0], s[1], s[2], s[3], true, true, true);
+				}
+			}
+		};
+
 		//Carries units, which come out where it goes off. It hurts nothing.
 		infantry = new Warhead("infantry", Color.valueOf("57b36b"), 120f, 0f){
 			@Override
@@ -276,22 +306,21 @@ public abstract class Warhead{
 		NukeFx.empPulse.at(u.x, u.y, u.hitSize * 2f, to.color);
 	}
 
-	/** Sends the unit to a random place it can stand on. If it finds none it stays. */
+	/** Sends the unit to a random place on the map. Anywhere will do: a walking unit can land in the water. */
 	public static boolean scatter(Unit u, Color color){
-		for(int i = 0; i < 60; i++){
-			int tx = Mathf.random(1, Vars.world.width() - 2), ty = Mathf.random(1, Vars.world.height() - 2);
-			Tile tile = Vars.world.tile(tx, ty);
-			if(tile == null) continue;
-			if(!u.type.flying){
-				if(!u.canPass(tx, ty)) continue;
-				if(u.type.canDrown && !u.type.hovering && tile.floor().isDeep()) continue;
-			}
-			NukeFx.empPulse.at(u.x, u.y, u.hitSize * 3f, color);
-			u.set(tile.worldx(), tile.worldy());
-			u.vel.setZero();
-			NukeFx.empPulse.at(u.x, u.y, u.hitSize * 3f, color);
-			return true;
-		}
-		return false;
+		int tx = Mathf.random(1, Vars.world.width() - 2), ty = Mathf.random(1, Vars.world.height() - 2);
+		Tile tile = Vars.world.tile(tx, ty);
+		if(tile == null) return false;
+
+		NukeFx.empPulse.at(u.x, u.y, u.hitSize * 3f, color);
+		u.set(tile.worldx(), tile.worldy());
+		u.vel.setZero();
+		NukeFx.empPulse.at(u.x, u.y, u.hitSize * 3f, color);
+		return true;
+	}
+
+	/** The radius of the blast a unit of this size makes in an overload nuke: always much smaller than the nuke's. */
+	public static float overloadRadius(Unit u){
+		return Mathf.clamp(u.hitSize * 2.2f + 20f, 36f, 100f);
 	}
 }
