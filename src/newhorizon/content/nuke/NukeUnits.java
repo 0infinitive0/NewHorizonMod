@@ -40,7 +40,9 @@ public class NukeUnits{
 		wall, wallActive,
 		temporal, temporalActive,
 		infantry, infantryActive,
-		overload, overloadActive;
+		overload, overloadActive,
+		laser, laserActive,
+		swarm, swarmActive;
 
 	/** The Strike command (the default of an active nuke) flies it at the target; Detonate sets it off at once. */
 	public static UnitCommand strikeCommand, detonateCommand;
@@ -108,8 +110,14 @@ public class NukeUnits{
 		pair(temporal, temporalActive);
 		overload = nuke(Warhead.overload, false);
 		overloadActive = nuke(Warhead.overload, true);
+		laser = nuke(Warhead.laser, false);
+		laserActive = nuke(Warhead.laser, true);
+		swarm = nuke(Warhead.swarm, false);
+		swarmActive = nuke(Warhead.swarm, true);
 		pair(infantry, infantryActive);
 		pair(overload, overloadActive);
+		pair(laser, laserActive);
+		pair(swarm, swarmActive);
 	}
 
 	private static void pair(NHUnitType off, NHUnitType on){

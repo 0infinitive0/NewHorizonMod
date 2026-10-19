@@ -37,7 +37,8 @@ public abstract class Warhead{
 
 	public static Warhead
 		explosive, incendiary, radiation, emp,
-		psychic, gravity, spatial, shockwave, cluster, wall, temporal, infantry, overload;
+		psychic, gravity, spatial, shockwave, cluster, wall, temporal, infantry, overload,
+		laser, swarm;
 	public static final Seq<Warhead> all = new Seq<>();
 
 	public final String name;
@@ -56,6 +57,13 @@ public abstract class Warhead{
 	/** What the active blast looks like. Runs on every side. */
 	public void visual(float x, float y){
 		NukeFx.blast.at(x, y, radius, color);
+	}
+
+	/**
+	 * Lingering things the blast leaves (patches, pulls, beams, missiles): bullets, which every side simulates for itself, so this runs on
+	 * every side, unlike {@link #detonate}. {@code nuke} is the dead unit.
+	 */
+	public void spawn(float x, float y, Team team, Unit nuke){
 	}
 
 	/** The whole active blast, server side: damage to everything in reach, then the kind's own effect. {@code nuke} is the dead unit. */
@@ -86,6 +94,10 @@ public abstract class Warhead{
 					if(u.within(x, y, radius + u.hitSize / 2f)) u.apply(StatusEffects.burning, 60f * 8f);
 				});
 				burnGround(x, y, radius * 0.85f);
+			}
+
+			@Override
+			public void spawn(float x, float y, Team team, Unit nuke){
 				zone(NukeBullets.incendiaryZone, x, y);
 			}
 		};
@@ -93,6 +105,10 @@ public abstract class Warhead{
 		radiation = new Warhead("radiation", Color.valueOf("9bff4a"), 170f, 650f){
 			@Override
 			public void special(float x, float y, Team team, Unit nuke){
+			}
+
+			@Override
+			public void spawn(float x, float y, Team team, Unit nuke){
 				zone(NukeBullets.radiationZone, x, y);
 			}
 		};
@@ -139,8 +155,13 @@ public abstract class Warhead{
 			}
 
 			@Override
-			public void detonate(float x, float y, Team team, Unit nuke){
+			public void spawn(float x, float y, Team team, Unit nuke){
 				NukeBullets.gravityZone.create(null, Team.derelict, x, y, 0f);
+			}
+
+			@Override
+			public void detonate(float x, float y, Team team, Unit nuke){
+				//Nothing yet: the blast comes when the pull is over.
 			}
 
 			@Override
@@ -174,6 +195,10 @@ public abstract class Warhead{
 		shockwave = new Warhead("shockwave", Color.valueOf("c8e8ff"), 280f, 700f){
 			@Override
 			public void special(float x, float y, Team team, Unit nuke){
+			}
+
+			@Override
+			public void spawn(float x, float y, Team team, Unit nuke){
 				NukeBullets.shockZone.create(null, Team.derelict, x, y, 0f);
 			}
 		};
@@ -244,6 +269,34 @@ public abstract class Warhead{
 			}
 		};
 
+		//Four meltdown lasers from the centre, turning slowly through a full circle. They burn everything in their way, whichever side.
+		laser = new Warhead("laser", Color.valueOf("f2f2f2"), 150f, 300f){
+			@Override
+			public void spawn(float x, float y, Team team, Unit nuke){
+				float start = Mathf.random(360f);
+				for(int i = 0; i < beams; i++){
+					NukeBullets.spinLaser.create(null, Team.derelict, x, y, start + i * 360f / beams);
+				}
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+			}
+		};
+
+		//Three waves of homing missiles, a second apart, each wave a ring of them. They belong to the nuke's team and home in on its enemies:
+		//homing only looks for enemies, which a neutral shot does not have.
+		swarm = new Warhead("swarm", Color.valueOf("ffd84d"), 130f, 200f){
+			@Override
+			public void spawn(float x, float y, Team team, Unit nuke){
+				NukeBullets.swarmSpawner.create(null, team, x, y, 0f);
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+			}
+		};
+
 		//Carries units, which come out where it goes off. It hurts nothing.
 		infantry = new Warhead("infantry", Color.valueOf("57b36b"), 120f, 0f){
 			@Override
@@ -268,6 +321,9 @@ public abstract class Warhead{
 			}
 		};
 	}
+
+	/** How many lasers the laser nuke fires. */
+	public static final int beams = 4;
 
 	/** How long the temporal nuke's freeze lasts: three minutes. */
 	public static final float lockTime = 60f * 60f * 3f;

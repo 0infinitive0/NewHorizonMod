@@ -37,6 +37,9 @@ public class NukeBlast{
 			Sounds.explosion.at(x, y, 1.1f, 1f);
 		}
 
+		//Bullets are simulated on every side, so what a blast leaves behind is made everywhere; the damage and the rest only on the server.
+		if(active) warhead.spawn(x, y, unit.team, unit);
+
 		if(Vars.net.client()) return;
 
 		if(active){
