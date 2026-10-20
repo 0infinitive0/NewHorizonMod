@@ -2,6 +2,7 @@ package newhorizon.expand.units.nuke;
 
 import arc.Core;
 import arc.math.Angles;
+import arc.math.Mathf;
 import arc.math.geom.Vec2;
 import arc.util.Time;
 import mindustry.Vars;
@@ -14,76 +15,99 @@ import newhorizon.content.nuke.NukeFx;
 import newhorizon.content.nuke.NukeUnits;
 
 /**
- * What makes a ship a mobile launcher: it holds up to {@link #slots} inactive nukes (loaded by the Dock command) and launches them, armed,
- * one at a time. The nukes are kept in the ability's saved number: five bits for the kind of each (its place in the list of inactive
- * nukes) and three for how many there are, so they survive a save. What a nuke had been set up with (a wall type, passengers) is not kept.
+ * What makes a ship a mobile launcher. It works like a Nuke Launcher: it holds one nuke, which an inactive nuke gets in by moving onto the
+ * ship, arms it (the Arm command, or a pilot holding fire; it takes a few seconds and can be undone with Disarm) and launches it at a
+ * target (the Launch command) or along the way the ship points (a pilot who keeps firing once it is armed). After a launch the ship needs a
+ * while to reload.
+ *
+ * <p>What is aboard is kept in the ability's saved number, so it survives a save: the kind of nuke (its place in the list of inactive
+ * nukes), whether it is armed, and whether there is one at all. What a nuke had been set up with (a wall type, passengers) is not kept.
  */
 public class NukeCarrierAbility extends Ability{
-	public static final int maxSlots = 4;
+	/** Ticks to arm (or disarm from fully armed) and to reload after a launch. */
+	public float armTime = 150f, launchDelay = 240f;
 
-	public int slots = maxSlots;
-	/** Ticks between launches. */
-	public float launchDelay = 90f;
+	/** The part of the loaded nuke that is armed, 0 to 1. Not saved: a ship that is loaded from a save is armed or not. */
+	public float armProgress;
+	/** What the ship has been told: whether to arm. */
+	public boolean wantArmed;
 	protected float timer;
 
-	public int count(){
-		return ((int)data >> 20) & 7;
+	public boolean loaded(){
+		return ((int)data & 64) != 0;
 	}
 
-	public boolean free(){
-		return count() < slots;
+	public boolean armed(){
+		return loaded() && ((int)data & 32) != 0;
 	}
 
-	/** The kind of the nuke in a slot. */
-	public UnitType type(int slot){
-		int index = ((int)data >> (slot * 5)) & 31;
+	/** The kind of the nuke aboard, in its inactive form. */
+	public UnitType type(){
+		if(!loaded()) return null;
+		int index = (int)data & 31;
 		return index < NukeUnits.inactive.size ? NukeUnits.inactive.get(index) : null;
 	}
 
-	/** Takes a nuke on board. Returns false if it is full or this is not an inactive nuke. */
+	public boolean free(){
+		return !loaded();
+	}
+
+	/** Takes a nuke on board. Returns false if there is one already or this is not an inactive nuke. */
 	public boolean load(UnitType inactive){
 		int index = NukeUnits.inactive.indexOf(t -> t == inactive);
-		if(index < 0 || index > 31 || !free()) return false;
-		int packed = (int)data, c = count();
-		packed |= index << (c * 5);
-		packed = (packed & ~(7 << 20)) | ((c + 1) << 20);
-		data = packed;
+		if(index < 0 || index > 31 || loaded()) return false;
+		data = 64 | index;
+		armProgress = 0f;
+		wantArmed = false;
 		return true;
 	}
 
-	/** Takes the last nuke off, or null if there is none. */
-	protected UnitType pop(){
-		int c = count();
-		if(c == 0) return null;
-		UnitType type = type(c - 1);
-		int packed = (int)data;
-		packed &= ~(31 << ((c - 1) * 5));
-		packed = (packed & ~(7 << 20)) | ((c - 1) << 20);
-		data = packed;
-		return type;
+	/** Takes the nuke off, whatever it was doing. */
+	protected void unload(){
+		data = 0f;
+		armProgress = 0f;
+		wantArmed = false;
 	}
 
 	public boolean ready(){
-		return timer <= 0f && count() > 0;
+		return armed() && timer <= 0f;
 	}
 
 	@Override
 	public void update(Unit unit){
 		timer = Math.max(0f, timer - Time.delta);
-		//A pilot launches along the way the ship points by firing.
-		if(unit.isPlayer() && unit.isShooting && ready()) launch(unit, null);
+		if(Vars.net.client()) return;
+
+		if(!loaded()){
+			armProgress = 0f;
+			return;
+		}
+
+		//A pilot holds fire to arm and launch, and lets go to disarm, like at a launcher.
+		if(unit.isPlayer()) wantArmed = unit.isShooting;
+
+		armProgress = Mathf.approach(armProgress, wantArmed ? 1f : 0f, Time.delta / armTime);
+		int bits = (int)data;
+		if(armProgress >= 1f && (bits & 32) == 0){
+			data = bits | 32;
+			NukeFx.armed.at(unit.x, unit.y);
+		}else if(armProgress <= 0f && (bits & 32) != 0){
+			data = bits & ~32;
+		}
+
+		if(unit.isPlayer() && wantArmed && ready()) launch(unit, null);
 	}
 
-	/** Launches the last nuke, armed, at the target (or straight ahead if there is none). Server side. Returns whether one went. */
+	/** Launches the nuke, armed, at the target (or straight ahead if there is none). Server side. Returns whether it went. */
 	public boolean launch(Unit ship, Vec2 aim){
 		if(Vars.net.client() || ship.dead() || !ready()) return false;
 		//An enemy cloak hides its area from launchers.
 		if(aim != null && NukeDefense.cloaked(ship.team, aim.x, aim.y)) return false;
-		UnitType next = type(count() - 1);
-		UnitType active = next == null ? null : NukeUnits.counterpart(next);
+		UnitType inactive = type();
+		UnitType active = inactive == null ? null : NukeUnits.counterpart(inactive);
 		if(active == null || !Units.canCreate(ship.team, active)) return false;
 
-		pop();
+		unload();
 		float angle = aim != null ? ship.angleTo(aim.x, aim.y) : ship.rotation;
 		Unit nuke = active.create(ship.team);
 		nuke.set(ship.x + Angles.trnsx(angle, ship.hitSize / 2f), ship.y + Angles.trnsy(angle, ship.hitSize / 2f));
@@ -98,10 +122,20 @@ public class NukeCarrierAbility extends Ability{
 		return true;
 	}
 
+	/** Whether this unit has this ability, and the ability. */
+	public static NukeCarrierAbility of(Unit unit){
+		for(Ability a : unit.abilities){
+			if(a instanceof NukeCarrierAbility) return (NukeCarrierAbility)a;
+		}
+		return null;
+	}
+
 	@Override
 	public Ability copy(){
 		NukeCarrierAbility copy = (NukeCarrierAbility)super.copy();
 		copy.timer = 0f;
+		copy.armProgress = 0f;
+		copy.wantArmed = false;
 		return copy;
 	}
 

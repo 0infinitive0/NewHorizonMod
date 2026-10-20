@@ -17,7 +17,6 @@ import mindustry.ai.types.CommandAI;
 import mindustry.gen.UnitWaterMove;
 import newhorizon.expand.units.nuke.ArmAI;
 import newhorizon.expand.units.nuke.CarrierAI;
-import newhorizon.expand.units.nuke.DockAI;
 import newhorizon.expand.units.nuke.NukeCarrierAbility;
 import newhorizon.expand.units.nuke.DetonateAI;
 import newhorizon.expand.units.nuke.MiniNukeAI;
@@ -69,7 +68,7 @@ public class NukeUnits{
 	public static NHUnitType carrier;
 
 	/** The Strike command (the default of an active nuke) flies it at the target; Detonate sets it off at once. */
-	public static UnitCommand strikeCommand, detonateCommand, armCommand, dockCommand, carrierLaunchCommand;
+	public static UnitCommand strikeCommand, detonateCommand, armCommand, carrierArmCommand, carrierDisarmCommand, carrierLaunchCommand;
 
 	/** One stance per wall a wall nuke can be set to. */
 	public static final Seq<WallStance> wallStances = new Seq<>();
@@ -96,10 +95,12 @@ public class NukeUnits{
 		//An inactive nuke can arm itself: it turns active where it is, and the player then sends it off with the Strike command.
 		armCommand = new UnitCommand("nh-nuke-arm", "power", u -> new ArmAI());
 		armCommand.switchToMove = false;
-		//An inactive nuke flies to the nearest carrier ship with room; a carrier fires one nuke at each target it is given.
-		dockCommand = new UnitCommand("nh-nuke-dock", "download", u -> new DockAI());
-		dockCommand.switchToMove = false;
-		carrierLaunchCommand = new UnitCommand("nh-carrier-launch", "commandAttack", u -> new CarrierAI());
+		//A carrier ship works like a launcher: arm the nuke aboard (or disarm it), and launch it at a target.
+		carrierArmCommand = new UnitCommand("nh-carrier-arm", "power", u -> new CarrierAI(CarrierAI.Mode.arm));
+		carrierArmCommand.switchToMove = false;
+		carrierDisarmCommand = new UnitCommand("nh-carrier-disarm", "cancel", u -> new CarrierAI(CarrierAI.Mode.disarm));
+		carrierDisarmCommand.switchToMove = false;
+		carrierLaunchCommand = new UnitCommand("nh-carrier-launch", "commandAttack", u -> new CarrierAI(CarrierAI.Mode.launch));
 		carrierLaunchCommand.switchToMove = false;
 		carrierLaunchCommand.resetTarget = false;
 
@@ -199,7 +200,7 @@ public class NukeUnits{
 			waveTrailX = 9f;
 			waveTrailY = -22f;
 			trailScl = 1.8f;
-			commands = Seq.with(UnitCommand.moveCommand, carrierLaunchCommand);
+			commands = Seq.with(UnitCommand.moveCommand, carrierArmCommand, carrierDisarmCommand, carrierLaunchCommand);
 			defaultCommand = UnitCommand.moveCommand;
 			abilities.add(new NukeCarrierAbility());
 		}};
@@ -256,7 +257,7 @@ public class NukeUnits{
 				engineSize = 2.6f;
 				aiController = AIController::new;
 				//It can also fly into a launcher (or any payload block that takes it), and arm itself.
-				commands = Seq.with(UnitCommand.moveCommand, UnitCommand.enterPayloadCommand, armCommand, dockCommand);
+				commands = Seq.with(UnitCommand.moveCommand, UnitCommand.enterPayloadCommand, armCommand);
 				defaultCommand = UnitCommand.moveCommand;
 			}
 

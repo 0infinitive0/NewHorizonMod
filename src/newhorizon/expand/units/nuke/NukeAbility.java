@@ -11,6 +11,8 @@ import mindustry.world.Block;
 import mindustry.world.blocks.defense.Door;
 import mindustry.world.blocks.defense.Wall;
 import mindustry.world.meta.BuildVisibility;
+import mindustry.entities.Units;
+import newhorizon.content.nuke.NukeFx;
 import newhorizon.content.nuke.NukeUnits;
 
 /**
@@ -24,7 +26,7 @@ public class NukeAbility extends Ability{
 	/** Ticks an active nuke flies before it detonates by itself. */
 	public float fuel = 60f * 45f;
 
-	protected float age;
+	protected float age, dockTimer;
 	/** Set when a pilot armed the nuke by firing: until the button is let go, firing again does not detonate it. */
 	public boolean latch;
 	protected WallStance appliedStance;
@@ -66,12 +68,33 @@ public class NukeAbility extends Ability{
 		//A pilot arms an inactive nuke by firing, and detonates an active one the same way.
 		if(!active){
 			if(unit.isPlayer() && unit.isShooting && NukeUnits.isInactive(unit.type)) NukeUnits.arm(unit);
+			else if(!unit.isPlayer()) boardCarrier(unit);
 			return;
 		}
 
 		if(latch && !unit.isShooting) latch = false;
 		age += Time.delta;
 		if(age >= fuel || (unit.isPlayer() && unit.isShooting && !latch)) detonate(unit);
+	}
+
+	/**
+	 * An inactive nuke that has moved onto a ship of its team that carries nukes and has none aboard enters it, to be armed there. Only
+	 * checked now and then, and not for nukes with passengers (they would be lost).
+	 */
+	protected void boardCarrier(Unit unit){
+		dockTimer -= Time.delta;
+		if(dockTimer > 0f) return;
+		dockTimer = 10f;
+		if(unit instanceof mindustry.gen.Payloadc && !((mindustry.gen.Payloadc)unit).payloads().isEmpty()) return;
+
+		Unit ship = Units.closest(unit.team, unit.x, unit.y, 60f, u -> {
+			NukeCarrierAbility a = NukeCarrierAbility.of(u);
+			return a != null && a.free() && unit.within(u, u.hitSize / 2f);
+		});
+		if(ship != null && NukeCarrierAbility.of(ship).load(unit.type)){
+			NukeFx.armed.at(unit.x, unit.y);
+			unit.remove();
+		}
 	}
 
 	/**
