@@ -5,7 +5,7 @@ import mindustry.content.Fx;
 import mindustry.type.StatusEffect;
 
 public class NukeStatus{
-	/** Radioactive fallout: constant damage and sluggishness. */
+	/** Radioactive fallout: sluggishness (the damage comes from the zone, as a share of health). */
 	public static StatusEffect irradiated;
 	/** Hit by an electromagnetic pulse: nearly stopped, weapons offline. */
 	public static StatusEffect empShock;
@@ -13,11 +13,12 @@ public class NukeStatus{
 	public static StatusEffect temporalLock;
 	/** In a tornado: cannot walk or fly off on its own. */
 	public static StatusEffect tornadoCaught;
+	/** A nuke launched from orbit: nothing can target or hit it. Not shown, no other effect. */
+	public static StatusEffect highAltitude;
 
 	public static void load(){
 		irradiated = new StatusEffect("irradiated"){{
 			color = Color.valueOf("9bff4a");
-			damage = 0.45f;
 			speedMultiplier = 0.8f;
 			healthMultiplier = 0.85f;
 			effect = Fx.sporeSlowed;
@@ -31,6 +32,11 @@ public class NukeStatus{
 			disarm = true;
 			effect = Fx.shootSmallSmoke;
 			effectChance = 0.1f;
+		}};
+
+		highAltitude = new StatusEffect("high-altitude"){{
+			show = false;
+			effect = Fx.none;
 		}};
 
 		tornadoCaught = new StatusEffect("tornado-caught"){{

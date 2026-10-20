@@ -83,6 +83,7 @@ public class NukeBlast{
 			Tile tile = Vars.world.tile(tx, ty);
 			if(!canFill(tile, block)) return;
 			tile.setNet(block, team, 0);
+			NukeSpawned.claim(tile.build);
 			count[0]++;
 		});
 		return count[0];

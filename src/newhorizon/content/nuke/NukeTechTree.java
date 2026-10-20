@@ -41,6 +41,7 @@ public class NukeTechTree{
 	private static void fill(TechNode builder){
 		TechNode launcher = child(builder, NukeBlocks.nukeLauncher);
 		child(launcher, NukeBlocks.multiNukeLauncher);
+		child(launcher, NukeBlocks.orbitalLauncher);
 		for(UnlockableContent unit : NukeUnits.inactive) child(builder, unit);
 	}
 

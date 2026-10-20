@@ -8,10 +8,13 @@ import mindustry.ai.UnitCommand;
 import mindustry.entities.units.AIController;
 import mindustry.gen.PayloadUnit;
 import mindustry.gen.Payloadc;
+import mindustry.entities.units.UnitController;
 import mindustry.gen.Unit;
 import mindustry.gen.UnitEntity;
 import mindustry.type.UnitType;
 import mindustry.world.Block;
+import mindustry.ai.types.CommandAI;
+import newhorizon.expand.units.nuke.ArmAI;
 import newhorizon.expand.units.nuke.DetonateAI;
 import newhorizon.expand.units.nuke.MiniNukeAI;
 import newhorizon.expand.units.nuke.NukeAI;
@@ -19,6 +22,7 @@ import newhorizon.expand.units.nuke.NukeAbility;
 import newhorizon.expand.units.nuke.WallStance;
 import newhorizon.expand.units.nuke.Warhead;
 import newhorizon.expand.units.unitType.NHUnitType;
+import newhorizon.expand.units.unitType.NukeUnitType;
 
 import static mindustry.Vars.tilesize;
 
@@ -45,12 +49,14 @@ public class NukeUnits{
 		laser, laserActive,
 		swarm, swarmActive,
 		storm, stormActive,
-		decoy, decoyActive;
+		decoy, decoyActive,
+		lightning, lightningActive,
+		quake, quakeActive;
 	/** What a decoy breaks into. Never built or launched, and not a part of any unit cap. */
 	public static NHUnitType mini;
 
 	/** The Strike command (the default of an active nuke) flies it at the target; Detonate sets it off at once. */
-	public static UnitCommand strikeCommand, detonateCommand;
+	public static UnitCommand strikeCommand, detonateCommand, armCommand;
 
 	/** One stance per wall a wall nuke can be set to. */
 	public static final Seq<WallStance> wallStances = new Seq<>();
@@ -74,6 +80,9 @@ public class NukeUnits{
 		strikeCommand = new UnitCommand("nh-nuke-strike", "commandAttack", u -> new NukeAI());
 		strikeCommand.switchToMove = false;
 		detonateCommand = new UnitCommand("nh-nuke-detonate", "warning", u -> new DetonateAI());
+		//An inactive nuke can arm itself: it turns active where it is, and the player then sends it off with the Strike command.
+		armCommand = new UnitCommand("nh-nuke-arm", "power", u -> new ArmAI());
+		armCommand.switchToMove = false;
 
 		explosive = nuke(Warhead.explosive, false);
 		explosiveActive = nuke(Warhead.explosive, true);
@@ -131,6 +140,13 @@ public class NukeUnits{
 		decoyActive = nuke(Warhead.decoy, true);
 		pair(decoy, decoyActive);
 		mini = nuke(Warhead.mini, true);
+
+		lightning = nuke(Warhead.lightning, false);
+		lightningActive = nuke(Warhead.lightning, true);
+		pair(lightning, lightningActive);
+		quake = nuke(Warhead.quake, false);
+		quakeActive = nuke(Warhead.quake, true);
+		pair(quake, quakeActive);
 	}
 
 	private static void pair(NHUnitType off, NHUnitType on){
@@ -140,7 +156,7 @@ public class NukeUnits{
 	}
 
 	private static NHUnitType nuke(Warhead warhead, boolean active){
-		NHUnitType type = new NHUnitType(active ? "nuke-" + warhead.name + "-active" : "nuke-" + warhead.name){{
+		NHUnitType type = new NukeUnitType(active ? "nuke-" + warhead.name + "-active" : "nuke-" + warhead.name){{
 			//The infantry nuke carries units: it is a payload unit, so units can be loaded into it while it is inactive.
 			constructor = warhead == Warhead.infantry ? PayloadUnit::create : UnitEntity::create;
 			outlineColor = Color.valueOf("1b1b22");
@@ -179,7 +195,8 @@ public class NukeUnits{
 				engineOffset = 9f;
 				engineSize = 2.6f;
 				aiController = AIController::new;
-				commands = Seq.with(UnitCommand.moveCommand);
+				//It can also fly into a launcher (or any payload block that takes it), and arm itself.
+				commands = Seq.with(UnitCommand.moveCommand, UnitCommand.enterPayloadCommand, armCommand);
 				defaultCommand = UnitCommand.moveCommand;
 			}
 
@@ -187,7 +204,7 @@ public class NukeUnits{
 				payloadCapacity = tilesize * tilesize * 60f;
 				//Passengers are loaded before it is armed and cannot be changed in flight.
 				if(!active){
-					commands = Seq.with(UnitCommand.moveCommand, UnitCommand.loadUnitsCommand, UnitCommand.unloadPayloadCommand);
+					commands = Seq.with(UnitCommand.moveCommand, UnitCommand.enterPayloadCommand, armCommand, UnitCommand.loadUnitsCommand, UnitCommand.unloadPayloadCommand);
 				}
 			}
 
@@ -225,6 +242,40 @@ public class NukeUnits{
 		}};
 		warheads.put(type, warhead);
 		return type;
+	}
+
+	/**
+	 * Arms an inactive nuke where it is: the same unit becomes its active form (so a pilot, or whoever has it selected, keeps it). What it
+	 * was set up with (a wall type, passengers) stays. Server side. Returns false for anything that is not an inactive nuke.
+	 */
+	public static boolean arm(Unit unit){
+		if(!isInactive(unit.type) || unit.dead()) return false;
+
+		UnitType active = counterpart(unit.type);
+		NukeAbility old = NukeAI.abilityOf(unit);
+		float data = old == null ? 0f : old.data;
+
+		//Changing the type may hand the unit to a new AI: whoever had it (a player, a commander) keeps it.
+		UnitController keep = unit.controller();
+		unit.setType(active);
+		if(unit.controller() != keep) unit.controller(keep);
+		//The ability list is only rebuilt when its length changes, and both forms have one ability: swap it by hand.
+		for(int i = 0; i < unit.abilities.length && i < active.abilities.size; i++) unit.abilities[i] = active.abilities.get(i).copy();
+		NukeAbility now = NukeAI.abilityOf(unit);
+		if(now != null){
+			now.data = data;
+			//A pilot who armed it by firing must let go of the button before the next press detonates it.
+			now.latch = unit.isPlayer();
+		}
+		unit.health = Math.min(unit.health, unit.maxHealth);
+
+		if(unit.controller() instanceof CommandAI){
+			((CommandAI)unit.controller()).command(strikeCommand);
+		}else if(!unit.isPlayer()){
+			unit.controller(active.createController(unit));
+		}
+		NukeFx.armed.at(unit.x, unit.y);
+		return true;
 	}
 
 	/** Carries what an inactive nuke has been set up with over to the active unit that replaces it, or the other way round: a wall type, passengers. */

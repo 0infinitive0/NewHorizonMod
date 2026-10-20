@@ -4,7 +4,9 @@ import arc.graphics.Color;
 import mindustry.content.Fx;
 import mindustry.entities.bullet.BulletType;
 import mindustry.entities.bullet.MissileBulletType;
+import newhorizon.expand.bullets.nuke.ArcOrbBulletType;
 import newhorizon.expand.bullets.nuke.ForceZoneBulletType;
+import newhorizon.expand.bullets.nuke.QuakeBulletType;
 import newhorizon.expand.bullets.nuke.SpinLaserBulletType;
 import newhorizon.expand.bullets.nuke.SwarmSpawnerBulletType;
 import newhorizon.expand.bullets.nuke.TornadoBulletType;
@@ -22,13 +24,19 @@ public class NukeBullets{
 	public static SwarmSpawnerBulletType swarmSpawner;
 	/** The storm nuke's tornado. */
 	public static TornadoBulletType tornado;
+	/** The lightning nuke's ball of light, and the earthquake nuke's quake. */
+	public static ArcOrbBulletType arcOrb;
+	public static QuakeBulletType quake;
 
 	public static void load(){
 		radiationZone = new ZoneBulletType(){{
 			radius = 200f;
 			lifetime = 60f * 25f;
-			unitDps = 36f;
-			buildingDps = 9f;
+			//A share of what each target has, not a fixed amount: the bigger it is the more it loses.
+			unitDps = 0f;
+			buildingDps = 0f;
+			unitPercent = 0.03f;
+			buildingPercent = 0.025f;
 			zoneStatus = NukeStatus.irradiated;
 			color = Color.valueOf("9bff4a");
 		}};
@@ -104,6 +112,22 @@ public class NukeBullets{
 			waves = 3;
 			count = 120;
 			interval = 60f;
+		}};
+
+		arcOrb = new ArcOrbBulletType(){{
+			radius = 210f;
+			lifetime = 60f * 10f;
+			interval = 15f;
+			maxTargets = 5;
+			arcDamage = 30f;
+			color = Color.valueOf("ffe066");
+		}};
+
+		quake = new QuakeBulletType(){{
+			radius = 290f;
+			lifetime = 60f * 4f;
+			interval = 15f;
+			color = Color.valueOf("b08968");
 		}};
 
 		tornado = new TornadoBulletType(){{

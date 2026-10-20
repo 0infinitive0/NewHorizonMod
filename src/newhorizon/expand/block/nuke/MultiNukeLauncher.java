@@ -57,6 +57,7 @@ public class MultiNukeLauncher extends NukeLauncher{
 			if(command == 0) b.launch();
 			else if(command == 1) b.hasTarget = false;
 			else if(command == 2) b.upgrade();
+			else if(command == 3) b.simultaneous = !b.simultaneous;
 		});
 	}
 
@@ -79,6 +80,8 @@ public class MultiNukeLauncher extends NukeLauncher{
 		/** Whether a salvo is under way, and the ticks until its next nuke. */
 		public boolean firing;
 		public float salvoTimer;
+		/** The firing mode: false is a salvo, one nuke after another; true is every nuke in the same moment. */
+		public boolean simultaneous;
 		/** How many nukes this launcher can hold now. */
 		public int capacity = slots;
 
@@ -105,7 +108,7 @@ public class MultiNukeLauncher extends NukeLauncher{
 
 		@Override
 		public boolean acceptUnitPayload(Unit unit){
-			return room(unit) && super.acceptUnitPayload(unit);
+			return room(unit) && unit.type.allowedInPayloads && !unit.spawnedByCore;
 		}
 
 		@Override
@@ -244,7 +247,7 @@ public class MultiNukeLauncher extends NukeLauncher{
 			return true;
 		}
 
-		/** Sends the next nuke of the salvo when it is due and the heading is right. The one in the last slot goes first, so the rest stay put. */
+		/** Sends the next nuke of the salvo when it is due and the heading is right; in the all-at-once mode every nuke goes together. */
 		protected void salvo(){
 			salvoTimer -= Time.delta;
 			if(salvoTimer > 0f) return;
@@ -252,13 +255,22 @@ public class MultiNukeLauncher extends NukeLauncher{
 				endSalvo();
 				return;
 			}
-			if(!Units.canCreate(team, stored.peek().unit.type)){
-				//No room for more units: the rest stay armed, ready for when there is.
-				firing = false;
-				return;
-			}
 			if(!aimed()) return;
 
+			//The one in the last slot goes first, so the rest stay put.
+			do{
+				if(!Units.canCreate(team, stored.peek().unit.type)){
+					//No room for more units: the rest stay armed, ready for when there is.
+					firing = false;
+					return;
+				}
+				fireOne();
+			}while(simultaneous && !stored.isEmpty());
+
+			if(stored.isEmpty()) endSalvo();
+		}
+
+		protected void fireOne(){
 			int slot = stored.size - 1;
 			Unit nuke = stored.pop().unit;
 			//The pilot's heading overrides the map target: a nuke launched by hand just flies the way it was pointed.
@@ -268,8 +280,6 @@ public class MultiNukeLauncher extends NukeLauncher{
 			NukeFx.launch.at(x, y, angle);
 			Sounds.shootMissileLarge.at(x, y, 1f, 0.8f);
 			if(!Vars.net.client()) send(nuke, lateral(slot), aim);
-
-			if(stored.isEmpty()) endSalvo();
 		}
 
 		protected void endSalvo(){
@@ -312,6 +322,12 @@ public class MultiNukeLauncher extends NukeLauncher{
 					}
 				}).left().padBottom(6f).row();
 				t.button(Core.bundle.get("nh.nuke.upgrade"), Styles.defaultt, () -> configure(2)).size(256f, 40f).disabled(b -> !canUpgrade());
+			});
+			table.row();
+			//Salvo, or everything at once.
+			table.table(Styles.black6, t -> {
+				t.margin(8f);
+				t.button(Core.bundle.get("nh.nuke.together"), Styles.togglet, () -> configure(3)).update(b -> b.setChecked(simultaneous)).size(256f, 40f);
 			});
 		}
 
@@ -366,6 +382,7 @@ public class MultiNukeLauncher extends NukeLauncher{
 			write.bool(firing);
 			write.f(salvoTimer);
 			write.i(capacity);
+			write.bool(simultaneous);
 		}
 
 		@Override
@@ -380,6 +397,7 @@ public class MultiNukeLauncher extends NukeLauncher{
 			firing = read.bool();
 			salvoTimer = read.f();
 			capacity = Math.max(slots, Math.min(maxSlots, read.i()));
+			simultaneous = read.bool();
 		}
 	}
 }

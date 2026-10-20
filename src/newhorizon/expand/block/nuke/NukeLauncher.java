@@ -145,7 +145,8 @@ public class NukeLauncher extends PayloadBlock{
 
 		@Override
 		public boolean acceptUnitPayload(Unit unit){
-			return payload == null && NukeUnits.isInactive(unit.type) && super.acceptUnitPayload(unit);
+			//A nuke can also fly in by itself (the Enter Payload command): the base block never takes units in, so this is checked here.
+			return payload == null && NukeUnits.isInactive(unit.type) && unit.type.allowedInPayloads && !unit.spawnedByCore;
 		}
 
 		@Override

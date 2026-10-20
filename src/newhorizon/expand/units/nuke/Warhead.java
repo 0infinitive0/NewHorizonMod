@@ -5,13 +5,16 @@ import arc.math.Mathf;
 import arc.struct.Seq;
 import arc.util.Tmp;
 import mindustry.Vars;
+import mindustry.content.Liquids;
 import mindustry.content.StatusEffects;
 import mindustry.entities.Damage;
 import mindustry.entities.Fires;
+import mindustry.entities.Puddles;
 import mindustry.entities.Units;
 import mindustry.game.Team;
 import mindustry.gen.Payloadc;
 import mindustry.gen.Unit;
+import mindustry.type.Liquid;
 import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.blocks.defense.turrets.Turret;
@@ -39,7 +42,7 @@ public abstract class Warhead{
 	public static Warhead
 		explosive, incendiary, radiation, emp,
 		psychic, gravity, spatial, shockwave, cluster, wall, temporal, infantry, overload,
-		laser, swarm, storm, decoy, mini;
+		laser, swarm, storm, decoy, mini, lightning, quake;
 	public static final Seq<Warhead> all = new Seq<>();
 
 	public final String name;
@@ -101,6 +104,9 @@ public abstract class Warhead{
 					if(u.within(x, y, radius + u.hitSize / 2f)) u.apply(StatusEffects.burning, 60f * 8f);
 				});
 				burnGround(x, y, radius * 0.85f);
+				burnBuildings(x, y, radius * 0.9f);
+				splash(Liquids.oil, 26, x, y, radius * 0.9f);
+				splash(Liquids.slag, 16, x, y, radius * 0.9f);
 			}
 
 			@Override
@@ -109,9 +115,22 @@ public abstract class Warhead{
 			}
 		};
 
+		//Its damage is a share of what each thing has, not a fixed amount: a first dose when it goes off, then the fallout (3% a second).
 		radiation = new Warhead("radiation", Color.valueOf("9bff4a"), 170f, 650f){
 			@Override
+			public void detonate(float x, float y, Team team, Unit nuke){
+				//No flat blast damage: only the dose in special.
+				special(x, y, team, nuke);
+			}
+
+			@Override
 			public void special(float x, float y, Team team, Unit nuke){
+				Units.nearby(x - radius, y - radius, radius * 2f, radius * 2f, u -> {
+					if(!u.dead() && u != nuke && u.within(x, y, radius + u.hitSize / 2f)) u.damagePierce(u.maxHealth * firstDose);
+				});
+				Units.nearbyBuildings(x, y, radius, b -> {
+					if(b.dst(x, y) <= radius) b.damagePierce(b.maxHealth * firstDose);
+				});
 			}
 
 			@Override
@@ -324,6 +343,35 @@ public abstract class Warhead{
 			}
 		};
 
+		//A ball of light that hangs where the nuke went off and strikes arcs of lightning around it for ten seconds. The blast hurts nothing.
+		lightning = new Warhead("lightning", Color.valueOf("ffe066"), 210f, 0f){
+			@Override
+			public void visual(float x, float y){
+				NukeFx.empPulse.at(x, y, radius, color);
+			}
+
+			@Override
+			public void spawn(float x, float y, Team team, Unit nuke){
+				NukeBullets.arcOrb.create(null, Team.derelict, x, y, 0f);
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+			}
+		};
+
+		//An earthquake: it tears at structures and hardly touches units. The blast itself hurts nothing.
+		quake = new Warhead("quake", Color.valueOf("b08968"), 290f, 0f){
+			@Override
+			public void spawn(float x, float y, Team team, Unit nuke){
+				NukeBullets.quake.create(null, Team.derelict, x, y, 0f);
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+			}
+		};
+
 		//A tough bait that breaks into three mini nukes, which fly off at whatever is near. The blast itself hurts nothing.
 		decoy = new Warhead("decoy", Color.valueOf("c3ccd8"), 60f, 0f){
 			@Override
@@ -369,6 +417,9 @@ public abstract class Warhead{
 		};
 	}
 
+	/** The share of its maximum health that a radiation nuke's blast takes from everything in reach at once. */
+	public static final float firstDose = 0.15f;
+
 	/** How many mini nukes a decoy breaks into. */
 	public static final int pieces = 3;
 
@@ -410,6 +461,22 @@ public abstract class Warhead{
 			float a = Mathf.random(360f), d = Mathf.sqrt(Mathf.random()) * tr;
 			Tile tile = Vars.world.tileWorld(x + Mathf.cosDeg(a) * d * tilesize, y + Mathf.sinDeg(a) * d * tilesize);
 			if(tile != null) Fires.create(tile);
+		}
+	}
+
+	/** Sets fire to most of the structures within range, whichever side they are on. */
+	protected static void burnBuildings(float x, float y, float range){
+		Units.nearbyBuildings(x, y, range, b -> {
+			if(b.dst(x, y) <= range && Mathf.chance(0.8f)) Fires.create(b.tile);
+		});
+	}
+
+	/** Spills {@code count} puddles of the liquid at random places within range. */
+	protected static void splash(Liquid liquid, int count, float x, float y, float range){
+		for(int i = 0; i < count; i++){
+			float a = Mathf.random(360f), d = Mathf.sqrt(Mathf.random()) * range;
+			Tile tile = Vars.world.tileWorld(x + Mathf.cosDeg(a) * d, y + Mathf.sinDeg(a) * d);
+			if(tile != null) Puddles.deposit(tile, liquid, Mathf.random(30f, 70f));
 		}
 	}
 

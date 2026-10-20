@@ -33,8 +33,8 @@ import newhorizon.content.nuke.NukeStatus;
  */
 public class TornadoBulletType extends BulletType{
 	public float radius = 170f;
-	/** Damage per second to every unit in reach. */
-	public float dps = 36f;
+	/** Damage per second to every unit in reach, and to every structure (more towards the middle, where it passes over them). */
+	public float dps = 36f, buildingDps = 48f;
 	/** Distance from the centre at which a carried unit swings, and how fast it goes round (degrees per tick). */
 	public float orbit = 56f, spin = 7f;
 	/** Ticks a unit is swung for, and ticks it is thrown for. */
@@ -113,6 +113,15 @@ public class TornadoBulletType extends BulletType{
 				if(dps > 0f) u.damageContinuousPierce(dps / 60f);
 				if(!s.caught.containsKey(u.id)) tryCatch(b, s, u);
 			});
+
+			//Structures in reach are torn at too, the ones under the funnel most.
+			if(buildingDps > 0f && b.timer(1, 10f)){
+				float rr = r;
+				Units.nearbyBuildings(b.x, b.y, rr, build -> {
+					float f = Mathf.clamp(build.dst(b) / Math.max(rr, 1f));
+					build.damage(buildingDps / 6f * Mathf.lerp(1.5f, 0.5f, f));
+				});
+			}
 
 			//Everything caught is driven from here, wherever it has got to: a unit that has been thrown out of reach is still being thrown.
 			IntSeq gone = new IntSeq();

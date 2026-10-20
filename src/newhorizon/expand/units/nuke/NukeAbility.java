@@ -25,6 +25,8 @@ public class NukeAbility extends Ability{
 	public float fuel = 60f * 45f;
 
 	protected float age;
+	/** Set when a pilot armed the nuke by firing: until the button is let go, firing again does not detonate it. */
+	public boolean latch;
 	protected WallStance appliedStance;
 
 	/** Which wall a wall nuke fills with: kept in the ability's data (which is saved with the unit) as the block's id; 0 means the default. */
@@ -59,10 +61,17 @@ public class NukeAbility extends Ability{
 	@Override
 	public void update(Unit unit){
 		if(warhead == Warhead.wall && !active) syncWallStance(unit);
-		if(!active || Vars.net.client()) return;
+		if(Vars.net.client()) return;
 
+		//A pilot arms an inactive nuke by firing, and detonates an active one the same way.
+		if(!active){
+			if(unit.isPlayer() && unit.isShooting && NukeUnits.isInactive(unit.type)) NukeUnits.arm(unit);
+			return;
+		}
+
+		if(latch && !unit.isShooting) latch = false;
 		age += Time.delta;
-		if(age >= fuel || (unit.isPlayer() && unit.isShooting)) detonate(unit);
+		if(age >= fuel || (unit.isPlayer() && unit.isShooting && !latch)) detonate(unit);
 	}
 
 	/**

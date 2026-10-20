@@ -21,6 +21,8 @@ public class ZoneBulletType extends BulletType{
 	public float radius = 150f;
 	/** Damage per second to units, and to structures. */
 	public float unitDps = 30f, buildingDps = 8f;
+	/** The same as a share of the target's maximum health per second (0.03 is 3% a second), which ignores armor. */
+	public float unitPercent = 0f, buildingPercent = 0f;
 	public StatusEffect zoneStatus;
 	/** How long a unit keeps the status after leaving. */
 	public float statusTime = 60f * 3f;
@@ -50,11 +52,15 @@ public class ZoneBulletType extends BulletType{
 			if(unit.dead() || !unit.within(b, r + unit.hitSize / 2f)) return;
 			if(zoneStatus != null) unit.apply(zoneStatus, statusTime);
 			if(unitDps > 0f) unit.damageContinuousPierce(unitDps / 60f);
+			if(unitPercent > 0f) unit.damageContinuousPierce(unit.maxHealth * unitPercent / 60f);
 		});
 
-		if(buildingDps > 0f && b.timer(1, 10f)){
+		if((buildingDps > 0f || buildingPercent > 0f) && b.timer(1, 10f)){
 			float amount = buildingDps / 6f;
-			Units.nearbyBuildings(b.x, b.y, r, build -> build.damage(amount));
+			Units.nearbyBuildings(b.x, b.y, r, build -> {
+				if(amount > 0f) build.damage(amount);
+				if(buildingPercent > 0f) build.damagePierce(build.maxHealth * buildingPercent / 6f);
+			});
 		}
 	}
 

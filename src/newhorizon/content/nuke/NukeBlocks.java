@@ -10,6 +10,7 @@ import mindustry.world.meta.Env;
 import newhorizon.expand.block.nuke.MineBlock;
 import newhorizon.expand.block.nuke.MultiNukeLauncher;
 import newhorizon.expand.block.nuke.NukeLauncher;
+import newhorizon.expand.block.nuke.OrbitalLauncher;
 
 import static mindustry.type.ItemStack.with;
 
@@ -18,7 +19,7 @@ import static mindustry.type.ItemStack.with;
  * thorium and surge alloy), so they can be built anywhere.
  */
 public class NukeBlocks{
-	public static Block nukeBuilder, nukeLauncher, multiNukeLauncher;
+	public static Block nukeBuilder, nukeLauncher, multiNukeLauncher, orbitalLauncher;
 	/** Laid by cluster nukes; cannot be built by hand. */
 	public static MineBlock mine;
 
@@ -46,6 +47,8 @@ public class NukeBlocks{
 				new UnitFactory.UnitPlan(NukeUnits.laser, 60f * 40f, with(Items.silicon, 100, Items.graphite, 100, Items.thorium, 60, Items.surgeAlloy, 30)),
 				new UnitFactory.UnitPlan(NukeUnits.swarm, 60f * 35f, with(Items.silicon, 100, Items.graphite, 140, Items.thorium, 60)),
 				new UnitFactory.UnitPlan(NukeUnits.storm, 60f * 35f, with(Items.silicon, 90, Items.graphite, 110, Items.thorium, 50, Items.phaseFabric, 15)),
+				new UnitFactory.UnitPlan(NukeUnits.lightning, 60f * 38f, with(Items.silicon, 120, Items.graphite, 80, Items.thorium, 40, Items.surgeAlloy, 25)),
+				new UnitFactory.UnitPlan(NukeUnits.quake, 60f * 35f, with(Items.silicon, 80, Items.graphite, 150, Items.thorium, 80)),
 				new UnitFactory.UnitPlan(NukeUnits.decoy, 60f * 8f, with(Items.silicon, 40, Items.graphite, 50, Items.thorium, 20)),
 				new UnitFactory.UnitPlan(NukeUnits.infantry, 60f * 25f, with(Items.silicon, 90, Items.graphite, 60, Items.thorium, 30))
 			);
@@ -62,6 +65,16 @@ public class NukeBlocks{
 			requirements(Category.units, with(Items.silicon, 320, Items.graphite, 240, Items.thorium, 200, Items.surgeAlloy, 40));
 			health = 3200;
 			consumePower(8f);
+		}};
+
+		//One nuke at a time, but it is thrown so high that nothing can target or hit it on the way: slow to arm, slow to recover.
+		orbitalLauncher = new OrbitalLauncher("orbital-launcher"){{
+			requirements(Category.units, with(Items.silicon, 900, Items.graphite, 600, Items.thorium, 500, Items.surgeAlloy, 200, Items.phaseFabric, 150));
+			health = 4600;
+			consumePower(20f);
+			armTime = 240f;
+			launchCooldown = 60f * 12f;
+			turnSpeed = 1.2f;
 		}};
 
 		//Holds four nukes to start with and arms and fires them together; more slots can be added from its menu, up to twenty.
