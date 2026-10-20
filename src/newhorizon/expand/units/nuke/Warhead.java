@@ -47,7 +47,7 @@ public abstract class Warhead{
 		explosive, incendiary, radiation, emp,
 		psychic, gravity, spatial, shockwave, cluster, wall, temporal, infantry, overload,
 		laser, swarm, storm, decoy, mini, lightning, quake,
-		scatter, magnet, hijack, scramble, sabotage, breach;
+		scatter, magnet, hijack, scramble, sabotage, breach, devolve;
 	public static final Seq<Warhead> all = new Seq<>();
 
 	public final String name;
@@ -481,6 +481,29 @@ public abstract class Warhead{
 				Units.nearby(mx - reach, my - reach, reach * 2f, reach * 2f, u -> {
 					if(u != nuke && !u.dead() && Intersector.distanceSegmentPoint(ax, ay, bx, by, u.x, u.y) <= laneWidth / 2f + u.hitSize / 2f) u.damagePierce(laneUnitDamage);
 				});
+			}
+		};
+
+		//Every unit in reach drops a tier; walls fall back to copper walls, conveyors to basic ones, turrets to duos, menders and batteries to
+		//their one-tile versions and power generators to combustion generators. Nothing is damaged.
+		devolve = new Warhead("devolve", Color.valueOf("b89b72"), 250f, 0f){
+			@Override
+			public void visual(float x, float y){
+				NukeFx.empPulse.at(x, y, radius, color);
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+				Seq<Unit> units = new Seq<>();
+				Units.nearby(x - radius, y - radius, radius * 2f, radius * 2f, u -> {
+					if(u != nuke && u.within(x, y, radius + u.hitSize / 2f)) units.add(u);
+				});
+				for(Unit u : units){
+					if(Devolve.unit(u)) NukeFx.armed.at(u.x, u.y);
+				}
+				for(Building b : BlockMover.within(x, y, radius)){
+					if(Devolve.target(b.block) != null) BlockMover.enqueue(() -> Devolve.block(b));
+				}
 			}
 		};
 

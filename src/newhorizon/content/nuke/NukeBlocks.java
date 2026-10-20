@@ -55,6 +55,7 @@ public class NukeBlocks{
 				new UnitFactory.UnitPlan(NukeUnits.scramble, 60f * 40f, with(Items.silicon, 110, Items.phaseFabric, 30, Items.surgeAlloy, 20)),
 				new UnitFactory.UnitPlan(NukeUnits.sabotage, 60f * 35f, with(Items.silicon, 90, Items.graphite, 120, Items.thorium, 50, Items.surgeAlloy, 15)),
 				new UnitFactory.UnitPlan(NukeUnits.breach, 60f * 40f, with(Items.silicon, 100, Items.graphite, 130, Items.thorium, 80, Items.surgeAlloy, 25)),
+				new UnitFactory.UnitPlan(NukeUnits.devolve, 60f * 40f, with(Items.silicon, 100, Items.graphite, 80, Items.phaseFabric, 40, Items.surgeAlloy, 20)),
 				new UnitFactory.UnitPlan(NukeUnits.decoy, 60f * 8f, with(Items.silicon, 40, Items.graphite, 50, Items.thorium, 20)),
 				new UnitFactory.UnitPlan(NukeUnits.infantry, 60f * 25f, with(Items.silicon, 90, Items.graphite, 60, Items.thorium, 30))
 			);

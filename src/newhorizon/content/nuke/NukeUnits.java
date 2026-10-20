@@ -57,7 +57,8 @@ public class NukeUnits{
 		hijack, hijackActive,
 		scramble, scrambleActive,
 		sabotage, sabotageActive,
-		breach, breachActive;
+		breach, breachActive,
+		devolve, devolveActive;
 	/** What a decoy breaks into. Never built or launched, and not a part of any unit cap. */
 	public static NHUnitType mini;
 
@@ -171,6 +172,9 @@ public class NukeUnits{
 		breach = nuke(Warhead.breach, false);
 		breachActive = nuke(Warhead.breach, true);
 		pair(breach, breachActive);
+		devolve = nuke(Warhead.devolve, false);
+		devolveActive = nuke(Warhead.devolve, true);
+		pair(devolve, devolveActive);
 	}
 
 	private static void pair(NHUnitType off, NHUnitType on){

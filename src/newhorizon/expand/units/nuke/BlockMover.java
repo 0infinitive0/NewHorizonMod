@@ -144,6 +144,21 @@ public class BlockMover{
 		return now;
 	}
 
+	/** Takes the structure away and puts a fresh one of another block where it stood (the same rotation and origin tile). Server side. */
+	public static Building replace(Building build, Block to){
+		if(!movable(build) || to == null) return null;
+		Team team = build.team;
+		Tile tile = build.tile;
+		int rotation = build.rotation;
+		boolean claimed = NukeSpawned.claimed(build);
+
+		tile.setNet(Blocks.air);
+		tile.setNet(to, team, rotation);
+		Building now = tile.build;
+		if(now != null && claimed) NukeSpawned.claim(now);
+		return now;
+	}
+
 	/** Puts a fresh structure of the same kind, turned the given way, where this one stands. Server side. */
 	public static Building rebuild(Building build, int rotation){
 		if(!movable(build)) return null;
