@@ -25,6 +25,20 @@ public class NukeDefense{
 		return found[0];
 	}
 
+	/** Further than any radar reaches: how far to look for one. */
+	public static final float radarScan = 1400f;
+
+	/** Whether a working radar of this team covers the point. */
+	public static boolean radarSees(Team viewer, float x, float y){
+		boolean[] seen = {false};
+		Units.nearbyBuildings(x, y, radarScan, b -> {
+			if(seen[0] || !(b instanceof DefenseField.DefenseFieldBuild)) return;
+			DefenseField.DefenseFieldBuild f = (DefenseField.DefenseFieldBuild)b;
+			if(f.kind() == DefenseField.Kind.radar && f.team == viewer && f.active() && f.within(x, y, f.range())) seen[0] = true;
+		});
+		return seen[0];
+	}
+
 	/** Whether a launcher of this team may not target the point, because an enemy cloak hides it. */
 	public static boolean cloaked(Team attacker, float x, float y){
 		return field(DefenseField.Kind.cloak, attacker, x, y) != null;

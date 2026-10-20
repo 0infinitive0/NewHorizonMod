@@ -25,7 +25,7 @@ import static mindustry.type.ItemStack.with;
 public class NukeBlocks{
 	public static Block nukeBuilder, nukeLauncher, multiNukeLauncher, orbitalLauncher;
 	/** The defences: radar, cloak, decoy beacon, jammer and the turret that takes nukes. */
-	public static Block trackingRadar, cloakProjector, decoyBeacon, nukeJammer, nukeInterceptor;
+	public static Block trackingRadar, longRangeRadar, cloakProjector, decoyBeacon, nukeJammer, nukeInterceptor;
 	/** Laid by cluster nukes; cannot be built by hand. */
 	public static MineBlock mine;
 
@@ -94,6 +94,16 @@ public class NukeBlocks{
 			health = 1500;
 			consumePower(4f);
 			range = 430f;
+			color = Color.valueOf("7fd8ff");
+		}};
+
+		//A bigger radar: reaches much further, and costs and draws much more.
+		longRangeRadar = new DefenseField("long-range-radar", DefenseField.Kind.radar){{
+			requirements(Category.effect, with(Items.silicon, 420, Items.graphite, 260, Items.thorium, 160, Items.phaseFabric, 80, Items.surgeAlloy, 50));
+			size = 4;
+			health = 2600;
+			consumePower(11f);
+			range = 1150f;
 			color = Color.valueOf("7fd8ff");
 		}};
 
