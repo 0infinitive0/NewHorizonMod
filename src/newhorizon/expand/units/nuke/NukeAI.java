@@ -166,6 +166,61 @@ public class NukeAI extends AIController{
 		return false;
 	}
 
+	/**
+	 * Where this nuke has been told to go, written into {@code out}: a point, a unit or a beacon. False if it has only a heading (nothing was
+	 * given to it, or it has lost its target to a jammer or a cloak).
+	 */
+	public boolean knownTarget(Vec2 out){
+		if(lost) return false;
+		if(lureTarget != null && lureTarget.isValid()){
+			out.set(lureTarget);
+			return true;
+		}
+		if(targetUnit != null && targetUnit.isValid() && targetUnit.team != unit.team){
+			out.set(targetUnit);
+			return true;
+		}
+		if(targetPos != null){
+			out.set(targetPos);
+			return true;
+		}
+		if(unit.controller() instanceof CommandAI){
+			CommandAI commander = (CommandAI)unit.controller();
+			if(commander.attackTarget instanceof Unit && ((Unit)commander.attackTarget).isValid() && commander.attackTarget.team() != unit.team){
+				out.set(commander.attackTarget);
+				return true;
+			}
+			if(commander.targetPos != null){
+				out.set(commander.targetPos);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** Where the nuke is going, whichever controller it has (flying itself, or commanded on the Strike command). */
+	public static boolean targetOf(Unit unit, Vec2 out){
+		mindustry.entities.units.UnitController controller = unit.controller();
+		if(controller instanceof NukeAI) return ((NukeAI)controller).knownTarget(out);
+		if(controller instanceof CommandAI){
+			CommandAI commander = (CommandAI)controller;
+			try{
+				AIController inner = arc.util.Reflect.get(CommandAI.class, commander, "commandController");
+				if(inner instanceof NukeAI) return ((NukeAI)inner).knownTarget(out);
+			}catch(Throwable ignored){
+			}
+			if(commander.attackTarget instanceof Unit && ((Unit)commander.attackTarget).isValid()){
+				out.set(commander.attackTarget);
+				return true;
+			}
+			if(commander.targetPos != null){
+				out.set(commander.targetPos);
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static NukeAbility abilityOf(Unit unit){
 		for(mindustry.entities.abilities.Ability a : unit.abilities){
 			if(a instanceof NukeAbility) return (NukeAbility)a;

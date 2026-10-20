@@ -3,10 +3,12 @@ package newhorizon.expand.block.nuke;
 import arc.Events;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Lines;
 import arc.math.Mat;
 import arc.math.Mathf;
 import arc.math.geom.Rect;
+import arc.math.geom.Vec2;
 import arc.scene.ui.layout.Scl;
 import arc.struct.Seq;
 import arc.util.Log;
@@ -20,12 +22,13 @@ import mindustry.gen.Groups;
 import mindustry.gen.Unit;
 import mindustry.graphics.MinimapRenderer;
 import newhorizon.content.nuke.NukeUnits;
+import newhorizon.expand.units.nuke.NukeAI;
 import newhorizon.expand.units.nuke.NukeDefense;
 import newhorizon.expand.units.nuke.Warhead;
 
 /**
  * Puts the nukes a radar has detected on the minimap and on the full map: a ring in the colour of the warhead, the way the nuke is
- * heading, and the name of its kind. It is done by swapping the game's minimap renderer for one that draws these on top of what the
+ * heading, the name of its kind, and (if it has been given one) its target: a line to it and the area the blast covers. It is done by swapping the game's minimap renderer for one that draws these on top of what the
  * game draws, with the same positions and scale, so the same code serves the corner minimap and the full-screen map. A nuke is shown to a
  * team only while one of that team's radars that is working covers it, and it is shown even where the fog of war would hide it.
  */
@@ -101,9 +104,23 @@ public class NukeMinimap{
 			//World units per pixel of the interface.
 			float px = Scl.scl(1f) / scale;
 			float pulse = 1f + 0.25f * Mathf.absin(Time.time, 10f, 1f);
+			Vec2 goal = new Vec2();
 			for(Unit u : nukes){
 				Warhead warhead = NukeUnits.warheadOf(u.type);
 				Color color = warhead == null ? Color.scarlet : warhead.color;
+				//Where it is going, if it knows: a line to the target and the area its blast covers.
+				if(NukeAI.targetOf(u, goal)){
+					float blast = warhead == null ? 60f : warhead.radius;
+					Draw.color(color, 0.14f + 0.06f * Mathf.absin(Time.time, 20f, 1f));
+					Fill.circle(goal.x, goal.y, blast);
+					Draw.color(color, 0.9f);
+					Lines.stroke(2f * px);
+					Lines.circle(goal.x, goal.y, blast);
+					Lines.line(goal.x - 7f * px, goal.y, goal.x + 7f * px, goal.y);
+					Lines.line(goal.x, goal.y - 7f * px, goal.x, goal.y + 7f * px);
+					Lines.stroke(1.4f * px);
+					Lines.dashLine(u.x, u.y, goal.x, goal.y, Math.max(2, (int)(u.dst(goal) / (14f * px))));
+				}
 				Draw.color(Color.black, 0.7f);
 				Lines.stroke(4.2f * px);
 				Lines.circle(u.x, u.y, 8f * px * pulse);

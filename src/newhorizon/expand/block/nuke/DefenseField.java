@@ -5,6 +5,7 @@ import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Lines;
 import arc.math.Mathf;
+import arc.math.geom.Vec2;
 import arc.util.Time;
 import mindustry.Vars;
 import mindustry.entities.Units;
@@ -15,6 +16,8 @@ import mindustry.world.Block;
 import mindustry.world.meta.Env;
 import newhorizon.content.nuke.NukeStatus;
 import newhorizon.content.nuke.NukeUnits;
+import newhorizon.expand.units.nuke.NukeAI;
+import newhorizon.expand.units.nuke.Warhead;
 
 /**
  * The area blocks that work against nukes. They all need power and cover a circle:
@@ -96,10 +99,17 @@ public class DefenseField extends Block{
 						Draw.z(Layer.overlayUI);
 						Draw.color(Color.scarlet, 0.9f);
 						Lines.stroke(1.6f);
+						Vec2 goal = new Vec2();
 						Units.nearby(x - range, y - range, range * 2f, range * 2f, u -> {
 							if(u.team == team || !NukeUnits.isActive(u.type) || !u.within(this, range + u.hitSize / 2f)) return;
 							Lines.circle(u.x, u.y, u.hitSize + 8f + Mathf.absin(Time.time, 8f, 3f));
 							Lines.lineAngle(u.x, u.y, u.rotation, 28f);
+							//Where it is going, and what the blast would cover.
+							if(NukeAI.targetOf(u, goal)){
+								Warhead warhead = NukeUnits.warheadOf(u.type);
+								Lines.dashLine(u.x, u.y, goal.x, goal.y, Math.max(2, (int)(u.dst(goal) / 14f)));
+								Lines.circle(goal.x, goal.y, warhead == null ? 60f : warhead.radius);
+							}
 						});
 						Draw.reset();
 					}
