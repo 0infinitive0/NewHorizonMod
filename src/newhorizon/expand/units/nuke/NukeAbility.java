@@ -68,7 +68,7 @@ public class NukeAbility extends Ability{
 		//A pilot arms an inactive nuke by firing, and detonates an active one the same way.
 		if(!active){
 			if(unit.isPlayer() && unit.isShooting && NukeUnits.isInactive(unit.type)) NukeUnits.arm(unit);
-			else if(!unit.isPlayer()) boardCarrier(unit);
+			else boardCarrier(unit);
 			return;
 		}
 
@@ -79,7 +79,7 @@ public class NukeAbility extends Ability{
 
 	/**
 	 * An inactive nuke that has moved onto a ship of its team that carries nukes and has none aboard enters it, to be armed there. Only
-	 * checked now and then, and not for nukes with passengers (they would be lost).
+	 * checked now and then, and not for nukes with passengers (they would be lost). A player flying the nuke takes over the ship.
 	 */
 	protected void boardCarrier(Unit unit){
 		dockTimer -= Time.delta;
@@ -93,7 +93,13 @@ public class NukeAbility extends Ability{
 		});
 		if(ship != null && NukeCarrierAbility.of(ship).load(unit.type)){
 			NukeFx.armed.at(unit.x, unit.y);
+			//A player flying the nuke takes over the ship, unless someone else already has it.
+			mindustry.gen.Player player = unit.getPlayer();
 			unit.remove();
+			if(player != null){
+				if(ship.isPlayer()) player.clearUnit();
+				else player.unit(ship);
+			}
 		}
 	}
 
