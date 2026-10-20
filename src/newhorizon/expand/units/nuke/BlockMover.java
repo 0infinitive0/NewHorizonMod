@@ -144,19 +144,31 @@ public class BlockMover{
 		return now;
 	}
 
-	/** Takes the structure away and puts a fresh one of another block where it stood (the same rotation and origin tile). Server side. */
+	/**
+	 * Takes the structure away and puts fresh ones of another block where it stood, with the same rotation. A one-tile block fills every
+	 * tile the old structure covered (a 3x3 turret replaced by a duo leaves nine duos); a bigger one is placed on the origin tile only.
+	 * Server side. Returns the new structure on the origin tile.
+	 */
 	public static Building replace(Building build, Block to){
 		if(!movable(build) || to == null) return null;
 		Team team = build.team;
-		Tile tile = build.tile;
+		Tile origin = build.tile;
 		int rotation = build.rotation;
 		boolean claimed = NukeSpawned.claimed(build);
 
-		tile.setNet(Blocks.air);
-		tile.setNet(to, team, rotation);
-		Building now = tile.build;
-		if(now != null && claimed) NukeSpawned.claim(now);
-		return now;
+		Seq<Tile> covered = origin.getLinkedTilesAs(build.block, new Seq<>());
+		origin.setNet(Blocks.air);
+		if(to.size == 1){
+			for(Tile tile : covered){
+				if(tile == null || tile.build != null || tile.block() != Blocks.air) continue;
+				tile.setNet(to, team, rotation);
+				if(claimed) NukeSpawned.claim(tile.build);
+			}
+		}else{
+			origin.setNet(to, team, rotation);
+			if(claimed) NukeSpawned.claim(origin.build);
+		}
+		return origin.build;
 	}
 
 	/** Puts a fresh structure of the same kind, turned the given way, where this one stands. Server side. */

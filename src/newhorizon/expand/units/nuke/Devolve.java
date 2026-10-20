@@ -103,7 +103,7 @@ public class Devolve{
 		return to == block ? null : to;
 	}
 
-	/** Drops a structure to its basic version. Server side. Returns false if it was not one that falls. */
+	/** Drops a structure to its basic version, on every tile it covered. Server side. Returns false if it was not one that falls. */
 	public static boolean block(mindustry.gen.Building build){
 		Block to = target(build.block);
 		if(to == null || !BlockMover.movable(build)) return false;
