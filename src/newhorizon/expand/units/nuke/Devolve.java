@@ -25,7 +25,7 @@ import newhorizon.content.nuke.NukeUnits;
 
 /**
  * What a devolve nuke does: units drop one tier (back to the unit a reconstructor makes them from) and structures fall back to the
- * basic version of their kind: walls to copper walls, conveyors to basic ones, turrets to duos, menders and batteries to their one-tile
+ * basic version of their kind: walls (of any size) to one-tile copper walls, conveyors to basic ones, turrets to duos, menders and batteries to their one-tile
  * versions, and every power generator to a combustion generator.
  */
 public class Devolve{
@@ -93,7 +93,7 @@ public class Devolve{
 	public static Block target(Block block){
 		if(block instanceof CoreBlock || block instanceof ConstructBlock) return null;
 		Block to = null;
-		if(block instanceof Wall) to = block.size == 1 ? Blocks.copperWall : block.size == 2 ? Blocks.copperWallLarge : null;
+		if(block instanceof Wall) to = Blocks.copperWall;
 		else if(block instanceof Turret) to = Blocks.duo;
 		else if(block instanceof Conveyor || block instanceof StackConveyor) to = Blocks.conveyor;
 		else if(block instanceof Duct) to = Blocks.duct;
