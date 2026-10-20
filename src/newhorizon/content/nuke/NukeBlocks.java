@@ -7,6 +7,10 @@ import mindustry.world.Block;
 import mindustry.world.blocks.units.UnitFactory;
 import mindustry.world.meta.BuildVisibility;
 import mindustry.world.meta.Env;
+import arc.graphics.Color;
+import newhorizon.expand.block.nuke.DefenseField;
+import newhorizon.expand.block.nuke.InterceptTurret;
+import newhorizon.expand.bullets.nuke.InterceptBulletType;
 import newhorizon.expand.block.nuke.MineBlock;
 import newhorizon.expand.block.nuke.MultiNukeLauncher;
 import newhorizon.expand.block.nuke.NukeLauncher;
@@ -20,6 +24,8 @@ import static mindustry.type.ItemStack.with;
  */
 public class NukeBlocks{
 	public static Block nukeBuilder, nukeLauncher, multiNukeLauncher, orbitalLauncher;
+	/** The defences: radar, cloak, decoy beacon, jammer and the turret that takes nukes. */
+	public static Block trackingRadar, cloakProjector, decoyBeacon, nukeJammer, nukeInterceptor;
 	/** Laid by cluster nukes; cannot be built by hand. */
 	public static MineBlock mine;
 
@@ -61,6 +67,13 @@ public class NukeBlocks{
 			);
 		}};
 
+		//Ships that carry nukes are built in the naval factory.
+		if(mindustry.content.Blocks.navalFactory instanceof UnitFactory){
+			((UnitFactory)mindustry.content.Blocks.navalFactory).plans.add(
+				new UnitFactory.UnitPlan(NukeUnits.carrier, 60f * 60f, with(Items.silicon, 320, Items.graphite, 240, Items.thorium, 160, Items.surgeAlloy, 40))
+			);
+		}
+
 		mine = new MineBlock("nuke-mine"){{
 			requirements(Category.effect, BuildVisibility.hidden, with(Items.silicon, 1));
 			health = 40;
@@ -72,6 +85,61 @@ public class NukeBlocks{
 			requirements(Category.units, with(Items.silicon, 320, Items.graphite, 240, Items.thorium, 200, Items.surgeAlloy, 40));
 			health = 3200;
 			consumePower(8f);
+		}};
+
+		//Takes the high altitude off enemy nukes in range, so that they can be shot at again, and marks them.
+		trackingRadar = new DefenseField("tracking-radar", DefenseField.Kind.radar){{
+			requirements(Category.effect, with(Items.silicon, 160, Items.graphite, 90, Items.thorium, 50));
+			size = 3;
+			health = 1500;
+			consumePower(4f);
+			range = 430f;
+			color = Color.valueOf("7fd8ff");
+		}};
+
+		//Hides its area from enemy launchers: no target can be picked there, and nukes already heading for one lose it.
+		cloakProjector = new DefenseField("cloak-projector", DefenseField.Kind.cloak){{
+			requirements(Category.effect, with(Items.silicon, 200, Items.graphite, 100, Items.phaseFabric, 60, Items.surgeAlloy, 30));
+			size = 3;
+			health = 1800;
+			consumePower(7f);
+			range = 260f;
+			color = Color.valueOf("8a7bff");
+		}};
+
+		//Every enemy nuke in range flies at it, whatever it was aimed at.
+		decoyBeacon = new DefenseField("decoy-beacon", DefenseField.Kind.beacon){{
+			requirements(Category.effect, with(Items.silicon, 120, Items.graphite, 100, Items.thorium, 60));
+			size = 2;
+			health = 2400;
+			consumePower(3f);
+			range = 480f;
+			color = Color.valueOf("ffb347");
+		}};
+
+		//Enemy nukes in range lose their target and wander at random, so that they fly past.
+		nukeJammer = new DefenseField("nuke-jammer", DefenseField.Kind.jammer){{
+			requirements(Category.effect, with(Items.silicon, 200, Items.graphite, 90, Items.phaseFabric, 50, Items.surgeAlloy, 40));
+			size = 3;
+			health = 1700;
+			consumePower(8f);
+			range = 380f;
+			color = Color.valueOf("ff5c5c");
+		}};
+
+		//A very fast shot that takes an active nuke it hits over to its side as an inactive one; a long recharge only after a success.
+		nukeInterceptor = new InterceptTurret("nuke-interceptor"){{
+			requirements(Category.turret, with(Items.silicon, 300, Items.graphite, 200, Items.thorium, 150, Items.surgeAlloy, 60));
+			size = 3;
+			health = 2600;
+			consumePower(12f);
+			range = 540f;
+			reload = 30f;
+			rotateSpeed = 18f;
+			shootCone = 10f;
+			inaccuracy = 0f;
+			shootType = new InterceptBulletType(26f);
+			successCooldown = 60f * 25f;
 		}};
 
 		//One nuke at a time, but it is thrown so high that nothing can target or hit it on the way: slow to arm, slow to recover.

@@ -35,6 +35,7 @@ import mindustry.world.meta.BlockGroup;
 import mindustry.world.meta.Env;
 import newhorizon.content.nuke.NukeFx;
 import newhorizon.content.nuke.NukeUnits;
+import newhorizon.expand.units.nuke.NukeDefense;
 
 import static mindustry.Vars.tilesize;
 
@@ -109,6 +110,8 @@ public class NukeLauncher extends PayloadBlock{
 		public float cooldown;
 
 		public void setTarget(Vec2 pos){
+			//An enemy cloak hides what is under it: no target can be picked there.
+			if(NukeDefense.cloaked(team, pos.x, pos.y)) return;
 			target.set(pos);
 			hasTarget = true;
 		}
@@ -163,6 +166,8 @@ public class NukeLauncher extends PayloadBlock{
 		public void updateTile(){
 			unit();
 			cooldown = Math.max(0f, cooldown - Time.delta);
+			//A cloak put up over the target after it was picked takes it away.
+			if(hasTarget && NukeDefense.cloaked(team, target.x, target.y)) hasTarget = false;
 
 			if(payload == null){
 				armProgress = 0f;
@@ -249,22 +254,7 @@ public class NukeLauncher extends PayloadBlock{
 			nuke.vel.trns(angle, nuke.type.speed * 0.6f);
 			nuke.add();
 
-			//A team the player commands gets the unit as a commandable one; everything else gets the nuke's own flight AI.
-			AIController controller;
-			if(!team.isAI() && nuke.type.commands.contains(NukeUnits.strikeCommand)){
-				CommandAI command = new CommandAI();
-				nuke.controller(command);
-				command.command(NukeUnits.strikeCommand);
-				controller = command;
-			}else{
-				UnitController current = nuke.controller();
-				if(!(current instanceof AIController)){
-					current = nuke.type.createController(nuke);
-					nuke.controller(current);
-				}
-				controller = (AIController)current;
-			}
-			if(aim != null) controller.commandPosition(aim);
+			NukeUnits.fly(nuke, aim);
 		}
 
 		@Override

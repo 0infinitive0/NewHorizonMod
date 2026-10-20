@@ -15,6 +15,7 @@ import mindustry.game.EventType;
 import mindustry.graphics.Layer;
 import mindustry.input.Binding;
 import mindustry.input.DesktopInput;
+import newhorizon.expand.units.nuke.NukeDefense;
 
 /**
  * Picking a launcher's target on the map: the launcher's menu closes and the camera is let go of, so it can be panned (the movement
@@ -108,6 +109,11 @@ public class NukeTargeting{
 			touching = false;
 			if(!dragged && !Core.scene.hasMouse()){
 				Vec2 world = Core.input.mouseWorld();
+				if(NukeDefense.cloaked(pending.team, world.x, world.y)){
+					//Hidden by an enemy cloak: it cannot be targeted, keep picking.
+					Vars.ui.showInfoToast(Core.bundle.get("nh.nuke.cloaked"), 3f);
+					return;
+				}
 				pending.configure(new Vec2(world.x, world.y));
 				finish();
 			}
@@ -119,7 +125,7 @@ public class NukeTargeting{
 		if(pending == null || !pending.isValid() || touching && dragged) return;
 		Vec2 world = Core.input.mouseWorld();
 		Draw.z(Layer.overlayUI);
-		Draw.color(Color.scarlet, 0.8f);
+		Draw.color(NukeDefense.cloaked(pending.team, world.x, world.y) ? Color.gray : Color.scarlet, 0.8f);
 		Lines.stroke(1.5f);
 		Lines.dashLine(pending.x, pending.y, world.x, world.y, (int)(pending.dst(world.x, world.y) / 14f));
 		Lines.circle(world.x, world.y, 14f);

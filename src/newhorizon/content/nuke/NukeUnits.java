@@ -14,7 +14,11 @@ import mindustry.gen.UnitEntity;
 import mindustry.type.UnitType;
 import mindustry.world.Block;
 import mindustry.ai.types.CommandAI;
+import mindustry.gen.UnitWaterMove;
 import newhorizon.expand.units.nuke.ArmAI;
+import newhorizon.expand.units.nuke.CarrierAI;
+import newhorizon.expand.units.nuke.DockAI;
+import newhorizon.expand.units.nuke.NukeCarrierAbility;
 import newhorizon.expand.units.nuke.DetonateAI;
 import newhorizon.expand.units.nuke.MiniNukeAI;
 import newhorizon.expand.units.nuke.NukeAI;
@@ -61,9 +65,11 @@ public class NukeUnits{
 		devolve, devolveActive;
 	/** What a decoy breaks into. Never built or launched, and not a part of any unit cap. */
 	public static NHUnitType mini;
+	/** The ship that carries nukes and launches them. */
+	public static NHUnitType carrier;
 
 	/** The Strike command (the default of an active nuke) flies it at the target; Detonate sets it off at once. */
-	public static UnitCommand strikeCommand, detonateCommand, armCommand;
+	public static UnitCommand strikeCommand, detonateCommand, armCommand, dockCommand, carrierLaunchCommand;
 
 	/** One stance per wall a wall nuke can be set to. */
 	public static final Seq<WallStance> wallStances = new Seq<>();
@@ -90,6 +96,12 @@ public class NukeUnits{
 		//An inactive nuke can arm itself: it turns active where it is, and the player then sends it off with the Strike command.
 		armCommand = new UnitCommand("nh-nuke-arm", "power", u -> new ArmAI());
 		armCommand.switchToMove = false;
+		//An inactive nuke flies to the nearest carrier ship with room; a carrier fires one nuke at each target it is given.
+		dockCommand = new UnitCommand("nh-nuke-dock", "download", u -> new DockAI());
+		dockCommand.switchToMove = false;
+		carrierLaunchCommand = new UnitCommand("nh-carrier-launch", "commandAttack", u -> new CarrierAI());
+		carrierLaunchCommand.switchToMove = false;
+		carrierLaunchCommand.resetTarget = false;
 
 		explosive = nuke(Warhead.explosive, false);
 		explosiveActive = nuke(Warhead.explosive, true);
@@ -172,6 +184,26 @@ public class NukeUnits{
 		breach = nuke(Warhead.breach, false);
 		breachActive = nuke(Warhead.breach, true);
 		pair(breach, breachActive);
+		carrier = new NukeUnitType("nuke-carrier"){{
+			constructor = UnitWaterMove::create;
+			naval = true;
+			outlineColor = Color.valueOf("1b1b22");
+			speed = 0.9f;
+			accel = 0.08f;
+			drag = 0.14f;
+			rotateSpeed = 1.8f;
+			hitSize = 34f;
+			health = 2600f;
+			armor = 8f;
+			trailLength = 22;
+			waveTrailX = 9f;
+			waveTrailY = -22f;
+			trailScl = 1.8f;
+			commands = Seq.with(UnitCommand.moveCommand, carrierLaunchCommand);
+			defaultCommand = UnitCommand.moveCommand;
+			abilities.add(new NukeCarrierAbility());
+		}};
+
 		devolve = nuke(Warhead.devolve, false);
 		devolveActive = nuke(Warhead.devolve, true);
 		pair(devolve, devolveActive);
@@ -224,7 +256,7 @@ public class NukeUnits{
 				engineSize = 2.6f;
 				aiController = AIController::new;
 				//It can also fly into a launcher (or any payload block that takes it), and arm itself.
-				commands = Seq.with(UnitCommand.moveCommand, UnitCommand.enterPayloadCommand, armCommand);
+				commands = Seq.with(UnitCommand.moveCommand, UnitCommand.enterPayloadCommand, armCommand, dockCommand);
 				defaultCommand = UnitCommand.moveCommand;
 			}
 
@@ -302,6 +334,69 @@ public class NukeUnits{
 		}else if(!unit.isPlayer()){
 			unit.controller(active.createController(unit));
 		}
+		NukeFx.armed.at(unit.x, unit.y);
+		return true;
+	}
+
+	/**
+	 * The way a launcher sends a nuke off: a team the player commands gets the unit as a commandable one on the Strike command, everything
+	 * else gets the nuke's own flight AI; the target, if any, is given to it.
+	 */
+	public static void fly(Unit nuke, arc.math.geom.Vec2 aim){
+		AIController controller;
+		if(!nuke.team.isAI() && nuke.type.commands.contains(strikeCommand)){
+			CommandAI command = new CommandAI();
+			nuke.controller(command);
+			command.command(strikeCommand);
+			controller = command;
+		}else{
+			UnitController current = nuke.controller();
+			if(!(current instanceof AIController)){
+				current = nuke.type.createController(nuke);
+				nuke.controller(current);
+			}
+			controller = (AIController)current;
+		}
+		if(aim != null) controller.commandPosition(aim);
+	}
+
+	/**
+	 * Disarms an active nuke where it is: the same unit becomes its inactive form. Server side. Returns false for anything that is not an
+	 * active nuke with an inactive form.
+	 */
+	public static boolean disarm(Unit unit){
+		if(!isActive(unit.type) || unit.dead()) return false;
+		UnitType inactive = counterpart(unit.type);
+		if(inactive == null) return false;
+
+		NukeAbility old = NukeAI.abilityOf(unit);
+		float data = old == null ? 0f : old.data;
+		UnitController keep = unit.controller();
+		unit.setType(inactive);
+		if(unit.controller() != keep) unit.controller(keep);
+		for(int i = 0; i < unit.abilities.length && i < inactive.abilities.size; i++) unit.abilities[i] = inactive.abilities.get(i).copy();
+		NukeAbility now = NukeAI.abilityOf(unit);
+		if(now != null) now.data = data;
+		unit.health = Math.min(unit.maxHealth, inactive.health);
+		return true;
+	}
+
+	/**
+	 * What an interceptor does to a nuke it hits: an active nuke is switched off, becoming its inactive form, and goes over to the
+	 * interceptor's team (a mini nuke has no inactive form and is simply neutralised). Server side. Returns whether it worked.
+	 */
+	public static boolean capture(Unit unit, mindustry.game.Team team){
+		if(!isActive(unit.type) || unit.dead() || !unit.isAdded()) return false;
+		if(counterpart(unit.type) == null){
+			NukeFx.armed.at(unit.x, unit.y);
+			unit.remove();
+			return true;
+		}
+		if(!disarm(unit)) return false;
+		unit.unapply(NukeStatus.highAltitude);
+		unit.team(team);
+		unit.controller(unit.type.createController(unit));
+		unit.vel.scl(0.3f);
 		NukeFx.armed.at(unit.x, unit.y);
 		return true;
 	}

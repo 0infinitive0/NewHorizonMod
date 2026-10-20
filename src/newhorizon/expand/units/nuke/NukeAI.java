@@ -1,6 +1,8 @@
 package newhorizon.expand.units.nuke;
 
+import arc.math.Mathf;
 import arc.math.geom.Vec2;
+import arc.util.Time;
 import mindustry.ai.types.CommandAI;
 import mindustry.entities.Units;
 import mindustry.entities.units.AIController;
@@ -23,6 +25,11 @@ public class NukeAI extends AIController{
 	public float arrival = 40f;
 
 	private final Vec2 tmp = new Vec2(), aimPoint = new Vec2();
+	/** The enemy beacon that has taken hold of this nuke. */
+	private Building lureTarget;
+	/** Whether a jammer or a cloak has made it lose its target for good: it flies on without one, and does not go off on what it meets. */
+	private boolean lost, jammedNow;
+	private float defenseTimer, jamTimer, jamTurn;
 	private Vec2 targetPos;
 	private Unit targetUnit;
 	private float lastDst = Float.MAX_VALUE;
@@ -34,7 +41,32 @@ public class NukeAI extends AIController{
 		NukeAbility ability = abilityOf(unit);
 		if(ability == null || !ability.active) return;
 
+		//The defence blocks: a jammer takes the target away, a beacon gives it a new one.
+		defenseTimer -= Time.delta;
+		if(defenseTimer <= 0f){
+			defenseTimer = 8f;
+			jammedNow = NukeDefense.jammed(unit);
+			if(!jammedNow){
+				Building lure = NukeDefense.lure(unit);
+				if(lure != null){
+					lureTarget = lure;
+					lost = false;
+				}
+			}
+		}
+		if(jammedNow) lose();
+		if(lost){
+			drift();
+			return;
+		}
+
 		boolean aimed = aim(aimPoint);
+		//A target hidden by an enemy cloak is gone.
+		if(aimed && explicitAim && lureTarget == null && NukeDefense.cloaked(unit.team, aimPoint.x, aimPoint.y)){
+			lose();
+			drift();
+			return;
+		}
 
 		//A nuke that was given a target flies to it, past whatever else is in the way. Only one with nothing to aim at (launched by hand, or
 		//heading for the nearest core on its own) goes off on the first enemy it meets.
@@ -65,6 +97,13 @@ public class NukeAI extends AIController{
 	 */
 	protected boolean aim(Vec2 out){
 		explicitAim = true;
+		if(lureTarget != null){
+			if(lureTarget.isValid()){
+				out.set(lureTarget);
+				return true;
+			}
+			lureTarget = null;
+		}
 		if(targetUnit != null && targetUnit.isValid() && targetUnit.team != unit.team){
 			out.set(targetUnit);
 			return true;
@@ -92,6 +131,28 @@ public class NukeAI extends AIController{
 			return true;
 		}
 		return false;
+	}
+
+	/** Forgets every target: from here the nuke only flies straight on. */
+	protected void lose(){
+		lost = true;
+		targetPos = null;
+		targetUnit = null;
+		lureTarget = null;
+	}
+
+	/** Flies on without a target. Inside a jammer's field it swings about at random. */
+	protected void drift(){
+		float offset = 0f;
+		if(jammedNow){
+			jamTimer -= Time.delta;
+			if(jamTimer <= 0f){
+				jamTimer = Mathf.random(12f, 40f);
+				jamTurn = Mathf.range(90f);
+			}
+			offset = jamTurn;
+		}
+		unit.movePref(tmp.trns(unit.rotation + offset, unit.speed()));
 	}
 
 	/** Goes off if an enemy unit or structure is right ahead. */

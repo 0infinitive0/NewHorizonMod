@@ -42,6 +42,9 @@ public class NukeTechTree{
 		TechNode launcher = child(builder, NukeBlocks.nukeLauncher);
 		child(launcher, NukeBlocks.multiNukeLauncher);
 		child(launcher, NukeBlocks.orbitalLauncher);
+		for(UnlockableContent defence : new UnlockableContent[]{NukeBlocks.trackingRadar, NukeBlocks.cloakProjector, NukeBlocks.decoyBeacon, NukeBlocks.nukeJammer, NukeBlocks.nukeInterceptor, NukeUnits.carrier}){
+			child(builder, defence);
+		}
 		for(UnlockableContent unit : NukeUnits.inactive) child(builder, unit);
 	}
 
