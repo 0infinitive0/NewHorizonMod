@@ -4,13 +4,18 @@ import arc.Core;
 import arc.math.Angles;
 import arc.math.Mathf;
 import arc.math.geom.Vec2;
+import arc.struct.Seq;
 import arc.util.Time;
 import mindustry.Vars;
 import mindustry.entities.Units;
 import mindustry.entities.abilities.Ability;
+import mindustry.gen.Payloadc;
 import mindustry.gen.Sounds;
 import mindustry.gen.Unit;
 import mindustry.type.UnitType;
+import mindustry.world.Block;
+import mindustry.world.blocks.payloads.Payload;
+import mindustry.world.blocks.payloads.UnitPayload;
 import newhorizon.content.nuke.NukeFx;
 import newhorizon.content.nuke.NukeUnits;
 
@@ -21,7 +26,9 @@ import newhorizon.content.nuke.NukeUnits;
  * while to reload.
  *
  * <p>What is aboard is kept in the ability's saved number, so it survives a save: the kind of nuke (its place in the list of inactive
- * nukes), whether it is armed, and whether there is one at all. What a nuke had been set up with (a wall type, passengers) is not kept.
+ * nukes), whether it is armed, whether there is one at all, and the wall type a wall nuke was set to. Passengers of an infantry nuke are
+ * kept in memory and go back into the nuke when it is launched; they are let out if the ship is destroyed, but they are not saved with the
+ * ship: a ship loaded from a save has lost them.
  */
 public class NukeCarrierAbility extends Ability{
 	/** Ticks to arm (or disarm from fully armed) and to reload after a launch. */
@@ -32,6 +39,8 @@ public class NukeCarrierAbility extends Ability{
 	/** What the ship has been told: whether to arm. */
 	public boolean wantArmed;
 	protected float timer;
+	/** The units an infantry nuke was carrying when it came aboard. */
+	protected Seq<Payload> cargo = new Seq<>();
 
 	public boolean loaded(){
 		return ((int)data & 64) != 0;
@@ -52,21 +61,50 @@ public class NukeCarrierAbility extends Ability{
 		return !loaded();
 	}
 
-	/** Takes a nuke on board. Returns false if there is one already or this is not an inactive nuke. */
+	/** The wall a wall nuke aboard is set to, or null for the default (or for any other kind of nuke). */
+	public Block wallType(){
+		int id = ((int)data >> 7) & 4095;
+		return id == 0 ? null : Vars.content.block(id - 1);
+	}
+
+	/** Takes a nuke of this kind on board, with nothing set up. Returns false if there is one already or this is not an inactive nuke. */
 	public boolean load(UnitType inactive){
 		int index = NukeUnits.inactive.indexOf(t -> t == inactive);
 		if(index < 0 || index > 31 || loaded()) return false;
 		data = 64 | index;
+		cargo.clear();
 		armProgress = 0f;
 		wantArmed = false;
+		return true;
+	}
+
+	/** Takes this nuke on board with what it has been set up with: its wall type and its passengers. The unit itself is not removed. */
+	public boolean load(Unit nuke){
+		if(!load(nuke.type)) return false;
+		NukeAbility setup = NukeAI.abilityOf(nuke);
+		if(setup != null && setup.data > 0f){
+			Block wall = setup.wallType();
+			if(wall != null && wall.id + 1 < 4096) data = (int)data | ((wall.id + 1) << 7);
+		}
+		if(nuke instanceof Payloadc){
+			Payloadc carrier = (Payloadc)nuke;
+			cargo.addAll(carrier.payloads());
+			carrier.payloads().clear();
+		}
 		return true;
 	}
 
 	/** Takes the nuke off, whatever it was doing. */
 	protected void unload(){
 		data = 0f;
+		cargo.clear();
 		armProgress = 0f;
 		wantArmed = false;
+	}
+
+	/** The passengers aboard, for tests and displays. */
+	public Seq<Payload> cargo(){
+		return cargo;
 	}
 
 	public boolean ready(){
@@ -107,12 +145,18 @@ public class NukeCarrierAbility extends Ability{
 		UnitType active = inactive == null ? null : NukeUnits.counterpart(inactive);
 		if(active == null || !Units.canCreate(ship.team, active)) return false;
 
+		//What the nuke was set up with goes with it.
+		Block wall = wallType();
+		Seq<Payload> passengers = new Seq<>(cargo);
 		unload();
 		float angle = aim != null ? ship.angleTo(aim.x, aim.y) : ship.rotation;
 		Unit nuke = active.create(ship.team);
 		nuke.set(ship.x + Angles.trnsx(angle, ship.hitSize / 2f), ship.y + Angles.trnsy(angle, ship.hitSize / 2f));
 		nuke.rotation = angle;
 		nuke.vel.trns(angle, active.speed * 0.6f);
+		NukeAbility setup = NukeAI.abilityOf(nuke);
+		if(wall != null && setup != null) setup.wallType(wall);
+		if(nuke instanceof Payloadc) ((Payloadc)nuke).payloads().addAll(passengers);
 		nuke.add();
 		NukeUnits.fly(nuke, aim);
 
@@ -130,9 +174,23 @@ public class NukeCarrierAbility extends Ability{
 		return null;
 	}
 
+	/** A ship that is destroyed lets its passengers out. */
+	@Override
+	public void death(Unit unit){
+		for(Payload payload : cargo){
+			if(!(payload instanceof UnitPayload)) continue;
+			Unit passenger = ((UnitPayload)payload).unit;
+			passenger.set(unit.x + Mathf.range(unit.hitSize / 2f), unit.y + Mathf.range(unit.hitSize / 2f));
+			passenger.vel.setZero();
+			passenger.add();
+		}
+		cargo.clear();
+	}
+
 	@Override
 	public Ability copy(){
 		NukeCarrierAbility copy = (NukeCarrierAbility)super.copy();
+		copy.cargo = new Seq<>();
 		copy.timer = 0f;
 		copy.armProgress = 0f;
 		copy.wantArmed = false;

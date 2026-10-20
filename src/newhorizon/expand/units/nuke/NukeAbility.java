@@ -79,19 +79,17 @@ public class NukeAbility extends Ability{
 
 	/**
 	 * An inactive nuke that has moved onto a ship of its team that carries nukes and has none aboard enters it, to be armed there. Only
-	 * checked now and then, and not for nukes with passengers (they would be lost). A player flying the nuke takes over the ship.
+	 * checked now and then. It keeps what it was set up with (wall type, passengers). A player flying the nuke takes over the ship.
 	 */
 	protected void boardCarrier(Unit unit){
 		dockTimer -= Time.delta;
 		if(dockTimer > 0f) return;
 		dockTimer = 10f;
-		if(unit instanceof mindustry.gen.Payloadc && !((mindustry.gen.Payloadc)unit).payloads().isEmpty()) return;
-
 		Unit ship = Units.closest(unit.team, unit.x, unit.y, 60f, u -> {
 			NukeCarrierAbility a = NukeCarrierAbility.of(u);
 			return a != null && a.free() && unit.within(u, u.hitSize / 2f);
 		});
-		if(ship != null && NukeCarrierAbility.of(ship).load(unit.type)){
+		if(ship != null && NukeCarrierAbility.of(ship).load(unit)){
 			NukeFx.armed.at(unit.x, unit.y);
 			//A player flying the nuke takes over the ship, unless someone else already has it.
 			mindustry.gen.Player player = unit.getPlayer();
