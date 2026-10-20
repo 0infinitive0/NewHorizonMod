@@ -51,7 +51,13 @@ public class NukeUnits{
 		storm, stormActive,
 		decoy, decoyActive,
 		lightning, lightningActive,
-		quake, quakeActive;
+		quake, quakeActive,
+		scatter, scatterActive,
+		magnet, magnetActive,
+		hijack, hijackActive,
+		scramble, scrambleActive,
+		sabotage, sabotageActive,
+		breach, breachActive;
 	/** What a decoy breaks into. Never built or launched, and not a part of any unit cap. */
 	public static NHUnitType mini;
 
@@ -147,6 +153,24 @@ public class NukeUnits{
 		quake = nuke(Warhead.quake, false);
 		quakeActive = nuke(Warhead.quake, true);
 		pair(quake, quakeActive);
+		scatter = nuke(Warhead.scatter, false);
+		scatterActive = nuke(Warhead.scatter, true);
+		pair(scatter, scatterActive);
+		magnet = nuke(Warhead.magnet, false);
+		magnetActive = nuke(Warhead.magnet, true);
+		pair(magnet, magnetActive);
+		hijack = nuke(Warhead.hijack, false);
+		hijackActive = nuke(Warhead.hijack, true);
+		pair(hijack, hijackActive);
+		scramble = nuke(Warhead.scramble, false);
+		scrambleActive = nuke(Warhead.scramble, true);
+		pair(scramble, scrambleActive);
+		sabotage = nuke(Warhead.sabotage, false);
+		sabotageActive = nuke(Warhead.sabotage, true);
+		pair(sabotage, sabotageActive);
+		breach = nuke(Warhead.breach, false);
+		breachActive = nuke(Warhead.breach, true);
+		pair(breach, breachActive);
 	}
 
 	private static void pair(NHUnitType off, NHUnitType on){

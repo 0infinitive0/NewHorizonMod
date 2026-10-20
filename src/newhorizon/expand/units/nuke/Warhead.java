@@ -2,6 +2,7 @@ package newhorizon.expand.units.nuke;
 
 import arc.graphics.Color;
 import arc.math.Mathf;
+import arc.math.geom.Intersector;
 import arc.struct.Seq;
 import arc.util.Tmp;
 import mindustry.Vars;
@@ -13,10 +14,13 @@ import mindustry.entities.Puddles;
 import mindustry.entities.Units;
 import mindustry.game.Team;
 import mindustry.gen.Payloadc;
+import mindustry.gen.Building;
 import mindustry.gen.Unit;
+import mindustry.type.Item;
 import mindustry.type.Liquid;
 import mindustry.world.Block;
 import mindustry.world.Tile;
+import mindustry.world.blocks.defense.turrets.ItemTurret;
 import mindustry.world.blocks.defense.turrets.Turret;
 import mindustry.world.blocks.payloads.Payload;
 import mindustry.world.blocks.payloads.UnitPayload;
@@ -42,7 +46,8 @@ public abstract class Warhead{
 	public static Warhead
 		explosive, incendiary, radiation, emp,
 		psychic, gravity, spatial, shockwave, cluster, wall, temporal, infantry, overload,
-		laser, swarm, storm, decoy, mini, lightning, quake;
+		laser, swarm, storm, decoy, mini, lightning, quake,
+		scatter, magnet, hijack, scramble, sabotage, breach;
 	public static final Seq<Warhead> all = new Seq<>();
 
 	public final String name;
@@ -372,6 +377,113 @@ public abstract class Warhead{
 			}
 		};
 
+		//Throws every structure in reach to a random free place around. Turrets, containers, tanks and batteries keep what they hold.
+		scatter = new Warhead("scatter", Color.valueOf("ff9ec4"), 230f, 0f){
+			@Override
+			public void visual(float x, float y){
+				NukeFx.empPulse.at(x, y, radius, color);
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+				BlockMover.scatter(x, y, radius, radius * 1.6f);
+			}
+		};
+
+		//Draws every structure in reach in towards the centre and packs them together. The same things keep what they hold.
+		magnet = new Warhead("magnet", Color.valueOf("5c8dff"), 260f, 0f){
+			@Override
+			public void visual(float x, float y){
+				NukeFx.pullRing.at(x, y, radius, color);
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+				BlockMover.magnet(x, y, radius);
+			}
+		};
+
+		//Every structure of another team in reach changes sides, turrets included. Cores stay. Nothing is damaged.
+		hijack = new Warhead("hijack", Color.valueOf("ffd1a0"), 240f, 0f){
+			@Override
+			public void visual(float x, float y){
+				NukeFx.empPulse.at(x, y, radius, color);
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+				Seq<Building> taken = new Seq<>();
+				Units.nearbyBuildings(x, y, radius, b -> {
+					if(b.dst(x, y) <= radius && b.team != team && BlockMover.movable(b)) taken.add(b);
+				});
+				for(Building b : taken){
+					b.changeTeam(team);
+					NukeFx.armed.at(b.x, b.y);
+				}
+			}
+		};
+
+		//Turns every rotating structure in reach a random way and wipes or randomises the settings of the rest: sorters and unloaders pick
+		//a random item, bridges and nodes unlink, factories forget what they were making. Nothing is damaged.
+		scramble = new Warhead("scramble", Color.valueOf("ff7ad9"), 240f, 0f){
+			@Override
+			public void visual(float x, float y){
+				NukeFx.empPulse.at(x, y, radius, color);
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+				for(Building b : BlockMover.within(x, y, radius)){
+					BlockMover.enqueue(() -> scrambleOne(b));
+				}
+			}
+		};
+
+		//Empties every turret in reach of its ammo and sets off what is stored: ammo and anything flammable or explosive blows up in
+		//proportion to how dangerous it is, which can set off the next structure along.
+		sabotage = new Warhead("sabotage", Color.valueOf("e8590c"), 230f, 0f){
+			@Override
+			public void visual(float x, float y){
+				NukeFx.blast.at(x, y, radius * 0.6f, color);
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+				Units.nearbyBuildings(x, y, radius, b -> {
+					if(b.dst(x, y) > radius || !b.isValid()) return;
+					sabotageOne(b);
+				});
+			}
+		};
+
+		//A cut along the way the nuke came: everything in a narrow lane behind the point where it went off takes enormous damage, armor
+		//or not, which opens a way through layered walls towards the target.
+		breach = new Warhead("breach", Color.valueOf("fff1c9"), 120f, 0f){
+			@Override
+			public void visual(float x, float y){
+				NukeFx.blast.at(x, y, radius, color);
+			}
+
+			@Override
+			public void spawn(float x, float y, Team team, Unit nuke){
+				NukeFx.breachBeam.at(x, y, heading(nuke), color);
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+				float angle = heading(nuke);
+				float ax = x + Mathf.cosDeg(angle + 180f) * laneBack, ay = y + Mathf.sinDeg(angle + 180f) * laneBack;
+				float bx = x + Mathf.cosDeg(angle) * laneFront, by = y + Mathf.sinDeg(angle) * laneFront;
+				float mx = (ax + bx) / 2f, my = (ay + by) / 2f, reach = (laneBack + laneFront) / 2f + 60f;
+				Units.nearbyBuildings(mx, my, reach, b -> {
+					if(b.isValid() && Intersector.distanceSegmentPoint(ax, ay, bx, by, b.x, b.y) <= laneWidth / 2f + b.block.size * tilesize / 2f) b.damagePierce(laneDamage);
+				});
+				Units.nearby(mx - reach, my - reach, reach * 2f, reach * 2f, u -> {
+					if(u != nuke && !u.dead() && Intersector.distanceSegmentPoint(ax, ay, bx, by, u.x, u.y) <= laneWidth / 2f + u.hitSize / 2f) u.damagePierce(laneUnitDamage);
+				});
+			}
+		};
+
 		//A tough bait that breaks into three mini nukes, which fly off at whatever is near. The blast itself hurts nothing.
 		decoy = new Warhead("decoy", Color.valueOf("c3ccd8"), 60f, 0f){
 			@Override
@@ -419,6 +531,72 @@ public abstract class Warhead{
 
 	/** The share of its maximum health that a radiation nuke's blast takes from everything in reach at once. */
 	public static final float firstDose = 0.15f;
+
+	/** The breach nuke's lane: how far it reaches behind the point and ahead of it, how wide it is, and what it does to a structure and a unit. */
+	public static final float laneBack = 700f, laneFront = 120f, laneWidth = 36f, laneDamage = 6000f, laneUnitDamage = 500f;
+
+	/** The way a nuke was flying when it went off. */
+	public static float heading(Unit nuke){
+		return nuke == null ? 0f : nuke.rotation;
+	}
+
+	/** One structure's share of a scramble: a random way round if it turns, otherwise its settings changed or cleared. Server side. */
+	public static void scrambleOne(Building b){
+		if(!BlockMover.movable(b)) return;
+		if(b.block.rotate){
+			BlockMover.rebuild(b, Mathf.random(3));
+		}else if(b.block.configurable){
+			if(b.block.configurations.containsKey(Item.class)) b.configureAny(Vars.content.items().random());
+			else if(b.block.configurations.containsKey(Liquid.class)) b.configureAny(Vars.content.liquids().random());
+			else b.configureAny(null);
+		}
+	}
+
+	/** One structure's share of a sabotage: a turret is emptied, and whatever is stored may blow it up. Server side. */
+	public static void sabotageOne(Building b){
+		float[] stored = {0f, 0f}; //explosiveness, flammability
+		boolean turret = b instanceof Turret.TurretBuild;
+		if(turret){
+			Turret.TurretBuild t = (Turret.TurretBuild)b;
+			for(Turret.AmmoEntry entry : t.ammo){
+				if(entry instanceof ItemTurret.ItemEntry){
+					Item item = ((ItemTurret.ItemEntry)entry).item;
+					stored[0] += item.explosiveness * entry.amount * 0.5f;
+					stored[1] += item.flammability * entry.amount * 0.5f;
+				}
+			}
+			t.ammo.clear();
+			t.totalAmmo = 0;
+		}
+		if(b.items != null) b.items.each((item, amount) -> {
+			stored[0] += item.explosiveness * amount;
+			stored[1] += item.flammability * amount;
+		});
+		if(b.liquids != null) b.liquids.each((liquid, amount) -> {
+			stored[0] += liquid.explosiveness * amount;
+			stored[1] += liquid.flammability * amount;
+		});
+		float power = b.block.consPower != null && b.block.consPower.buffered && b.power != null ? b.power.status * b.block.consPower.capacity : 0f;
+
+		boolean dangerous = stored[0] * 3f + stored[1] > 40f || power > 800f;
+		if(!dangerous && !turret) return;
+
+		BlockMover.enqueue(() -> {
+			if(!b.isValid()) return;
+			if(turret && !dangerous){
+				//An emptied turret that held nothing dangerous is only shaken.
+				b.damagePierce(b.maxHealth * 0.2f);
+				return;
+			}
+			if(turret){
+				Damage.dynamicExplosion(b.x, b.y, stored[1], stored[0] * 3.5f, power, b.block.size * tilesize / 2f, true);
+				b.damagePierce(b.maxHealth * 0.5f);
+			}else{
+				//Destroying it sets off its contents the way the game does.
+				b.kill();
+			}
+		});
+	}
 
 	/** How many mini nukes a decoy breaks into. */
 	public static final int pieces = 3;

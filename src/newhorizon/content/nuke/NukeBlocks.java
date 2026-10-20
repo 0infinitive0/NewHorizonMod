@@ -49,6 +49,12 @@ public class NukeBlocks{
 				new UnitFactory.UnitPlan(NukeUnits.storm, 60f * 35f, with(Items.silicon, 90, Items.graphite, 110, Items.thorium, 50, Items.phaseFabric, 15)),
 				new UnitFactory.UnitPlan(NukeUnits.lightning, 60f * 38f, with(Items.silicon, 120, Items.graphite, 80, Items.thorium, 40, Items.surgeAlloy, 25)),
 				new UnitFactory.UnitPlan(NukeUnits.quake, 60f * 35f, with(Items.silicon, 80, Items.graphite, 150, Items.thorium, 80)),
+				new UnitFactory.UnitPlan(NukeUnits.scatter, 60f * 35f, with(Items.silicon, 90, Items.graphite, 100, Items.thorium, 60, Items.phaseFabric, 10)),
+				new UnitFactory.UnitPlan(NukeUnits.magnet, 60f * 35f, with(Items.silicon, 90, Items.graphite, 90, Items.thorium, 60, Items.phaseFabric, 15)),
+				new UnitFactory.UnitPlan(NukeUnits.hijack, 60f * 45f, with(Items.silicon, 140, Items.phaseFabric, 60, Items.surgeAlloy, 40)),
+				new UnitFactory.UnitPlan(NukeUnits.scramble, 60f * 40f, with(Items.silicon, 110, Items.phaseFabric, 30, Items.surgeAlloy, 20)),
+				new UnitFactory.UnitPlan(NukeUnits.sabotage, 60f * 35f, with(Items.silicon, 90, Items.graphite, 120, Items.thorium, 50, Items.surgeAlloy, 15)),
+				new UnitFactory.UnitPlan(NukeUnits.breach, 60f * 40f, with(Items.silicon, 100, Items.graphite, 130, Items.thorium, 80, Items.surgeAlloy, 25)),
 				new UnitFactory.UnitPlan(NukeUnits.decoy, 60f * 8f, with(Items.silicon, 40, Items.graphite, 50, Items.thorium, 20)),
 				new UnitFactory.UnitPlan(NukeUnits.infantry, 60f * 25f, with(Items.silicon, 90, Items.graphite, 60, Items.thorium, 30))
 			);

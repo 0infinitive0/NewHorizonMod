@@ -66,6 +66,19 @@ public class NukeFx{
 			Draw.reset();
 		}),
 
+		/** The cut of a breach nuke: a bright line behind the point where it went off, in the direction it came from (the rotation is the heading). */
+		breachBeam = new Effect(45f, 1400f, e -> {
+			Draw.z(Layer.effect + 2f);
+			float len = 700f;
+			Draw.color(Color.white, e.color, e.fin());
+			Lines.stroke(14f * e.fout());
+			Lines.lineAngle(e.x, e.y, e.rotation + 180f, len * Interp.pow2Out.apply(Math.min(1f, e.fin() * 6f)));
+			Draw.color(e.color, 0.6f * e.fout());
+			Lines.stroke(30f * e.fout());
+			Lines.lineAngle(e.x, e.y, e.rotation + 180f, len * Interp.pow2Out.apply(Math.min(1f, e.fin() * 6f)));
+			Draw.reset();
+		}),
+
 		/** The flash of a nuke leaving its launcher. */
 		launch = new Effect(40f, 300f, e -> {
 			Draw.color(Color.white, Color.orange, e.fin());
