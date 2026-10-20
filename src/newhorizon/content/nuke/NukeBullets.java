@@ -118,8 +118,8 @@ public class NukeBullets{
 			radius = 210f;
 			lifetime = 60f * 10f;
 			interval = 15f;
-			maxTargets = 5;
-			arcDamage = 30f;
+			maxTargets = 20;
+			arcDamage = 50f;
 			color = Color.valueOf("ffe066");
 		}};
 

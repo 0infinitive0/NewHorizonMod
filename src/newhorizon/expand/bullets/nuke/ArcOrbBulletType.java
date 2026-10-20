@@ -31,8 +31,8 @@ public class ArcOrbBulletType extends BulletType{
 	public float radius = 210f;
 	/** Ticks between volleys (15 is four a second), targets hit by one, and the damage of one arc. */
 	public float interval = 15f;
-	public int maxTargets = 5;
-	public float arcDamage = 30f;
+	public int maxTargets = 20;
+	public float arcDamage = 50f;
 	public StatusEffect arcStatus = StatusEffects.electrified;
 	public float statusTime = 60f * 2f;
 	public Color color = Color.valueOf("ffe066");
