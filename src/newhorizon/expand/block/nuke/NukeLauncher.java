@@ -18,12 +18,15 @@ import mindustry.entities.Units;
 import mindustry.entities.units.AIController;
 import mindustry.entities.units.UnitController;
 import mindustry.gen.BlockUnitc;
+import mindustry.core.World;
 import mindustry.gen.Building;
+import mindustry.gen.Posc;
 import mindustry.gen.Sounds;
 import mindustry.gen.Unit;
 import mindustry.graphics.Drawf;
 import mindustry.graphics.Layer;
 import mindustry.graphics.Pal;
+import mindustry.logic.LAccess;
 import mindustry.type.UnitType;
 import mindustry.ui.Bar;
 import mindustry.ui.Styles;
@@ -51,6 +54,12 @@ import static mindustry.Vars.tilesize;
  * target for as long as they are in control: the launcher follows the cursor, holding the fire button arms the nuke and launches it
  * straight along that heading as soon as it is armed and facing the right way, and letting go before that disarms it again. When the
  * pilot leaves, the launcher returns to the map target and to the arming the menu asked for.
+ *
+ * <p>A logic processor can run it too, with the {@code control shoot} instruction ({@code control shoot launcher x y mode}, x and y in
+ * tiles) or {@code control shootp launcher unit mode}: it sets the map target and the mode says what to do with the nuke: 0 disarms it,
+ * 1 arms it and launches it at the target as soon as it is armed and facing it, 2 only arms it and holds it. The orders stay in force
+ * (there is no need to repeat them), and the menu or a pilot can still override them. {@code sensor} reads the state back; see
+ * {@link NukeLauncherBuild#sense(LAccess)}.
  */
 public class NukeLauncher extends PayloadBlock{
 	/** Ticks to arm (or to disarm from fully armed). */
@@ -75,10 +84,16 @@ public class NukeLauncher extends PayloadBlock{
 		envEnabled = Env.any;
 
 		config(Vec2.class, (NukeLauncherBuild b, Vec2 target) -> b.setTarget(target));
-		config(Boolean.class, (NukeLauncherBuild b, Boolean armed) -> b.armSwitch = armed);
+		config(Boolean.class, (NukeLauncherBuild b, Boolean armed) -> {
+			b.armSwitch = armed;
+			b.launchOrder = false;
+		});
 		config(Integer.class, (NukeLauncherBuild b, Integer command) -> {
 			if(command == 0) b.launch();
-			else if(command == 1) b.hasTarget = false;
+			else if(command == 1){
+				b.hasTarget = false;
+				b.launchOrder = false;
+			}
 		});
 	}
 
@@ -104,6 +119,8 @@ public class NukeLauncher extends PayloadBlock{
 		public boolean hasTarget;
 		/** What the menu asked for: whether to arm. A pilot's fire button replaces it while they are in control. */
 		public boolean armSwitch;
+		/** Set by a logic processor: launch at the target as soon as the nuke is armed and facing it. */
+		public boolean launchOrder;
 		/** Whether the nuke is being armed now, and how far arming has got: 0 is inactive, 1 is active. */
 		public boolean wantArmed;
 		public float armProgress;
@@ -167,7 +184,10 @@ public class NukeLauncher extends PayloadBlock{
 			unit();
 			cooldown = Math.max(0f, cooldown - Time.delta);
 			//A cloak put up over the target after it was picked takes it away.
-			if(hasTarget && NukeDefense.cloaked(team, target.x, target.y)) hasTarget = false;
+			if(hasTarget && NukeDefense.cloaked(team, target.x, target.y)){
+				hasTarget = false;
+				launchOrder = false;
+			}
 
 			if(payload == null){
 				armProgress = 0f;
@@ -193,8 +213,93 @@ public class NukeLauncher extends PayloadBlock{
 			else if(armProgress <= 0f && isArmed()) convert();
 			if(armProgress > before && Mathf.chanceDelta(0.2)) NukeFx.armed.at(x, y);
 
-			//A pilot launches by holding fire; otherwise the Launch button does it.
-			if(piloted() && wantArmed && canLaunch()) launch();
+			//A pilot launches by holding fire; otherwise the Launch button does it, or a processor's launch order once the nuke is armed.
+			if(wantArmed && canLaunch() && autoLaunch()) launch();
+		}
+
+		/** Whether the launcher is meant to fire by itself now: a pilot holding fire, or a processor's order with a target to fire at. */
+		protected boolean autoLaunch(){
+			return piloted() || launchOrder && hasTarget;
+		}
+
+		/** How many nukes are in the launcher, and how many it can hold. */
+		public int count(){
+			return loaded() ? 1 : 0;
+		}
+
+		public int capacityNow(){
+			return 1;
+		}
+
+		/** Whether a salvo is under way. */
+		public boolean salvoing(){
+			return false;
+		}
+
+		/** A processor's aim: the target goes to the tile (or unit) it names. Nothing under an enemy cloak can be aimed at. */
+		protected boolean logicAim(double x, double y){
+			if(Double.isNaN(x) || Double.isNaN(y) || Double.isInfinite(x) || Double.isInfinite(y)) return false;
+			float wx = Mathf.clamp((float)x, 0f, Vars.world.unitWidth()), wy = Mathf.clamp((float)y, 0f, Vars.world.unitHeight());
+			if(NukeDefense.cloaked(team, wx, wy)){
+				hasTarget = false;
+				launchOrder = false;
+				return false;
+			}
+			target.set(wx, wy);
+			hasTarget = true;
+			return true;
+		}
+
+		/** A processor's mode: 0 disarms, 1 arms and launches at the target, 2 arms and waits. */
+		protected void logicMode(double mode, boolean aimed){
+			if(Double.isNaN(mode) || mode < 0.5){
+				armSwitch = false;
+				launchOrder = false;
+			}else if(aimed){
+				armSwitch = true;
+				launchOrder = mode < 1.5;
+			}
+		}
+
+		@Override
+		public void control(LAccess type, double p1, double p2, double p3, double p4){
+			if(type == LAccess.shoot) logicMode(p3, logicAim(World.unconv((float)p1), World.unconv((float)p2)));
+			else super.control(type, p1, p2, p3, p4);
+		}
+
+		@Override
+		public void control(LAccess type, Object p1, double p2, double p3, double p4){
+			if(type == LAccess.shootp){
+				if(p1 instanceof Posc) logicMode(p2, logicAim(((Posc)p1).getX(), ((Posc)p1).getY()));
+			}else super.control(type, p1, p2, p3, p4);
+		}
+
+		/**
+		 * What a processor can read: {@code payloadCount} the nukes inside and {@code payloadCapacity} how many fit, {@code ammo} how many
+		 * of them are armed, {@code progress} how far arming has got (1 once armed), {@code heat} the share of the cooldown after a launch
+		 * that is left, {@code shooting} 1 when it is ready to launch or a salvo is under way, {@code rotation} the heading, and {@code shootX}
+		 * and {@code shootY} the target's tile (null when there is none).
+		 */
+		@Override
+		public double sense(LAccess sensor){
+			switch(sensor){
+				case payloadCount: return count();
+				case payloadCapacity: case ammoCapacity: return capacityNow();
+				case ammo: return isArmed() ? count() : 0;
+				case progress: return loaded() ? armProgress : 0f;
+				case heat: return Mathf.clamp(cooldown / launchCooldown);
+				case shooting: return canLaunch() || salvoing() ? 1 : 0;
+				case rotation: return angle;
+				case shootX: return hasTarget ? World.conv(target.x) : Double.NaN;
+				case shootY: return hasTarget ? World.conv(target.y) : Double.NaN;
+				default: return super.sense(sensor);
+			}
+		}
+
+		@Override
+		public Object senseObject(LAccess sensor){
+			if(sensor == LAccess.payloadType) return loaded() ? loadedUnit().type : null;
+			return super.senseObject(sensor);
 		}
 
 		/** Swaps the loaded nuke for its other form. */
@@ -234,6 +339,7 @@ public class NukeLauncher extends PayloadBlock{
 			armProgress = 0f;
 			wantArmed = false;
 			armSwitch = false;
+			launchOrder = false;
 
 			NukeFx.launch.at(x, y, angle);
 			Sounds.shootMissileLarge.at(x, y, 1f, 0.8f);

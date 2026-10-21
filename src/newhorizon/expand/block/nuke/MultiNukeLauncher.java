@@ -56,8 +56,10 @@ public class MultiNukeLauncher extends NukeLauncher{
 		//The same commands as the single launcher, and 2: add a slot.
 		config(Integer.class, (MultiNukeLauncherBuild b, Integer command) -> {
 			if(command == 0) b.launch();
-			else if(command == 1) b.hasTarget = false;
-			else if(command == 2) b.upgrade();
+			else if(command == 1){
+				b.hasTarget = false;
+				b.launchOrder = false;
+			}else if(command == 2) b.upgrade();
 			else if(command == 3) b.simultaneous = !b.simultaneous;
 		});
 	}
@@ -172,7 +174,10 @@ public class MultiNukeLauncher extends NukeLauncher{
 			unit();
 			cooldown = Math.max(0f, cooldown - Time.delta);
 			//A cloak put up over the target after it was picked takes it away.
-			if(hasTarget && NukeDefense.cloaked(team, target.x, target.y)) hasTarget = false;
+			if(hasTarget && NukeDefense.cloaked(team, target.x, target.y)){
+				hasTarget = false;
+				launchOrder = false;
+			}
 
 			//The nuke on its way in joins the magazine when it gets to the middle.
 			if(payload != null){
@@ -189,6 +194,7 @@ public class MultiNukeLauncher extends NukeLauncher{
 				armProgress = 0f;
 				wantArmed = false;
 				armSwitch = false;
+				launchOrder = false;
 				firing = false;
 				return;
 			}
@@ -217,7 +223,22 @@ public class MultiNukeLauncher extends NukeLauncher{
 			else if(armProgress <= 0f && isArmed()) convert();
 			if(armProgress > before && Mathf.chanceDelta(0.2)) NukeFx.armed.at(x, y);
 
-			if(piloted() && wantArmed && canLaunch()) launch();
+			if(wantArmed && canLaunch() && autoLaunch()) launch();
+		}
+
+		@Override
+		public int count(){
+			return stored.size;
+		}
+
+		@Override
+		public int capacityNow(){
+			return capacity;
+		}
+
+		@Override
+		public boolean salvoing(){
+			return firing;
 		}
 
 		/** Swaps every nuke in the magazine for its other form. */
@@ -291,6 +312,7 @@ public class MultiNukeLauncher extends NukeLauncher{
 			armProgress = 0f;
 			wantArmed = false;
 			armSwitch = false;
+			launchOrder = false;
 		}
 
 		@Override
