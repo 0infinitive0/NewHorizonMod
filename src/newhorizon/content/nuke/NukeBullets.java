@@ -143,7 +143,7 @@ public class NukeBullets{
 			lifetime = 60f * 10f;
 			interval = 4f;
 			maxTargets = 1;
-			arcDamage = 10f;
+			arcDamage = 20f;
 			statusTime = 60f;
 			refresh = true;
 			pullStart = 60f * 30f;
