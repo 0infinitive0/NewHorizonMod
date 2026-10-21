@@ -36,6 +36,8 @@ public class ArcOrbBulletType extends BulletType{
 	public StatusEffect arcStatus = StatusEffects.electrified;
 	public float statusTime = 60f * 2f;
 	public Color color = Color.valueOf("ffe066");
+	/** The colour of the arcs and the sparks around the orb. */
+	public Color arcColor = Color.valueOf("8fe3ff");
 
 	public ArcOrbBulletType(){
 		super(0f, 0f);
@@ -77,7 +79,7 @@ public class ArcOrbBulletType extends BulletType{
 		int hits = Math.min(maxTargets, found.size);
 		for(int i = 0; i < hits; i++){
 			Position target = found.remove(rand.nextInt(found.size));
-			Fx.chainLightning.at(b.x, b.y, 0f, color, target);
+			Fx.chainLightning.at(b.x, b.y, 0f, arcColor, target);
 			if(Vars.net.client()) continue;
 			if(target instanceof mindustry.gen.Unit){
 				mindustry.gen.Unit u = (mindustry.gen.Unit)target;
@@ -90,7 +92,7 @@ public class ArcOrbBulletType extends BulletType{
 		//With nothing in reach it still crackles.
 		if(hits == 0){
 			Vec2 spot = new Vec2().trns(rand.random(360f), rand.random(radius * 0.4f, radius * 0.9f)).add(b.x, b.y);
-			Fx.chainLightning.at(b.x, b.y, 0f, color, spot);
+			Fx.chainLightning.at(b.x, b.y, 0f, arcColor, spot);
 		}
 		Sounds.acceleratorLightning1.at(b.x, b.y, 0.6f, 1.2f);
 	}
@@ -110,7 +112,7 @@ public class ArcOrbBulletType extends BulletType{
 		Fill.circle(b.x, b.y, 7f * power * pulse);
 
 		//Little flickering sparks around it.
-		Draw.color(color, power);
+		Draw.color(arcColor, power);
 		Lines.stroke(1.6f);
 		Angles.randLenVectors(b.id * 13L + (long)(Time.time / 3f), 6, 22f * power, 34f * power, (x, y) -> Lines.lineAngle(b.x + x, b.y + y, Mathf.angle(x, y), 6f));
 		Draw.reset();

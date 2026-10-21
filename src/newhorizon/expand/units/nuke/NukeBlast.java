@@ -28,6 +28,7 @@ public class NukeBlast{
 
 		if(active){
 			warhead.visual(x, y);
+			if(warhead.radius >= 100f) NukeFx.aftermath.at(x, y, warhead.radius, warhead.color);
 			if(warhead.radius < 100f) Effect.shake(3f, 20f, x, y);
 			else Effect.shake(warhead.damage > 0f ? 14f : 5f, warhead.damage > 0f ? 90f : 30f, x, y);
 			Sounds.explosion.at(x, y, 0.7f, 2.6f);

@@ -27,6 +27,9 @@ public class ZoneBulletType extends BulletType{
 	/** How long a unit keeps the status after leaving. */
 	public float statusTime = 60f * 3f;
 	public Color color = Color.white;
+	/** A particle that rises off the ground now and then, and how many appear per tick for each square pixel of the zone. */
+	public mindustry.entities.Effect particle;
+	public float particleDensity = 0.00002f;
 
 	public ZoneBulletType(){
 		super(0f, 0f);
@@ -48,6 +51,15 @@ public class ZoneBulletType extends BulletType{
 
 		float life = Mathf.clamp(Math.min(b.fin() / 0.05f, b.fout() / 0.1f));
 		float r = radius * life;
+		if(particle != null && !mindustry.Vars.headless){
+			float n = r * r * Mathf.pi * particleDensity * arc.util.Time.delta;
+			int count = (int)n;
+			if(Mathf.chance(n - count)) count++;
+			for(int i = 0; i < count; i++){
+				float a = Mathf.random(360f), d = Mathf.sqrt(Mathf.random()) * r;
+				particle.at(b.x + Mathf.cosDeg(a) * d, b.y + Mathf.sinDeg(a) * d, 0f, color);
+			}
+		}
 		Units.nearby(b.x - r, b.y - r, r * 2f, r * 2f, unit -> {
 			if(unit.dead() || !unit.within(b, r + unit.hitSize / 2f)) return;
 			if(zoneStatus != null) unit.apply(zoneStatus, statusTime);

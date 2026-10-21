@@ -79,12 +79,93 @@ public class NukeFx{
 			Draw.reset();
 		}),
 
-		/** The flash of a nuke leaving its launcher. */
-		launch = new Effect(40f, 300f, e -> {
+		/** The flash, ring, flame jet, sparks and smoke cloud of a nuke leaving its launcher (the rotation is the heading). */
+		launch = new Effect(80f, 500f, e -> {
+			Draw.z(Layer.effect + 1f);
 			Draw.color(Color.white, Color.orange, e.fin());
-			Lines.stroke(3f * e.fout());
-			Lines.circle(e.x, e.y, 10f + 60f * e.finpow());
-			Angles.randLenVectors(e.id, 14, 20f + 70f * e.finpow(), e.rotation, 28f, (x, y) -> Fill.circle(e.x + x, e.y + y, 3.5f * e.fout()));
+			Fill.circle(e.x, e.y, 14f * e.fout(Interp.pow3Out));
+			Lines.stroke(3.2f * e.fout());
+			Lines.circle(e.x, e.y, 10f + 80f * e.finpow());
+			Lines.stroke(1.6f * e.fout());
+			Lines.circle(e.x, e.y, 6f + 46f * e.finpow());
+			//The flame jet along the heading.
+			Angles.randLenVectors(e.id, 20, 12f + 120f * e.finpow(), e.rotation, 20f, (x, y) -> {
+				Draw.color(Color.white, Color.orange, Color.valueOf("5c3a2a"), e.fin());
+				Fill.circle(e.x + x, e.y + y, 3.8f * e.fout());
+			});
+			//Sparks.
+			Draw.color(Color.valueOf("ffe9a8"));
+			Lines.stroke(1.5f * e.fout());
+			Angles.randLenVectors(e.id + 3, 12, 20f + 100f * e.finpow(), e.rotation, 45f, (x, y) -> Lines.lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), 3f + 5f * e.fout()));
+			//The smoke cloud, drifting back and slowly thinning out.
+			Angles.randLenVectors(e.id + 7, 14, 6f + 64f * e.finpow(), (x, y) -> {
+				Draw.color(Color.gray, 0.5f * e.fout(Interp.pow2Out));
+				Fill.circle(e.x + x, e.y + y, 5f + 9f * e.fin());
+			});
+			Draw.reset();
+		}),
+
+		/** Smoke a flying nuke leaves behind: puffs that swell and fade slowly. */
+		trail = new Effect(130f, e -> {
+			Draw.z(Layer.effect - 1f);
+			Draw.color(Color.lightGray, Color.darkGray, e.fin());
+			Draw.alpha(0.55f * e.fout(Interp.pow2Out));
+			Angles.randLenVectors(e.id, 2, 3f + 12f * e.finpow(), (x, y) -> Fill.circle(e.x + x, e.y + y, 1.8f + 4.8f * e.fin()));
+			Draw.reset();
+		}),
+
+		/** The hot flame at the tail of a flying nuke: short and bright, in the colour of its warhead. */
+		flame = new Effect(14f, e -> {
+			Draw.z(Layer.effect);
+			Draw.color(Color.white, e.color, Color.orange, e.fin());
+			Fill.circle(e.x, e.y, 3f * e.fout());
+			Draw.color(e.color, 0.5f * e.fout());
+			Fill.circle(e.x, e.y, 5.5f * e.fout());
+			Draw.reset();
+		}),
+
+		/** What a big blast leaves: a cloud of smoke spreading out and thinning, and embers drifting off. The rotation is the radius. */
+		aftermath = new Effect(180f, 1800f, e -> {
+			float r = e.rotation;
+			Draw.z(Layer.effect + 1f);
+			Angles.randLenVectors(e.id, (int)Mathf.clamp(r / 8f, 8f, 34f), r * 0.12f, r * (0.5f + 0.5f * e.finpow()), (x, y) -> {
+				Draw.color(Color.darkGray, Color.gray, e.fin());
+				Draw.alpha(0.5f * e.fout(Interp.pow2Out));
+				Fill.circle(e.x + x, e.y + y, r * 0.085f * (0.7f + e.fin()));
+			});
+			Draw.color(Color.white, e.color, e.fin());
+			Angles.randLenVectors(e.id + 5, 26, r * 0.25f, r * 0.95f * e.finpow(), (x, y) -> Fill.circle(e.x + x, e.y + y, 1.8f * e.fout()));
+			Draw.reset();
+		}),
+
+		/** A green speck drifting up out of radioactive fallout. */
+		fallout = new Effect(80f, e -> {
+			Draw.z(Layer.effect);
+			Draw.color(e.color, Color.white, e.fout() * 0.4f);
+			Draw.alpha(Mathf.clamp(e.fout() * 1.5f) * 0.9f);
+			Fill.circle(e.x + Mathf.sinDeg(e.id * 37f + e.time * 4f) * 2.5f, e.y + 14f * e.finpow(), 0.6f + 1.6f * e.fout());
+			Draw.reset();
+		}),
+
+		/** An ember flying up off burning ground, with a wisp of smoke after it. */
+		ember = new Effect(60f, e -> {
+			Draw.z(Layer.effect);
+			Draw.color(Color.white, Color.orange, Color.valueOf("661f12"), e.fin());
+			Fill.circle(e.x + Mathf.sinDeg(e.id * 53f + e.time * 6f) * 2f, e.y + 18f * e.finpow(), 0.5f + 1.5f * e.fout());
+			Draw.color(Color.gray, 0.3f * e.fin() * e.fout());
+			Fill.circle(e.x, e.y + 24f * e.finpow(), 2f + 3f * e.fin());
+			Draw.reset();
+		}),
+
+		/** A ring of force going out, for a pulse of a shockwave nuke. The rotation is the radius. */
+		shockRing = new Effect(34f, 1500f, e -> {
+			Draw.z(Layer.effect + 2f);
+			Draw.color(Color.white, e.color, e.fin());
+			Lines.stroke(7f * e.fout());
+			Lines.circle(e.x, e.y, e.rotation * e.finpow());
+			Draw.color(e.color, 0.35f * e.fout());
+			Lines.stroke(16f * e.fout());
+			Lines.circle(e.x, e.y, e.rotation * e.finpow() * 0.96f);
 			Draw.reset();
 		}),
 

@@ -39,6 +39,8 @@ public class NukeBullets{
 			buildingPercent = 0.025f;
 			zoneStatus = NukeStatus.irradiated;
 			color = Color.valueOf("9bff4a");
+			particle = NukeFx.fallout;
+			particleDensity = 0.000028f;
 		}};
 
 		incendiaryZone = new ZoneBulletType(){{
@@ -49,6 +51,8 @@ public class NukeBullets{
 			zoneStatus = mindustry.content.StatusEffects.burning;
 			statusTime = 60f * 3f;
 			color = Color.valueOf("ff6a3d");
+			particle = NukeFx.ember;
+			particleDensity = 0.00003f;
 		}};
 
 		gravityZone = new ForceZoneBulletType(){{
@@ -60,11 +64,15 @@ public class NukeBullets{
 			onEnd = b -> Warhead.gravity.finish(b.x, b.y);
 		}};
 
+		//Five pulses, each a short hard shove out from the middle.
 		shockZone = new ForceZoneBulletType(){{
 			radius = 280f;
-			lifetime = 50f;
-			edge = -2.4f;
-			center = -3.6f;
+			pulses = 5;
+			pulseInterval = 24f;
+			pulseOn = 6f;
+			lifetime = 5 * 24f - 2f;
+			edge = -4f;
+			center = -6f;
 			color = Warhead.shockwave.color;
 		}};
 
@@ -90,8 +98,12 @@ public class NukeBullets{
 		}};
 
 		swarmMissile = new MissileBulletType(3.4f, 22f){{
-			width = 7f;
-			height = 11f;
+			sprite = newhorizon.NewHorizon.name("swarm-missile");
+			width = 8f;
+			height = 15f;
+			trailLength = 12;
+			trailWidth = 1.3f;
+			trailColor = Color.valueOf("ffd84d");
 			lifetime = 140f;
 			splashDamage = 28f;
 			splashDamageRadius = 26f;
@@ -121,6 +133,7 @@ public class NukeBullets{
 			maxTargets = 20;
 			arcDamage = 50f;
 			color = Color.valueOf("ffe066");
+			arcColor = Color.valueOf("8fe3ff");
 		}};
 
 		quake = new QuakeBulletType(){{

@@ -14,7 +14,6 @@ import mindustry.Vars;
 import mindustry.game.EventType;
 import mindustry.graphics.Layer;
 import mindustry.input.Binding;
-import mindustry.input.DesktopInput;
 import newhorizon.expand.units.nuke.NukeDefense;
 
 /**
@@ -26,8 +25,6 @@ public class NukeTargeting{
 	private static NukeLauncher.NukeLauncherBuild pending;
 	private static long startFrame;
 	private static boolean hooked;
-	/** Whether the camera was already free before the pick began, so that it is put back the way it was. */
-	private static boolean wasPanning;
 	/** A press that may turn out to be a drag, and where it began on the screen. */
 	private static boolean touching, dragged;
 	private static float downX, downY;
@@ -43,7 +40,9 @@ public class NukeTargeting{
 			Events.run(EventType.Trigger.draw, NukeTargeting::draw);
 			Events.on(EventType.ResetEvent.class, e -> finish());
 		}
-		wasPanning = panning();
+		//Locks the player's own controls while a target is being picked: the movement keys pan the camera instead of moving the unit, and the
+		//camera stops following the unit.
+		if(!Vars.control.input.inputLocks.contains(lock)) Vars.control.input.inputLocks.add(lock);
 		pending = launcher;
 		touching = dragged = false;
 		startFrame = Core.graphics.getFrameId();
@@ -55,18 +54,11 @@ public class NukeTargeting{
 		return pending != null;
 	}
 
-	/** Whether the camera is free of the player (desktop only: a touch screen's camera is dragged by the finger as it is). */
-	private static boolean panning(){
-		return Vars.control.input instanceof DesktopInput && ((DesktopInput)Vars.control.input).panning;
-	}
-
-	private static void panning(boolean free){
-		if(Vars.control != null && Vars.control.input instanceof DesktopInput) ((DesktopInput)Vars.control.input).panning = free;
-	}
+	/** Held by the input handler while a pick is under way. */
+	private static final arc.func.Boolp lock = () -> pending != null;
 
 	/** Ends the pick and gives the camera back. */
 	private static void finish(){
-		if(pending != null) panning(wasPanning);
 		pending = null;
 		touching = dragged = false;
 	}
@@ -82,8 +74,6 @@ public class NukeTargeting{
 			return;
 		}
 
-		//The camera stays where it is put instead of following the player.
-		panning(true);
 		if(!Core.scene.hasField() && !Core.scene.hasKeyboard()){
 			float speed = (Core.input.keyDown(Binding.boost) ? 14f : 7f) * Time.delta;
 			float dx = Core.input.axis(Binding.moveX), dy = Core.input.axis(Binding.moveY);

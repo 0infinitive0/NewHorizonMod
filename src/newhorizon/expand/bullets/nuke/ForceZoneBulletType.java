@@ -23,6 +23,12 @@ public class ForceZoneBulletType extends BulletType{
 	/** Pull per tick at the edge and at the centre. A negative sign pushes instead. */
 	public float edge = 0.1f, center = 0.5f;
 	public Color color = Color.white;
+	/**
+	 * With a number of pulses above zero the force comes in that many short bursts instead of all the time: every {@code pulseInterval}
+	 * ticks it pushes (or pulls) for {@code pulseOn} ticks, with a ring of force going out and a thump.
+	 */
+	public int pulses = 0;
+	public float pulseInterval = 24f, pulseOn = 6f;
 	/** Runs once when the zone ends. */
 	public Cons<Bullet> onEnd;
 
@@ -45,6 +51,15 @@ public class ForceZoneBulletType extends BulletType{
 		super.update(b);
 
 		float r = radius;
+		if(pulses > 0){
+			//The start of a pulse: a ring going out and a thump.
+			if(b.timer(2, pulseInterval)){
+				NukeFx.shockRing.at(b.x, b.y, radius, color);
+				mindustry.entities.Effect.shake(6f, 24f, b.x, b.y);
+				mindustry.gen.Sounds.explosion.at(b.x, b.y, 0.6f, 1.5f);
+			}
+			if(b.time % pulseInterval >= pulseOn) return;
+		}
 		Units.nearby(b.x - r, b.y - r, r * 2f, r * 2f, unit -> {
 			if(unit.dead()) return;
 			float dst = unit.dst(b);
@@ -70,6 +85,14 @@ public class ForceZoneBulletType extends BulletType{
 	@Override
 	public void draw(Bullet b){
 		float r = radius * Mathf.clamp(b.fout() * 1.2f);
+		if(pulses > 0){
+			//Only the field itself: the rings are effects.
+			Draw.z(Layer.effect + 0.5f);
+			Draw.color(color, 0.07f);
+			arc.graphics.g2d.Fill.circle(b.x, b.y, radius * Mathf.clamp(b.fout() * 4f));
+			Draw.reset();
+			return;
+		}
 		Draw.z(Layer.effect + 0.5f);
 		Draw.color(color, 0.1f);
 		arc.graphics.g2d.Fill.circle(b.x, b.y, r);

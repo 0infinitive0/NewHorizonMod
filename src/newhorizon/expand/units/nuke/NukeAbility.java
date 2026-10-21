@@ -26,7 +26,7 @@ public class NukeAbility extends Ability{
 	/** Ticks an active nuke flies before it detonates by itself. */
 	public float fuel = 60f * 45f;
 
-	protected float age, dockTimer;
+	protected float age, dockTimer, trailTimer;
 	/** Set when a pilot armed the nuke by firing: until the button is let go, firing again does not detonate it. */
 	public boolean latch;
 	protected WallStance appliedStance;
@@ -63,6 +63,7 @@ public class NukeAbility extends Ability{
 	@Override
 	public void update(Unit unit){
 		if(warhead == Warhead.wall && !active) syncWallStance(unit);
+		if(active && !Vars.headless && !unit.dead()) trail(unit);
 		if(Vars.net.client()) return;
 
 		//A pilot arms an inactive nuke by firing, and detonates an active one the same way.
@@ -75,6 +76,16 @@ public class NukeAbility extends Ability{
 		if(latch && !unit.isShooting) latch = false;
 		age += Time.delta;
 		if(age >= fuel || (unit.isPlayer() && unit.isShooting && !latch)) detonate(unit);
+	}
+
+	/** A flying active nuke leaves a smoke trail that fades slowly, and a bright flame at its tail. Seen by everyone. */
+	protected void trail(Unit unit){
+		trailTimer -= Time.delta;
+		if(trailTimer > 0f) return;
+		trailTimer = 2f;
+		float tx = unit.x - arc.math.Angles.trnsx(unit.rotation, unit.hitSize * 0.55f), ty = unit.y - arc.math.Angles.trnsy(unit.rotation, unit.hitSize * 0.55f);
+		NukeFx.trail.at(tx, ty);
+		NukeFx.flame.at(tx, ty, unit.rotation, warhead.color);
 	}
 
 	/**

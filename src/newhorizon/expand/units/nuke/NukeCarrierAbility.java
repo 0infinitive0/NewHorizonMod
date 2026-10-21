@@ -25,6 +25,9 @@ import newhorizon.content.nuke.NukeUnits;
  * target (the Launch command) or along the way the ship points (a pilot who keeps firing once it is armed). After a launch the ship needs a
  * while to reload.
  *
+ * <p>Arming: the Armed stance (a toggle among the ship's buttons) keeps the nuke armed; a target given on the Launch command arms it by
+ * itself if it was not armed yet, and fires as soon as it is.
+ *
  * <p>What is aboard is kept in the ability's saved number, so it survives a save: the kind of nuke (its place in the list of inactive
  * nukes), whether it is armed, whether there is one at all, and the wall type a wall nuke was set to. Passengers of an infantry nuke are
  * kept in memory and go back into the nuke when it is launched; they are let out if the ship is destroyed, but they are not saved with the
@@ -36,8 +39,10 @@ public class NukeCarrierAbility extends Ability{
 
 	/** The part of the loaded nuke that is armed, 0 to 1. Not saved: a ship that is loaded from a save is armed or not. */
 	public float armProgress;
-	/** What the ship has been told: whether to arm. */
+	/** Whether the ship is arming now: the Armed stance is on, an order is waiting for the nuke to be ready, or a pilot is holding fire. */
 	public boolean wantArmed;
+	/** Until when an order (a target waiting for the nuke to be armed) keeps the arming going. */
+	protected float orderUntil;
 	protected float timer;
 	/** The units an infantry nuke was carrying when it came aboard. */
 	protected Seq<Payload> cargo = new Seq<>();
@@ -111,6 +116,11 @@ public class NukeCarrierAbility extends Ability{
 		return armed() && timer <= 0f;
 	}
 
+	/** Keeps the arming going for this many more ticks, as an order for a launch does. */
+	public void order(float ticks){
+		orderUntil = Time.time + ticks;
+	}
+
 	@Override
 	public void update(Unit unit){
 		timer = Math.max(0f, timer - Time.delta);
@@ -121,8 +131,14 @@ public class NukeCarrierAbility extends Ability{
 			return;
 		}
 
-		//A pilot holds fire to arm and launch, and lets go to disarm, like at a launcher.
-		if(unit.isPlayer()) wantArmed = unit.isShooting;
+		//A pilot holds fire to arm and launch, and lets go to disarm, like at a launcher. Otherwise it arms while the Armed stance is on or a
+		//launch order is waiting for it.
+		if(unit.isPlayer()){
+			wantArmed = unit.isShooting;
+		}else{
+			boolean stance = unit.controller() instanceof mindustry.ai.types.CommandAI && ((mindustry.ai.types.CommandAI)unit.controller()).hasStance(NukeUnits.carrierArmedStance);
+			wantArmed = stance || Time.time < orderUntil;
+		}
 
 		armProgress = Mathf.approach(armProgress, wantArmed ? 1f : 0f, Time.delta / armTime);
 		int bits = (int)data;
@@ -194,6 +210,7 @@ public class NukeCarrierAbility extends Ability{
 		copy.timer = 0f;
 		copy.armProgress = 0f;
 		copy.wantArmed = false;
+		copy.orderUntil = 0f;
 		return copy;
 	}
 
