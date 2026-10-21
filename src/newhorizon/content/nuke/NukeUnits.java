@@ -69,7 +69,7 @@ public class NukeUnits{
 	public static NHUnitType carrier;
 
 	/** The Strike command (the default of an active nuke) flies it at the target; Detonate sets it off at once. */
-	public static UnitCommand strikeCommand, detonateCommand, armCommand, carrierLaunchCommand;
+	public static UnitCommand strikeCommand, detonateCommand, armCommand, carrierTargetCommand, carrierClearCommand, carrierLaunchCommand;
 	/** The toggle among a carrier's buttons that keeps its nuke armed. */
 	public static UnitStance carrierArmedStance;
 
@@ -100,10 +100,15 @@ public class NukeUnits{
 		armCommand.switchToMove = false;
 		//A carrier ship works like a launcher: its Launch command sends the nuke aboard at each target (arming it first if need be), and the
 		//Armed button keeps it armed ahead of time.
-		carrierLaunchCommand = new UnitCommand("nh-carrier-launch", "commandAttack", u -> new CarrierAI());
+		carrierTargetCommand = new UnitCommand("nh-carrier-target", "commandAttack", u -> new CarrierAI(CarrierAI.Mode.target));
+		carrierTargetCommand.switchToMove = false;
+		carrierTargetCommand.resetTarget = false;
+		carrierTargetCommand.drawTarget = true;
+		carrierClearCommand = new UnitCommand("nh-carrier-clear", "cancel", u -> new CarrierAI(CarrierAI.Mode.clear));
+		carrierClearCommand.switchToMove = false;
+		carrierLaunchCommand = new UnitCommand("nh-carrier-launch", "up", u -> new CarrierAI(CarrierAI.Mode.launch));
 		carrierArmedStance = new newhorizon.expand.units.nuke.CarrierArmedStance();
 		carrierLaunchCommand.switchToMove = false;
-		carrierLaunchCommand.resetTarget = false;
 
 		explosive = nuke(Warhead.explosive, false);
 		explosiveActive = nuke(Warhead.explosive, true);
@@ -201,7 +206,7 @@ public class NukeUnits{
 			waveTrailX = 9f;
 			waveTrailY = -22f;
 			trailScl = 1.8f;
-			commands = Seq.with(UnitCommand.moveCommand, carrierLaunchCommand);
+			commands = Seq.with(UnitCommand.moveCommand, carrierTargetCommand, carrierClearCommand, carrierLaunchCommand);
 			stances = Seq.with(carrierArmedStance);
 			defaultCommand = UnitCommand.moveCommand;
 			abilities.add(new NukeCarrierAbility());

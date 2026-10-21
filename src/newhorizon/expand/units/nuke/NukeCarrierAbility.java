@@ -1,6 +1,11 @@
 package newhorizon.expand.units.nuke;
 
 import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
+import mindustry.graphics.Layer;
 import arc.math.Angles;
 import arc.math.Mathf;
 import arc.math.geom.Vec2;
@@ -25,6 +30,9 @@ import newhorizon.content.nuke.NukeUnits;
  * target (the Launch command) or along the way the ship points (a pilot who keeps firing once it is armed). After a launch the ship needs a
  * while to reload.
  *
+ * <p>Targeting works like a launcher's: the Select target command picks a point on the map (kept until Clear target), the Launch command fires
+ * the nuke at it (straight ahead if none was picked).
+ *
  * <p>Arming: the Armed stance (a toggle among the ship's buttons) keeps the nuke armed; a target given on the Launch command arms it by
  * itself if it was not armed yet, and fires as soon as it is.
  *
@@ -44,6 +52,8 @@ public class NukeCarrierAbility extends Ability{
 	/** Until when an order (a target waiting for the nuke to be armed) keeps the arming going. */
 	protected float orderUntil;
 	protected float timer;
+	/** The target picked for the ship, like a launcher's map target; null if none. Kept in memory only: a ship loaded from a save has none. */
+	public Vec2 target;
 	/** The units an infantry nuke was carrying when it came aboard. */
 	protected Seq<Payload> cargo = new Seq<>();
 
@@ -116,6 +126,17 @@ public class NukeCarrierAbility extends Ability{
 		return armed() && timer <= 0f;
 	}
 
+	/** Picks the target. An enemy cloak hides its area: nothing can be picked there. Returns whether it was taken. */
+	public boolean setTarget(Unit ship, Vec2 pos){
+		if(pos == null || NukeDefense.cloaked(ship.team, pos.x, pos.y)) return false;
+		target = pos.cpy();
+		return true;
+	}
+
+	public void clearTarget(){
+		target = null;
+	}
+
 	/** Keeps the arming going for this many more ticks, as an order for a launch does. */
 	public void order(float ticks){
 		orderUntil = Time.time + ticks;
@@ -125,6 +146,8 @@ public class NukeCarrierAbility extends Ability{
 	public void update(Unit unit){
 		timer = Math.max(0f, timer - Time.delta);
 		if(Vars.net.client()) return;
+		//A cloak put up over the target after it was picked takes it away.
+		if(target != null && NukeDefense.cloaked(unit.team, target.x, target.y)) target = null;
 
 		if(!loaded()){
 			armProgress = 0f;
@@ -182,6 +205,28 @@ public class NukeCarrierAbility extends Ability{
 		return true;
 	}
 
+	/** The picked target, drawn for the ship's own team: a line to it, a cross and the area the blast would cover. Only the host sees it. */
+	@Override
+	public void draw(Unit unit){
+		if(target == null || Vars.player == null || unit.team != Vars.player.team()) return;
+		UnitType inactive = type();
+		UnitType active = inactive == null ? null : NukeUnits.counterpart(inactive);
+		Warhead warhead = active == null ? null : NukeUnits.warheadOf(active);
+		Color color = warhead == null ? Color.scarlet : warhead.color;
+		float blast = warhead == null ? 60f : warhead.radius;
+
+		Draw.z(Layer.overlayUI);
+		Draw.color(color, 0.14f);
+		Fill.circle(target.x, target.y, blast);
+		Draw.color(color, 0.9f);
+		Lines.stroke(1.6f);
+		Lines.circle(target.x, target.y, blast);
+		Lines.line(target.x - 10f, target.y, target.x + 10f, target.y);
+		Lines.line(target.x, target.y - 10f, target.x, target.y + 10f);
+		Lines.dashLine(unit.x, unit.y, target.x, target.y, Math.max(2, (int)(unit.dst(target) / 14f)));
+		Draw.reset();
+	}
+
 	/** Whether this unit has this ability, and the ability. */
 	public static NukeCarrierAbility of(Unit unit){
 		for(Ability a : unit.abilities){
@@ -211,6 +256,7 @@ public class NukeCarrierAbility extends Ability{
 		copy.armProgress = 0f;
 		copy.wantArmed = false;
 		copy.orderUntil = 0f;
+		copy.target = null;
 		return copy;
 	}
 
