@@ -5,7 +5,10 @@ import arc.struct.Seq;
 import mindustry.ai.UnitCommand;
 import mindustry.content.Fx;
 import mindustry.entities.bullet.BasicBulletType;
-import mindustry.entities.bullet.LaserBulletType;
+import mindustry.content.StatusEffects;
+import mindustry.entities.Effect;
+import mindustry.entities.bullet.ContinuousLaserBulletType;
+import mindustry.entities.pattern.ShootAlternate;
 import mindustry.gen.Sounds;
 import mindustry.gen.UnitEntity;
 import newhorizon.NewHorizon;
@@ -48,7 +51,7 @@ public class SerpentUnits{
 			aiController = SerpentSegmentAI::new;
 			commands = new Seq<>();
 			defaultCommand = null;
-			hitSize = 26f;
+			hitSize = SerpentChain.bodyWidth;
 			//The health of an omni wall, which it has the other properties of too (see OmniArmorAbility).
 			health = 5000f;
 			armor = 8f;
@@ -62,37 +65,38 @@ public class SerpentUnits{
 			abilities.add(new PassiveHealAbility(0.015f));
 			abilities.add(new OmniArmorAbility());
 
-			//Two cannons on each side, one behind the other. Each turns a little but can only fire to its own side.
-			for(float y : new float[]{7f, -7f}){
-				weapons.add(new SideWeapon(NewHorizon.name("serpent-cannon")){{
-					x = 12f;
-					this.y = y;
-					mirror = true;
-					alternate = false;
-					rotate = true;
-					rotateSpeed = 8f;
-					baseRotation = -90f;
-					rotationLimit = 80f;
-					shootCone = 12f;
-					reload = 18f;
-					autoTarget = true;
-					controllable = false;
-					aiControllable = false;
-					ejectEffect = Fx.none;
-					shootSound = Sounds.shootMissileLarge;
-					bullet = new BasicBulletType(7f, 26f){{
-						lifetime = 42f;
-						width = 8f;
-						height = 12f;
-						backColor = purple;
-						frontColor = light;
-						trailColor = purple;
-						trailWidth = 2f;
-						trailLength = 8;
-						hitColor = light;
-					}};
-				}});
-			}
+			//One twin-barrel cannon on each side, on the pad at the end of the oval. It turns a little but can only fire to its own side;
+			//its two barrels fire in turn.
+			weapons.add(new SideWeapon(NewHorizon.name("serpent-cannon")){{
+				x = 14.25f;
+				y = 0f;
+				shootY = 5f;
+				mirror = true;
+				alternate = false;
+				rotate = true;
+				rotateSpeed = 8f;
+				baseRotation = -90f;
+				rotationLimit = 80f;
+				shootCone = 12f;
+				reload = 9f;
+				shoot = new ShootAlternate(3f);
+				autoTarget = true;
+				controllable = false;
+				aiControllable = false;
+				ejectEffect = Fx.none;
+				shootSound = Sounds.shootMissileLarge;
+				bullet = new BasicBulletType(7f, 26f){{
+					lifetime = 42f;
+					width = 8f;
+					height = 12f;
+					backColor = purple;
+					frontColor = light;
+					trailColor = purple;
+					trailWidth = 2f;
+					trailLength = 8;
+					hitColor = light;
+				}};
+			}});
 		}};
 
 		head = new SerpentHeadType("serpent"){{
@@ -102,7 +106,7 @@ public class SerpentUnits{
 			drawCell = false;
 			allowedInPayloads = false;
 			faceTarget = true;
-			hitSize = 36f;
+			hitSize = SerpentChain.headWidth;
 			health = 6000f;
 			armor = 12f;
 			speed = 0.9f;
@@ -118,28 +122,48 @@ public class SerpentUnits{
 			abilities.add(new PassiveHealAbility(0.015f));
 			abilities.add(new SerpentGuardAbility());
 
-			//One laser cannon in the middle, straight ahead.
+			//One laser cannon in the middle, straight ahead: a beam like the Meltdown's, which charges, then burns for a few seconds while the
+			//head is slowed.
+			Effect charge = new Effect(40f, 100f, e -> {
+				arc.graphics.g2d.Draw.color(light, Color.white, e.fin());
+				arc.graphics.g2d.Lines.stroke(e.fin() * 2.5f);
+				arc.graphics.g2d.Lines.circle(e.x, e.y, 4f + e.fout() * 22f);
+				arc.graphics.g2d.Fill.circle(e.x, e.y, e.fin() * 5f);
+			}).followParent(true).rotWithParent(true);
+
 			weapons.add(new mindustry.type.Weapon(NewHorizon.name("serpent-laser")){{
 				x = 0f;
-				y = 10f;
+				y = 9f;
+				shootY = 4f;
 				mirror = false;
 				rotate = false;
-				reload = 100f;
+				continuous = true;
+				reload = 200f;
+				cooldownTime = 200f;
 				shootCone = 6f;
-				recoil = 4f;
+				recoil = 2f;
+				parentizeEffects = true;
 				ejectEffect = Fx.none;
-				shootSound = Sounds.shootMissileLarge;
-				bullet = new LaserBulletType(230f){{
-					length = 290f;
-					width = 26f;
-					colors = new Color[]{purple.cpy().a(0.4f), light, Color.white};
+				chargeSound = Sounds.chargeVela;
+				shootSound = Sounds.beamMeltdown;
+				bullet = new ContinuousLaserBulletType(){{
+					damage = 70f;
+					length = 260f;
+					lifetime = 160f;
+					hitEffect = Fx.hitMeltdown;
 					hitColor = light;
-					lightColor = light;
-					shootEffect = Fx.lancerLaserShoot;
-					sideAngle = 25f;
-					sideWidth = 1f;
-					sideLength = 60f;
+					drawSize = 420f;
+					shake = 1f;
+					despawnEffect = Fx.smokeCloud;
+					smokeEffect = Fx.none;
+					chargeEffect = charge;
+					incendChance = 0f;
+					incendAmount = 0;
+					colors = new Color[]{purple.cpy().a(0.35f), purple.cpy().a(0.7f), light, Color.white};
 				}};
+				shoot.firstShotDelay = 40f;
+				shootStatus = StatusEffects.slow;
+				shootStatusDuration = bullet.lifetime + shoot.firstShotDelay;
 			}});
 		}};
 

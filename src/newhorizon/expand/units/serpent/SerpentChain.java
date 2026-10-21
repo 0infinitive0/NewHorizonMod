@@ -81,8 +81,15 @@ public class SerpentChain{
 		return unit.type == head && head(unit.team) == unit && sections(unit.team) > 0;
 	}
 
-	/** How far behind its predecessor a section keeps. */
+	/** The size of the head and of a section, as drawn: the width across, and the length along the way they face, in world units (a sprite is drawn at 4 pixels to a unit). */
+	public static final float headWidth = 40f, headLength = 28f, bodyWidth = 32f, bodyLength = 20f;
+
+	public static float lengthOf(Unit unit){
+		return unit.type == head ? headLength : bodyLength;
+	}
+
+	/** How far behind its predecessor a section keeps: the ovals just touch, a little overlapping. */
 	public static float spacing(Unit section, Unit predecessor){
-		return (section.hitSize + predecessor.hitSize) / 2f * 0.8f;
+		return 0.9f * (lengthOf(section) + lengthOf(predecessor)) / 2f;
 	}
 }
