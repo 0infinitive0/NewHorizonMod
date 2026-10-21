@@ -8,6 +8,8 @@ import newhorizon.expand.block.omni.OmniExtractor;
 import newhorizon.expand.block.omni.OmniFactory;
 import newhorizon.expand.block.omni.OmniShield;
 import newhorizon.expand.block.omni.OmniWall;
+import newhorizon.expand.block.omni.SerpentNest;
+import mindustry.world.blocks.units.UnitFactory;
 
 import static mindustry.type.ItemStack.with;
 
@@ -18,6 +20,8 @@ import static mindustry.type.ItemStack.with;
  */
 public class OmniBlocks{
 	public static Block omniFactory, omniExtractor, omniShield, omniWall;
+	/** Makes the head of the Serpent. */
+	public static Block serpentNest;
 
 	public static void load(){
 		omniFactory = new OmniFactory("omni-factory"){{
@@ -41,6 +45,14 @@ public class OmniBlocks{
 			sides = 6;
 			shieldColor = Color.valueOf("c885ff");
 			pointsPerItem = 400f;
+		}};
+
+		serpentNest = new SerpentNest("serpent-nest"){{
+			requirements(Category.units, with(Items.silicon, 300, Items.thorium, 250, Items.surgeAlloy, 150, Items.phaseFabric, 100, NukeItems.omniMatter, 100));
+			size = 4;
+			health = 2800;
+			consumePower(6f);
+			plans.add(new UnitFactory.UnitPlan(SerpentUnits.head, 60f * 120f, with(Items.silicon, 400, Items.thorium, 300, Items.surgeAlloy, 200, Items.plastanium, 150, NukeItems.omniMatter, 200)));
 		}};
 
 		omniWall = new OmniWall("omni-wall"){{

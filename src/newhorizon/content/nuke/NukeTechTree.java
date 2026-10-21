@@ -58,6 +58,8 @@ public class NukeTechTree{
 			child(factory, OmniBlocks.omniExtractor);
 			child(factory, OmniBlocks.omniShield);
 			child(factory, OmniBlocks.omniWall);
+			TechNode nest = child(factory, OmniBlocks.serpentNest);
+			child(nest, SerpentUnits.head);
 		}
 	}
 

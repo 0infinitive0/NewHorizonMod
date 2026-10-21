@@ -15,6 +15,7 @@ public class NukeContent{
 		Warhead.load();
 		NukeBullets.load();
 		NukeUnits.load();
+		SerpentUnits.load();
 		NukeBlocks.load();
 		OmniBlocks.load();
 		//The detected nukes are drawn on the minimap once the game is up.
