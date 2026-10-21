@@ -6,24 +6,29 @@ import arc.struct.IntFloatMap;
 import arc.struct.IntSet;
 import mindustry.Vars;
 import mindustry.content.Blocks;
+import mindustry.entities.Units;
 import mindustry.game.EventType;
 import mindustry.gen.Groups;
 import mindustry.gen.Minerc;
 import mindustry.type.Item;
 import mindustry.world.Tile;
-import mindustry.world.blocks.environment.OreBlock;
+import mindustry.world.Block;
+import mindustry.world.meta.BuildVisibility;
 import newhorizon.content.nuke.NukeItems;
 
+import static mindustry.Vars.tilesize;
+
 /**
- * An ore that runs out. It is an overlay, like any ore: it lies on top of the floor, so when a tile is used up the overlay is taken away
- * and the floor underneath is just as it was. How much a tile has left is kept in the tile's overlay data (a byte, which the game saves
- * with the map), up to {@link #cap}.
+ * A deposit that runs out, built like the wall ores of Erekir: a solid block that sits on top of whatever the ground has (floor, ore
+ * overlay) and is mined by units. It has no structure of its own, so nothing is lost underneath: when a tile is used up the block is
+ * taken away and the ground below, ore and all, is just as it was. How much a tile has left is kept in the tile's data byte (which the
+ * game saves with the map), up to {@link #cap}.
  *
  * <p>The game does not say when a unit has mined an item, so {@link #track} watches every mining unit: each time the mining timer falls
- * back to zero on a deposit tile an item has been mined and one is taken from the tile. Drills are kept off the ore by the item (see
- * {@link NukeItems}). Only the server counts.
+ * back to zero on a deposit tile an item has been mined and one is taken from the tile. Only units can mine it (the ground under it is
+ * out of reach of a drill, and nothing can be built on it). Only the server counts.
  */
-public class OmniDeposit extends OreBlock{
+public class OmniDeposit extends Block{
 	/** The most one tile can hold. */
 	public static final int cap = 255;
 
@@ -32,38 +37,51 @@ public class OmniDeposit extends OreBlock{
 	private static boolean hooked;
 
 	public OmniDeposit(String name, Item item){
-		super(name, item);
-		oreDefault = false;
+		super(name);
+		itemDrop = item;
+		variants = 3;
+		solid = true;
+		destructible = false;
+		update = false;
+		breakable = false;
+		alwaysReplace = false;
+		targetable = false;
+		buildVisibility = BuildVisibility.hidden;
+		mapColor.set(item.color);
 	}
 
 	public static boolean isDeposit(Tile tile){
-		return tile != null && tile.overlay() instanceof OmniDeposit;
+		return tile != null && tile.block() instanceof OmniDeposit;
 	}
 
 	/** How many items the tile has left. */
 	public static int remaining(Tile tile){
-		return isDeposit(tile) ? tile.overlayData & 0xff : 0;
+		return isDeposit(tile) ? tile.data & 0xff : 0;
 	}
 
-	/** Takes one item out of the tile; when it is empty the ore goes and the floor is left as it was. Server side. */
+	/** Takes one item out of the tile; when it is empty the deposit goes and the ground under it is left as it was. Server side. */
 	public static void mined(Tile tile){
 		if(!isDeposit(tile)) return;
 		int left = remaining(tile) - 1;
 		if(left <= 0){
-			tile.setOverlayNet(Blocks.air);
-			tile.overlayData = 0;
+			tile.setNet(Blocks.air);
+			tile.data = 0;
 		}else{
-			tile.overlayData = (byte)left;
+			tile.data = (byte)left;
 		}
 	}
 
-	/** Whether ore can be laid on the tile: bare ground with no ore on it already, nothing built on it, and not under water. */
+	/**
+	 * Whether a deposit can be laid on the tile: nothing built on it (ore underneath is fine, the deposit goes over it), not under water,
+	 * not a place enemies come from, and no ground unit standing there, which a solid block would crush.
+	 */
 	public static boolean eligible(Tile tile){
-		return tile != null && tile.block() == Blocks.air && tile.overlay() == Blocks.air && !tile.floor().isLiquid && !tile.floor().isDeep();
+		if(tile == null || tile.block() != Blocks.air || tile.floor().isLiquid || tile.floor().isDeep() || tile.overlay() == Blocks.spawn) return false;
+		return !Units.anyEntities(tile.worldx() - tilesize / 2f, tile.worldy() - tilesize / 2f, tilesize, tilesize, true);
 	}
 
 	/**
-	 * Adds to a tile: onto a deposit it adds to what is there, onto bare ground it starts one. A tile holds at most {@link #cap}; what does
+	 * Adds to a tile: onto a deposit it adds to what is there, onto free ground it starts one. A tile holds at most {@link #cap}; what does
 	 * not fit goes to the tiles around it, as far as they have room. Returns how much was not placed.
 	 */
 	private static int add(Tile tile, int amount, boolean spill){
@@ -71,12 +89,12 @@ public class OmniDeposit extends OreBlock{
 		int have;
 		if(isDeposit(tile)) have = remaining(tile);
 		else if(eligible(tile)){
-			tile.setOverlayNet(NukeItems.omniOre);
+			tile.setNet(NukeItems.omniDeposit);
 			have = 0;
 		}else return amount;
 
 		int put = Math.min(amount, cap - have);
-		tile.overlayData = (byte)(have + put);
+		tile.data = (byte)(have + put);
 		int rest = amount - put;
 		if(rest > 0 && spill){
 			for(int[] d : new int[][]{{1, 0}, {0, 1}, {-1, 0}, {0, -1}}){
@@ -90,8 +108,8 @@ public class OmniDeposit extends OreBlock{
 	/**
 	 * What a siphon orb leaves where it ended, after it had lived {@code age} ticks (and pulled, which it does from thirty seconds on).
 	 * The longer it lived the wider the patch and the more each tile holds. Over an existing patch it adds to the tiles that are
-	 * there, and the patch spreads: bare ground next to a deposit within a tile of the disc becomes deposit too. Ore of any other kind is
-	 * never overwritten. Server side.
+	 * there, and the patch spreads: free ground next to a deposit within a tile of the disc becomes deposit too. It goes over other ore, which
+	 * comes back when the deposit is used up, but never over a building. Server side.
 	 */
 	public static void leave(float x, float y, float age){
 		if(Vars.net.client()) return;
@@ -158,7 +176,7 @@ public class OmniDeposit extends OreBlock{
 			float now = miner.mineTimer(), prev = timers.get(unit.id, 0f);
 			timers.put(unit.id, now);
 			//The timer climbs to a limit and goes back to zero each time an item is mined; a unit that only switched tiles has not got far.
-			Item item = tile.drop();
+			Item item = tile.wallDrop();
 			float limit = 50f + (unit.type.mineHardnessScaling && item != null ? item.hardness * 15f : 15f);
 			if(now < prev && prev > limit * 0.5f) mined(tile);
 		}
