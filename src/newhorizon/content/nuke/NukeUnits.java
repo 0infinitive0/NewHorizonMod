@@ -55,6 +55,7 @@ public class NukeUnits{
 		storm, stormActive,
 		decoy, decoyActive,
 		lightning, lightningActive,
+		siphon, siphonActive,
 		quake, quakeActive,
 		scatter, scatterActive,
 		magnet, magnetActive,
@@ -170,6 +171,9 @@ public class NukeUnits{
 		lightning = nuke(Warhead.lightning, false);
 		lightningActive = nuke(Warhead.lightning, true);
 		pair(lightning, lightningActive);
+		siphon = nuke(Warhead.siphon, false);
+		siphonActive = nuke(Warhead.siphon, true);
+		pair(siphon, siphonActive);
 		quake = nuke(Warhead.quake, false);
 		quakeActive = nuke(Warhead.quake, true);
 		pair(quake, quakeActive);

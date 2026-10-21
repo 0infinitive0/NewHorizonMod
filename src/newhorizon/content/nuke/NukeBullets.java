@@ -25,7 +25,7 @@ public class NukeBullets{
 	/** The storm nuke's tornado. */
 	public static TornadoBulletType tornado;
 	/** The lightning nuke's ball of light, and the earthquake nuke's quake. */
-	public static ArcOrbBulletType arcOrb;
+	public static ArcOrbBulletType arcOrb, siphonOrb;
 	public static QuakeBulletType quake;
 
 	public static void load(){
@@ -134,6 +134,25 @@ public class NukeBullets{
 			arcDamage = 50f;
 			color = Color.valueOf("ffe066");
 			arcColor = Color.valueOf("8fe3ff");
+		}};
+
+		//One quick arc at a time that keeps the orb alive for as long as it strikes something; after thirty seconds it starts to pull.
+		//Point defence can shoot it down: its damage is what it can take.
+		siphonOrb = new ArcOrbBulletType(){{
+			radius = 210f;
+			lifetime = 60f * 10f;
+			interval = 4f;
+			maxTargets = 1;
+			arcDamage = 10f;
+			statusTime = 60f;
+			refresh = true;
+			pullStart = 60f * 30f;
+			pullGrowth = 0.0005f;
+			pullMax = 1.2f;
+			hittable = true;
+			damage = 700f;
+			color = Color.valueOf("9c3fe8");
+			arcColor = Color.valueOf("c885ff");
 		}};
 
 		quake = new QuakeBulletType(){{

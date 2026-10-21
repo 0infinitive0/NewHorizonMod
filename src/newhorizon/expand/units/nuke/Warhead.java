@@ -46,7 +46,7 @@ public abstract class Warhead{
 	public static Warhead
 		explosive, incendiary, radiation, emp,
 		psychic, gravity, spatial, shockwave, cluster, wall, temporal, infantry, overload,
-		laser, swarm, storm, decoy, mini, lightning, quake,
+		laser, swarm, storm, decoy, mini, lightning, siphon, quake,
 		scatter, magnet, hijack, scramble, sabotage, breach, devolve;
 	public static final Seq<Warhead> all = new Seq<>();
 
@@ -358,6 +358,24 @@ public abstract class Warhead{
 			@Override
 			public void spawn(float x, float y, Team team, Unit nuke){
 				NukeBullets.arcOrb.create(null, Team.derelict, x, y, 0f);
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+			}
+		};
+
+		//A purple orb that strikes one arc at a time, again and again, and lives as long as there is something to strike. Left alone for
+		//half a minute it begins to drag in every unit around it. The blast hurts nothing; point defence can shoot the orb down.
+		siphon = new Warhead("siphon", Color.valueOf("9c3fe8"), 210f, 0f){
+			@Override
+			public void visual(float x, float y){
+				NukeFx.empPulse.at(x, y, radius, color);
+			}
+
+			@Override
+			public void spawn(float x, float y, Team team, Unit nuke){
+				NukeBullets.siphonOrb.create(null, Team.derelict, x, y, 0f);
 			}
 
 			@Override
