@@ -47,7 +47,18 @@ public class NukeTechTree{
 		for(UnlockableContent defence : new UnlockableContent[]{NukeBlocks.cloakProjector, NukeBlocks.decoyBeacon, NukeBlocks.nukeJammer, NukeBlocks.nukeInterceptor, NukeUnits.carrier}){
 			child(builder, defence);
 		}
-		for(UnlockableContent unit : NukeUnits.inactive) child(builder, unit);
+		TechNode siphon = null;
+		for(UnlockableContent unit : NukeUnits.inactive){
+			TechNode node = child(builder, unit);
+			if(unit == NukeUnits.siphon) siphon = node;
+		}
+		//What omni-matter is for hangs off the siphon nuke, which is what makes it.
+		if(siphon != null){
+			TechNode factory = child(siphon, OmniBlocks.omniFactory);
+			child(factory, OmniBlocks.omniExtractor);
+			child(factory, OmniBlocks.omniShield);
+			child(factory, OmniBlocks.omniWall);
+		}
 	}
 
 	private static TechNode child(TechNode parent, UnlockableContent content){

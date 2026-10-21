@@ -16,6 +16,7 @@ public class NukeContent{
 		NukeBullets.load();
 		NukeUnits.load();
 		NukeBlocks.load();
+		OmniBlocks.load();
 		//The detected nukes are drawn on the minimap once the game is up.
 		newhorizon.expand.block.nuke.NukeMinimap.hook();
 	}
