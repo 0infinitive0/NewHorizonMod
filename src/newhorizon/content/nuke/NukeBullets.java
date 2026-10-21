@@ -141,9 +141,9 @@ public class NukeBullets{
 		siphonOrb = new ArcOrbBulletType(){{
 			radius = 210f;
 			lifetime = 60f * 10f;
-			interval = 4f;
+			interval = 12f;
 			maxTargets = 1;
-			arcDamage = 20f;
+			arcDamage = 150f;
 			statusTime = 60f;
 			refresh = true;
 			pullStart = 60f * 30f;
