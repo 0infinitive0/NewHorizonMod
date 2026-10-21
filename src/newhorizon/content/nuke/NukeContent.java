@@ -11,6 +11,7 @@ import newhorizon.expand.units.nuke.Warhead;
 public class NukeContent{
 	public static void load(){
 		NukeStatus.load();
+		NukeItems.load();
 		Warhead.load();
 		NukeBullets.load();
 		NukeUnits.load();

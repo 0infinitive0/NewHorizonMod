@@ -151,6 +151,8 @@ public class NukeBullets{
 			pullMax = 1.2f;
 			hittable = true;
 			damage = 700f;
+			//A long-lived orb leaves omni-matter ore where it was: the longer it lasted, the more.
+			onPulled = (b, age) -> newhorizon.expand.block.env.OmniDeposit.leave(b.x, b.y, age);
 			color = Color.valueOf("9c3fe8");
 			arcColor = Color.valueOf("c885ff");
 		}};

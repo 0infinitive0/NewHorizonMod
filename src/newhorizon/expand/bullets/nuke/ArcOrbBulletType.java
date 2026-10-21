@@ -48,6 +48,8 @@ public class ArcOrbBulletType extends BulletType{
 	public boolean refresh = false;
 	/** Ticks of life after which the orb starts to pull (negative: never), how fast the pull grows per tick, and its limit. Same units as {@link ForceZoneBulletType}. */
 	public float pullStart = -1f, pullGrowth = 0.0005f, pullMax = 1.2f;
+	/** Runs when the orb is gone, if it got as far as pulling. Gets the orb and how long it lasted in all, in ticks. */
+	public arc.func.Cons2<Bullet, Float> onPulled;
 
 	/** What an orb keeps track of: how long it has been there, which does not start over when its life does, and how many volleys it has made. */
 	protected static class State{
@@ -115,6 +117,7 @@ public class ArcOrbBulletType extends BulletType{
 		super.removed(b);
 		//Gone, whether it ran out or was shot down.
 		Fx.sparkExplosion.at(b.x, b.y, 0f, arcColor);
+		if(onPulled != null && pull(b) > 0f) onPulled.get(b, age(b));
 	}
 
 	/** One volley: arcs to a few things in reach, chosen at random but the same way on every side. */
