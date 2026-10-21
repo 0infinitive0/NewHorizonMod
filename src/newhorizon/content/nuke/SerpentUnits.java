@@ -12,6 +12,7 @@ import mindustry.entities.pattern.ShootAlternate;
 import mindustry.gen.Sounds;
 import mindustry.gen.UnitEntity;
 import newhorizon.NewHorizon;
+import newhorizon.expand.units.BoostAbility;
 import newhorizon.expand.units.serpent.OmniArmorAbility;
 import newhorizon.expand.units.serpent.PassiveHealAbility;
 import newhorizon.expand.units.serpent.SerpentChain;
@@ -85,7 +86,7 @@ public class SerpentUnits{
 				aiControllable = false;
 				ejectEffect = Fx.none;
 				shootSound = Sounds.shootMissileLarge;
-				bullet = new BasicBulletType(7f, 26f){{
+				bullet = new BasicBulletType(7f, 60f){{
 					lifetime = 42f;
 					width = 8f;
 					height = 12f;
@@ -109,18 +110,23 @@ public class SerpentUnits{
 			hitSize = SerpentChain.headWidth;
 			health = 6000f;
 			armor = 12f;
-			speed = 0.9f;
+			speed = 1.1f;
 			accel = 0.06f;
 			drag = 0.05f;
 			rotateSpeed = 2.4f;
-			engineOffset = 28f;
-			engineSize = 7f;
-			engineColor = light;
+			//No engine glow behind it.
+			engineSize = 0f;
+			engineOffset = 0f;
+			//When it attacks it flies at the target, passes it and loops back round (the game's own circling attack, which both a
+			//commanded head and an enemy one do), and it can boost to double speed on a steady run.
+			circleTarget = true;
+			circleTargetRadius = 190f;
 			commands = Seq.with(UnitCommand.moveCommand, growCommand);
 			defaultCommand = UnitCommand.moveCommand;
 
 			abilities.add(new PassiveHealAbility(0.015f));
 			abilities.add(new SerpentGuardAbility());
+			abilities.add(new BoostAbility(2f, 15f));
 
 			//One laser cannon in the middle, straight ahead: a beam like the Meltdown's, which charges, then burns for a few seconds while the
 			//head is slowed.
@@ -157,6 +163,9 @@ public class SerpentUnits{
 					despawnEffect = Fx.smokeCloud;
 					smokeEffect = Fx.none;
 					chargeEffect = charge;
+					//It saps what it burns: slower, and it takes more damage.
+					status = StatusEffects.sapped;
+					statusDuration = 120f;
 					incendChance = 0f;
 					incendAmount = 0;
 					colors = new Color[]{purple.cpy().a(0.35f), purple.cpy().a(0.7f), light, Color.white};
