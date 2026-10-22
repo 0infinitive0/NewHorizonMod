@@ -131,7 +131,7 @@ public class NukeBullets{
 			lifetime = 60f * 10f;
 			interval = 15f;
 			maxTargets = 20;
-			arcDamage = 50f;
+			arcDamage = 150f;
 			color = Color.valueOf("ffe066");
 			arcColor = Color.valueOf("8fe3ff");
 		}};
@@ -141,9 +141,9 @@ public class NukeBullets{
 		siphonOrb = new ArcOrbBulletType(){{
 			radius = 210f;
 			lifetime = 60f * 10f;
-			interval = 12f;
-			maxTargets = 1;
-			arcDamage = 150f;
+			interval = 30f;
+			maxTargets = 2;
+			arcDamage = 1000f;
 			statusTime = 60f;
 			refresh = true;
 			pullStart = 60f * 30f;

@@ -16,6 +16,8 @@ import newhorizon.expand.units.BoostAbility;
 import newhorizon.expand.units.serpent.OmniArmorAbility;
 import newhorizon.expand.units.serpent.PassiveHealAbility;
 import newhorizon.expand.units.serpent.SerpentChain;
+import newhorizon.expand.units.serpent.SerpentCommandAI;
+import newhorizon.expand.units.serpent.SerpentFlyingAI;
 import newhorizon.expand.units.serpent.SerpentGrowAI;
 import newhorizon.expand.units.serpent.SerpentGuardAbility;
 import newhorizon.expand.units.serpent.SerpentHeadType;
@@ -88,6 +90,8 @@ public class SerpentUnits{
 				shootSound = Sounds.shootMissileLarge;
 				bullet = new BasicBulletType(7f, 60f){{
 					lifetime = 42f;
+					//The section is moving along its ring: a shot that kept its speed would drift sideways off a target at the middle of it.
+					keepVelocity = false;
 					width = 8f;
 					height = 12f;
 					backColor = purple;
@@ -117,10 +121,12 @@ public class SerpentUnits{
 			//No engine glow behind it.
 			engineSize = 0f;
 			engineOffset = 0f;
-			//When it attacks it flies at the target, passes it and loops back round (the game's own circling attack, which both a
-			//commanded head and an enemy one do), and it can boost to double speed on a steady run.
+			//When it attacks it goes round the target in a ring, so that the body, which follows it round, has its sides to the target
+			//(see SerpentOrbit); it can boost to double speed on a steady run.
 			circleTarget = true;
-			circleTargetRadius = 190f;
+			circleTargetRadius = 170f;
+			aiController = SerpentFlyingAI::new;
+			controller = u -> !u.type.playerControllable || (u.team.isAI() && !u.team.rules().rtsAi) ? new SerpentFlyingAI() : new SerpentCommandAI();
 			commands = Seq.with(UnitCommand.moveCommand, growCommand);
 			defaultCommand = UnitCommand.moveCommand;
 
