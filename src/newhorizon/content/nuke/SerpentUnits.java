@@ -131,7 +131,8 @@ public class SerpentUnits{
 			aiController = SerpentFlyingAI::new;
 			controller = u -> !u.type.playerControllable || (u.team.isAI() && !u.team.rules().rtsAi) ? new SerpentFlyingAI() : new SerpentCommandAI();
 			commands = Seq.with(UnitCommand.moveCommand, growCommand);
-			stances = Seq.with(spreadStance);
+			//The command panel only shows a row of stance buttons when there is more than one, so the usual ones are kept beside it.
+			stances = Seq.with(mindustry.ai.UnitStance.stop, mindustry.ai.UnitStance.holdFire, mindustry.ai.UnitStance.pursueTarget, mindustry.ai.UnitStance.patrol, spreadStance);
 			defaultCommand = UnitCommand.moveCommand;
 
 			abilities.add(new PassiveHealAbility(0.015f));

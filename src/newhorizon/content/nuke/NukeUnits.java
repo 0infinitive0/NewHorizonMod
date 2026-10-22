@@ -211,7 +211,8 @@ public class NukeUnits{
 			waveTrailY = -22f;
 			trailScl = 1.8f;
 			commands = Seq.with(UnitCommand.moveCommand, carrierTargetCommand, carrierClearCommand, carrierLaunchCommand);
-			stances = Seq.with(carrierArmedStance);
+			//The command panel only shows a row of stance buttons when there is more than one, so Stop is kept beside Armed.
+			stances = Seq.with(UnitStance.stop, carrierArmedStance);
 			defaultCommand = UnitCommand.moveCommand;
 			abilities.add(new NukeCarrierAbility());
 		}};

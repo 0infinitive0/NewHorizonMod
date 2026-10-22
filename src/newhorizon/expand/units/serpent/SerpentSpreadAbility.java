@@ -20,10 +20,12 @@ import mindustry.ui.Bar;
  * On the head: the state of the Spread damage toggle. While it is on, {@link SerpentSpreadSystem} shares every hit on a body section out
  * among all the sections. It lasts {@link #duration} ticks and then, or when the button is switched off, has to cool down for
  * {@link #cooldownTime} ticks before it can be used again. The ticks left are kept in {@code data}, so they are saved with the unit.
- * Only a player team's head, which has the button, can use it: enemy heads never do.
+ * It also turns itself on when any body section is below half health, for a head a player commands or flies. Enemy heads never use it.
  */
 public class SerpentSpreadAbility extends Ability{
 	public static final float duration = 60f * 60f * 5f, cooldownTime = 60f * 30f;
+	/** It turns itself on when a section is below this share of its health. */
+	public static final float autoBelow = 0.5f;
 	public final UnitStance stance;
 	public float cooldown;
 	public Color color = Color.valueOf("c885ff");
@@ -46,25 +48,43 @@ public class SerpentSpreadAbility extends Ability{
 		if(unit.controller() instanceof CommandAI) ((CommandAI)unit.controller()).setStance(stance, false);
 	}
 
+	/** Whether any body section is below the health at which Spread damage turns itself on. */
+	public boolean hurt(Unit head){
+		for(Unit section : SerpentChain.sectionList(head.team)){
+			if(!section.dead && section.health < section.maxHealth * autoBelow) return true;
+		}
+		return false;
+	}
+
 	@Override
 	public void update(Unit unit){
 		if(Vars.net.client()) return;
+		boolean commanded = unit.controller() instanceof CommandAI;
 		boolean want = !unit.dead && switchedOn(unit);
+		boolean body = SerpentChain.sections(unit.team) > 0;
 
 		if(data > 0f){
 			data -= Time.delta;
-			//It ends when its time is up, when it is switched off, or when there is nothing left to share the damage between.
-			if(data <= 0f || !want || SerpentChain.sections(unit.team) == 0){
+			//It ends when its time is up, when the button is switched off (a head that is piloted has no button), or when there is nothing
+			//left to share the damage between.
+			if(data <= 0f || (commanded && !want) || !body || unit.dead){
 				data = 0f;
 				cooldown = cooldownTime;
 				switchOff(unit);
 			}
 		}else{
 			cooldown = Math.max(0f, cooldown - Time.delta);
-			if(want){
+			if(want && (cooldown > 0f || !body)){
 				//On during the cooldown, or with no body, does nothing: the button goes back off.
-				if(cooldown <= 0f && SerpentChain.sections(unit.team) > 0) data = duration;
-				else switchOff(unit);
+				switchOff(unit);
+			}else if(!unit.dead && body && cooldown <= 0f){
+				//Started by the button, or by itself once any section is below half health: only for a head a player commands or flies,
+				//never for an enemy's.
+				boolean auto = (commanded || unit.isPlayer()) && hurt(unit);
+				if(want || auto){
+					data = duration;
+					if(commanded) ((CommandAI)unit.controller()).setStance(stance, true);
+				}
 			}
 		}
 	}
