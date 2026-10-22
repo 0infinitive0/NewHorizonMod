@@ -34,10 +34,13 @@ public class SerpentUnits{
 	public static SerpentHeadType head;
 	public static NHUnitType body;
 	public static UnitCommand growCommand;
+	public static mindustry.ai.UnitStance spreadStance;
 
 	public static void load(){
 		growCommand = new UnitCommand("nh-serpent-grow", "add", u -> new SerpentGrowAI());
 		growCommand.switchToMove = false;
+		spreadStance = new newhorizon.expand.units.serpent.SerpentSpreadStance();
+		newhorizon.expand.units.serpent.SerpentSpreadSystem.hook();
 
 		Color purple = Color.valueOf("9c3fe8"), light = Color.valueOf("c885ff");
 
@@ -128,11 +131,13 @@ public class SerpentUnits{
 			aiController = SerpentFlyingAI::new;
 			controller = u -> !u.type.playerControllable || (u.team.isAI() && !u.team.rules().rtsAi) ? new SerpentFlyingAI() : new SerpentCommandAI();
 			commands = Seq.with(UnitCommand.moveCommand, growCommand);
+			stances = Seq.with(spreadStance);
 			defaultCommand = UnitCommand.moveCommand;
 
 			abilities.add(new PassiveHealAbility(0.015f));
 			abilities.add(new SerpentGuardAbility());
 			abilities.add(new BoostAbility(2f, 15f));
+			abilities.add(new newhorizon.expand.units.serpent.SerpentSpreadAbility(spreadStance));
 
 			//One laser cannon in the middle, straight ahead: a beam like the Meltdown's, which charges, then burns for a few seconds while the
 			//head is slowed.

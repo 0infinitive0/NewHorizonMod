@@ -57,6 +57,11 @@ public class SerpentChain{
 		return cache(team).head;
 	}
 
+	/** The team's body sections, in order, front to back. Do not change the list. */
+	public static Seq<Unit> sectionList(Team team){
+		return cache(team).sections;
+	}
+
 	/** How many body sections the team has. */
 	public static int sections(Team team){
 		return cache(team).sections.size;
