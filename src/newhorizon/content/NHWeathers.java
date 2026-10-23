@@ -9,12 +9,15 @@ import mindustry.graphics.Pal;
 import mindustry.type.Weather;
 import mindustry.type.weather.ParticleWeather;
 import mindustry.world.meta.Attribute;
+import newhorizon.expand.weather.ColdWave;
 import newhorizon.expand.weather.MatterStorm;
 
 public class NHWeathers{
 	public static Weather
-			quantumField, quantumStorm, solarStorm;
+			quantumField, quantumStorm, solarStorm, coldWave;
 	public static void load(){
+		coldWave = new ColdWave("cold-wave");
+		
 		quantumStorm = new MatterStorm("quantum-storm"){{
 			status = NHStatusEffects.ultFireBurn;
 			statusDuration = 15f;

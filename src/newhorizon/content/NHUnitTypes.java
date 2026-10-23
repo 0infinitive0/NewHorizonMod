@@ -58,11 +58,13 @@ import newhorizon.expand.entities.UltFire;
 import newhorizon.expand.units.*;
 import newhorizon.expand.units.ablility.*;
 import newhorizon.expand.units.ai.InterceptorAI;
+import newhorizon.expand.units.ai.IceMinerAI;
 import newhorizon.expand.units.ai.ProbeAI;
 import newhorizon.expand.units.ai.SniperAI;
 import newhorizon.expand.units.ai.SurroundAI;
 import newhorizon.expand.units.unitEntity.NucleoidEntity;
 import newhorizon.expand.units.unitEntity.PesterEntity;
+import newhorizon.expand.units.unitEntity.IceMinerEntity;
 import newhorizon.expand.units.unitEntity.ProbeEntity;
 import newhorizon.expand.units.unitType.AncientUnitType;
 import newhorizon.expand.units.unitType.NHUnitType;
@@ -106,6 +108,8 @@ public class NHUnitTypes{
 			/*relay,*/ ghost, zarkov, declining, //Navy
 			liv;
 	
+	public static UnitType iceMiner;
+	
 	static{
 			EntityMapping.nameMap.put(NewHorizon.name("declining"), EntityMapping.idMap[20]);
 			EntityMapping.nameMap.put(NewHorizon.name("zarkov"), EntityMapping.idMap[20]);
@@ -127,6 +131,7 @@ public class NHUnitTypes{
 			EntityMapping.nameMap.put(NewHorizon.name("nucleoid"), NucleoidEntity::new);
 			EntityMapping.nameMap.put(NewHorizon.name("restriction-enzyme"), EntityMapping.idMap[24]);
 			EntityMapping.nameMap.put(NewHorizon.name("ancient-probe"), ProbeEntity::new);
+			EntityMapping.nameMap.put(NewHorizon.name("ice-miner"), IceMinerEntity::new);
 
 			EntityMapping.nameMap.put(NewHorizon.name("guardian"), EnergyUnit::new);
 		}
@@ -968,6 +973,39 @@ public class NHUnitTypes{
 		loadWeapon();
 		
 		loadPreviousWeapon();
+
+		iceMiner = new UnitType("ice-miner"){{
+			aiController = IceMinerAI::new;
+			controller = u -> new IceMinerAI();
+			constructor = IceMinerEntity::new;
+
+			flying = true;
+			hidden = true;
+			useUnitCap = false;
+			isEnemy = false;
+			allowedInPayloads = false;
+			createWreck = false;
+			bounded = false;
+			drawMinimap = false;
+
+			health = 120;
+			hitSize = 8f;
+			speed = 2.4f;
+			accel = 0.12f;
+			drag = 0.06f;
+			rotateSpeed = 12f;
+			range = 70f;
+			faceTarget = false;
+			engineOffset = 4.5f;
+			engineSize = 2.4f;
+
+			itemCapacity = 20;
+			mineTier = 1;
+			mineSpeed = 1.5f;
+			mineRange = 80f;
+			mineHardnessScaling = false;
+			mineItems = Seq.with(NHItems.ice);
+		}};
 
 		//radiance = new RadianceUnitType("radiance");
 

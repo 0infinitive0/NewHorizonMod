@@ -34,6 +34,7 @@ import newhorizon.content.*;
 import newhorizon.content.blocks.DefenseBlock;
 import newhorizon.content.blocks.DistributionBlock;
 import newhorizon.expand.NHVars;
+import newhorizon.expand.block.env.IceFloor;
 import newhorizon.expand.entities.EntityRegister;
 import newhorizon.expand.entities.WorldEvent;
 import newhorizon.expand.eventsys.AutoEventTrigger;
@@ -411,6 +412,7 @@ public class NewHorizon extends Mod{
 			NHUnitTypes.load();
 			Recipes.load();
 			NHBlocks.load();
+			IceFloor.createAll();
 			NHWeathers.load();
 			NHPlanets.load();
 			NHSectorPresents.load();

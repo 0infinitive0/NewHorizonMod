@@ -46,6 +46,9 @@ public class NHTechTree{
 
 			node(SpecialBlock.nexusCore, () -> {
 				node(ProductionBlocks.resonanceMiningFacility, () -> {
+					node(ProductionBlocks.iceMiningStation, () -> {
+						nodeProduce(NHItems.ice, () -> {});
+					});
 					node(ProductionBlocks.beamMiningFacility, () -> {
 						node(ProductionBlocks.implosionMiningFacility, () -> {
 							node(ProductionBlocks.deliveryModule);

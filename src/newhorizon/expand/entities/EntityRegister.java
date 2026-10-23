@@ -14,6 +14,7 @@ import newhorizon.expand.units.EnergyUnit;
 import newhorizon.expand.units.EnergyUnitII;
 import newhorizon.expand.units.unitEntity.NucleoidEntity;
 import newhorizon.expand.units.unitEntity.PesterEntity;
+import newhorizon.expand.units.unitEntity.IceMinerEntity;
 import newhorizon.expand.units.unitEntity.ProbeEntity;
 import newhorizon.expand.weather.MatterStorm;
 
@@ -37,6 +38,7 @@ public class EntityRegister {
 		put(AdaptedTimedKillUnit.class, AdaptedTimedKillUnit::new);
 		put(NucleoidEntity.class, NucleoidEntity::new);
 		put(ProbeEntity.class, ProbeEntity::new);
+		put(IceMinerEntity.class, IceMinerEntity::new);
 
 		put(AutoEventTrigger.class, AutoEventTrigger::new);
 		put(WorldEvent.class, WorldEvent::new);

@@ -23,6 +23,7 @@ import newhorizon.content.NHContent;
 import newhorizon.expand.NHVars;
 import newhorizon.expand.eventsys.EventHandler;
 import newhorizon.expand.eventsys.types.WorldEventObjective;
+import newhorizon.expand.game.IceManager;
 import newhorizon.expand.game.NHWorldData;
 import newhorizon.expand.packets.LongInfoMessageCallPacket;
 import newhorizon.util.ui.dialog.NHWorldSettingDialog;
@@ -54,6 +55,8 @@ public class NHRegister{
 	}
 	
 	public static void load(){
+		IceManager.load();
+		
 		Events.on(EventType.ResetEvent.class, e -> {
 
 			NHGroups.clear();
