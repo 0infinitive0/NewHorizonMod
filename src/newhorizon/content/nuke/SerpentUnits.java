@@ -151,7 +151,7 @@ public class SerpentUnits{
 			//hit does what the toughest wall of the base game could take, see ArcStrikeBulletType) and then needs a long time to cool down.
 			//The reload counts from the start of the charge, so the cooldown after the bolt is reload less the charge. The charge and the
 			//cooldown are drawn by SerpentArcAbility, which also lets the body's stored charge shorten the cooldown.
-			weapons.add(new mindustry.type.Weapon(NewHorizon.name("serpent-laser")){{
+			weapons.add(new newhorizon.expand.units.serpent.ArcWeapon(NewHorizon.name("serpent-laser")){{
 				x = 0f;
 				y = 2f;
 				shootY = 6f;

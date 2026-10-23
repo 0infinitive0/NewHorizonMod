@@ -162,20 +162,25 @@ public class ArcStrikeBulletType extends BulletType{
 
 	/** The one enemy nearest the point aimed at, within {@link #snap} of it (its own size counts) and within reach of the weapon; null if none. */
 	public Position pick(Bullet b, float aimX, float aimY){
+		return pick(b.team, b.x, b.y, aimX, aimY);
+	}
+
+	/** The same, for a bolt that has not been made yet: from a muzzle at (fromX, fromY), for a team. */
+	public Position pick(mindustry.game.Team team, float fromX, float fromY, float aimX, float aimY){
 		float reach = rangeOverride;
 		Object[] best = {null};
 		float[] bestDst = {Float.MAX_VALUE};
-		Units.nearbyEnemies(b.team, aimX - snap - 40f, aimY - snap - 40f, (snap + 40f) * 2f, (snap + 40f) * 2f, unit -> {
-			if(unit.dead() || !unit.isAdded() || !unit.targetable(b.team) || !unit.checkTarget(collidesAir, collidesGround)) return;
+		Units.nearbyEnemies(team, aimX - snap - 40f, aimY - snap - 40f, (snap + 40f) * 2f, (snap + 40f) * 2f, unit -> {
+			if(unit.dead() || !unit.isAdded() || !unit.targetable(team) || !unit.checkTarget(collidesAir, collidesGround)) return;
 			float d = unit.dst(aimX, aimY);
-			if(d > snap + unit.hitSize / 2f || unit.dst(b) > reach + unit.hitSize / 2f || d >= bestDst[0]) return;
+			if(d > snap + unit.hitSize / 2f || unit.dst(fromX, fromY) > reach + unit.hitSize / 2f || d >= bestDst[0]) return;
 			bestDst[0] = d;
 			best[0] = unit;
 		});
 		Units.nearbyBuildings(aimX, aimY, snap + 40f, build -> {
-			if(!build.isValid() || build.team == b.team || build.team == mindustry.game.Team.derelict || !build.block.targetable) return;
+			if(!build.isValid() || build.team == team || build.team == mindustry.game.Team.derelict || !build.block.targetable) return;
 			float d = build.dst(aimX, aimY);
-			if(d > snap + build.hitSize() / 2f || build.dst(b) > reach + build.hitSize() / 2f || d >= bestDst[0]) return;
+			if(d > snap + build.hitSize() / 2f || build.dst(fromX, fromY) > reach + build.hitSize() / 2f || d >= bestDst[0]) return;
 			bestDst[0] = d;
 			best[0] = build;
 		});
