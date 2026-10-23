@@ -18,7 +18,7 @@ import newhorizon.content.nuke.NukeItems;
  */
 public class SerpentGrowAI extends AIController{
 	/** What a section costs, in omni-matter from the core. */
-	public static int cost = 100;
+	public static int cost = 200;
 	/** Ticks that have to pass between two sections of the same team. */
 	public static float cooldown = 30f;
 

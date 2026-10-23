@@ -7,9 +7,13 @@ import mindustry.world.Block;
 import newhorizon.expand.block.omni.OmniExtractor;
 import newhorizon.expand.block.omni.OmniFactory;
 import newhorizon.expand.block.omni.OmniShield;
+import newhorizon.expand.block.omni.OmniStabilizer;
+import newhorizon.expand.units.serpent.SerpentGrowAI;
 import newhorizon.expand.block.omni.OmniWall;
 import newhorizon.expand.block.omni.SerpentNest;
 import mindustry.world.blocks.units.UnitFactory;
+
+import static mindustry.Vars.tilesize;
 
 import static mindustry.type.ItemStack.with;
 
@@ -19,7 +23,7 @@ import static mindustry.type.ItemStack.with;
  * of items every planet has, but the shield and the wall also need omni-matter to build.
  */
 public class OmniBlocks{
-	public static Block omniFactory, omniExtractor, omniShield, omniWall;
+	public static Block omniFactory, omniExtractor, omniShield, omniWall, omniStabilizer;
 	/** Makes the head of the Serpent and its body sections. */
 	public static Block serpentNest;
 
@@ -52,9 +56,17 @@ public class OmniBlocks{
 			size = 4;
 			health = 2800;
 			consumePower(6f);
-			plans.add(new UnitFactory.UnitPlan(SerpentUnits.head, 60f * 120f, with(Items.silicon, 400, Items.thorium, 300, Items.surgeAlloy, 200, Items.plastanium, 150, NukeItems.omniMatter, 200)));
-			//A section, like the Add section command, for 100 omni-matter, but paid in items delivered to the Nest. Only while there is a head.
-			plans.add(new UnitFactory.UnitPlan(SerpentUnits.body, 60f * 20f, with(Items.silicon, 120, Items.thorium, 80, Items.surgeAlloy, 50, Items.plastanium, 40, NukeItems.omniMatter, 100)));
+			plans.add(new UnitFactory.UnitPlan(SerpentUnits.head, 60f * 180f, with(Items.silicon, 800, Items.thorium, 600, Items.surgeAlloy, 400, Items.plastanium, 300, NukeItems.omniMatter, 400)));
+			//A section costs what the Add section command costs: omni-matter only, delivered to the Nest instead of taken from the core. Only while there is a head.
+			plans.add(new UnitFactory.UnitPlan(SerpentUnits.body, 60f * 20f, with(NukeItems.omniMatter, SerpentGrowAI.cost)));
+		}};
+
+		omniStabilizer = new OmniStabilizer("omni-stabilizer"){{
+			requirements(Category.effect, with(Items.silicon, 80, Items.thorium, 60, Items.phaseFabric, 40, NukeItems.omniMatter, 40));
+			size = 2;
+			health = 600;
+			consumePower(1f);
+			range = 12f * tilesize;
 		}};
 
 		omniWall = new OmniWall("omni-wall"){{

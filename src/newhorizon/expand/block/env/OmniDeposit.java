@@ -4,6 +4,7 @@ import arc.Events;
 import arc.math.Mathf;
 import arc.func.Cons;
 import arc.struct.IntFloatMap;
+import arc.struct.IntSeq;
 import arc.struct.IntSet;
 import arc.util.Time;
 import mindustry.Vars;
@@ -18,6 +19,8 @@ import mindustry.world.Tile;
 import mindustry.world.Block;
 import mindustry.world.meta.BuildVisibility;
 import newhorizon.content.nuke.NukeItems;
+import newhorizon.content.nuke.OmniBlocks;
+import newhorizon.expand.block.omni.OmniStabilizer;
 
 import static mindustry.Vars.tilesize;
 
@@ -33,10 +36,23 @@ import static mindustry.Vars.tilesize;
  * <p>The game does not say when a unit has mined an item, so {@link #track} watches every mining unit: each time the mining timer falls
  * back to zero on a deposit tile an item has been mined and one is taken from the tile. Only units can mine it (the ground under it is
  * out of reach of a drill, and nothing can be built on it). Only the server counts.
+ *
+ * <p>A deposit wears away by itself: every tile loses one every {@link #decaySeconds} seconds, each at a different second of the minute
+ * (by where it is), until it is used up like a mined-out tile. A powered {@link OmniStabilizer} in reach stops that. To find the tiles
+ * without searching the map, the positions of the deposits are kept in a set that is filled when a deposit is laid and when a map is loaded.
  */
 public class OmniDeposit extends Block{
 	/** The most one tile can hold. */
 	public static final int cap = 255;
+
+	/** Seconds one tile takes to lose one item. */
+	public static int decaySeconds = 60;
+
+	/** Where the deposits are (tile positions). */
+	private static final IntSet positions = new IntSet();
+	private static final IntSeq gone = new IntSeq(), due = new IntSeq();
+	private static float clock;
+	private static int lastSecond;
 
 	/** The mining timer of every unit that was working a deposit a moment ago, by unit id. */
 	private static final IntFloatMap timers = new IntFloatMap();
@@ -73,6 +89,7 @@ public class OmniDeposit extends Block{
 		if(!isDeposit(tile)) return;
 		int left = remaining(tile) - 1;
 		if(left <= 0){
+			positions.remove(tile.pos());
 			tile.setNet(Blocks.air);
 			tile.data = 0;
 		}else{
@@ -110,6 +127,7 @@ public class OmniDeposit extends Block{
 		if(isDeposit(tile)) have = remaining(tile);
 		else if(free(tile)){
 			tile.setNet(NukeItems.omniDeposit);
+			positions.add(tile.pos());
 			have = 0;
 		}else return amount;
 
@@ -176,8 +194,68 @@ public class OmniDeposit extends Block{
 		if(hooked) return;
 		hooked = true;
 		Events.run(EventType.Trigger.update, OmniDeposit::track);
-		Events.on(EventType.ResetEvent.class, e -> timers.clear());
-		Events.on(EventType.WorldLoadEvent.class, e -> timers.clear());
+		Events.run(EventType.Trigger.update, OmniDeposit::decay);
+		Events.on(EventType.ResetEvent.class, e -> {
+			timers.clear();
+			positions.clear();
+		});
+		Events.on(EventType.WorldLoadEvent.class, e -> {
+			timers.clear();
+			scan();
+		});
+	}
+
+	/** Finds every deposit on the map again, after it was loaded. */
+	public static void scan(){
+		positions.clear();
+		clock = 0f;
+		lastSecond = 0;
+		if(Vars.world == null || Vars.world.tiles == null) return;
+		for(Tile tile : Vars.world.tiles){
+			if(isDeposit(tile)) positions.add(tile.pos());
+		}
+	}
+
+	/** Notes a deposit that was put on the map in some other way than by {@link #leave}. */
+	public static void register(Tile tile){
+		if(isDeposit(tile)) positions.add(tile.pos());
+	}
+
+	/** How many deposit tiles are known. */
+	public static int known(){
+		return positions.size;
+	}
+
+	/** Once a second, the tiles whose turn it is lose one, unless a stabilizer that has power reaches them. Server side. */
+	private static void decay(){
+		if(Vars.net.client() || positions.size == 0) return;
+		clock += Time.delta;
+		int second = (int)(clock / 60f);
+		if(second == lastSecond) return;
+		lastSecond = second;
+		decayStep(second);
+	}
+
+	/** The tiles whose second it is when the clock reads this second. */
+	public static void decayStep(int second){
+		arc.struct.Seq<mindustry.gen.Building> stabilizers = null;
+		gone.clear();
+		due.clear();
+		for(IntSet.IntSetIterator it = positions.iterator(); it.hasNext;){
+			int pos = it.next();
+			Tile tile = Vars.world.tile(pos);
+			if(!isDeposit(tile)){
+				gone.add(pos);
+				continue;
+			}
+			if(Math.floorMod(second + pos, Math.max(1, decaySeconds)) != 0) continue;
+			if(stabilizers == null) stabilizers = OmniStabilizer.all(OmniBlocks.omniStabilizer);
+			if(OmniStabilizer.covers(stabilizers, tile)) continue;
+			due.add(pos);
+		}
+		for(int i = 0; i < gone.size; i++) positions.remove(gone.get(i));
+		//Taking one off may use a tile up and drop it from the set, which is not done while the set is being walked.
+		for(int i = 0; i < due.size; i++) mined(Vars.world.tile(due.get(i)));
 	}
 
 	private static void track(){
