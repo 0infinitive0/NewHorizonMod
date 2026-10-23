@@ -63,8 +63,8 @@ public class OmniBlocks{
 
 		omniStabilizer = new OmniStabilizer("omni-stabilizer"){{
 			requirements(Category.effect, with(Items.silicon, 80, Items.thorium, 60, Items.phaseFabric, 40, NukeItems.omniMatter, 40));
-			size = 2;
-			health = 600;
+			size = 1;
+			health = 300;
 			consumePower(1f);
 			range = 12f * tilesize;
 		}};

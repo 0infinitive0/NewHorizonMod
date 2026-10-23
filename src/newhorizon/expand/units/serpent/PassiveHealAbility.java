@@ -18,6 +18,7 @@ public class PassiveHealAbility extends Ability{
 	@Override
 	public void update(Unit unit){
 		lastHeal = 0f;
+		if(newhorizon.expand.status.NoHeal.blocked(unit)) return;
 		if(unit.health < unit.maxHealth && !unit.dead){
 			float before = unit.health;
 			unit.heal(unit.maxHealth * percent * Time.delta / 60f);

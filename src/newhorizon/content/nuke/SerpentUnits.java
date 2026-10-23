@@ -10,6 +10,7 @@ import mindustry.gen.Sounds;
 import mindustry.gen.UnitEntity;
 import newhorizon.NewHorizon;
 import newhorizon.expand.bullets.nuke.ArcStrikeBulletType;
+import newhorizon.expand.bullets.nuke.FlameBulletType;
 import newhorizon.expand.units.BoostAbility;
 import newhorizon.expand.units.serpent.OmniArmorAbility;
 import newhorizon.expand.units.serpent.PassiveHealAbility;
@@ -129,7 +130,7 @@ public class SerpentUnits{
 			//When it attacks it goes round the target in a ring, so that the body, which follows it round, has its sides to the target
 			//(see SerpentOrbit); it can boost to double speed on a steady run.
 			circleTarget = true;
-			circleTargetRadius = 170f;
+			circleTargetRadius = 150f;
 			aiController = SerpentFlyingAI::new;
 			controller = u -> !u.type.playerControllable || (u.team.isAI() && !u.team.rules().rtsAi) ? new SerpentFlyingAI() : new SerpentCommandAI();
 			commands = Seq.with(UnitCommand.moveCommand, growCommand);
@@ -152,8 +153,8 @@ public class SerpentUnits{
 			//cooldown are drawn by SerpentArcAbility, which also lets the body's stored charge shorten the cooldown.
 			weapons.add(new mindustry.type.Weapon(NewHorizon.name("serpent-laser")){{
 				x = 0f;
-				y = 9f;
-				shootY = 4f;
+				y = 2f;
+				shootY = 6f;
 				mirror = false;
 				rotate = false;
 				reload = 460f;
@@ -168,6 +169,28 @@ public class SerpentUnits{
 					light = SerpentUnits.light;
 				}};
 				shoot.firstShotDelay = 100f;
+			}});
+
+			//The flame thrower comes out of the head's mouth, at the front edge, and cannot turn: it throws a cone of flames straight ahead, a
+			//Scorch's scaled up. The flames burn, go through units, and stop what they touch healing for a moment. They reach a little past
+			//the ring the head goes round its target on. The mouth is part of the head's sprite, so the weapon has none of its own.
+			weapons.add(new mindustry.type.Weapon(){{
+				x = 0f;
+				y = 11f;
+				shootY = 2f;
+				mirror = false;
+				rotate = false;
+				reload = 6f;
+				shootCone = 25f;
+				inaccuracy = 3f;
+				velocityRnd = 0.25f;
+				recoil = 0f;
+				ejectEffect = Fx.none;
+				shootSound = Sounds.shootFlame;
+				shoot = new mindustry.entities.pattern.ShootSpread(5, 8f);
+				bullet = new FlameBulletType(6.2f, 22f){{
+					lifetime = 30f;
+				}};
 			}});
 
 			//The laser it had before, a continuous beam like the Meltdown's that slowed the head while it burned and sapped what it hit.

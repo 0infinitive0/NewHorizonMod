@@ -15,6 +15,8 @@ public class NukeStatus{
 	public static StatusEffect tornadoCaught;
 	/** A nuke launched from orbit: nothing can target or hit it. Not shown, no other effect. */
 	public static StatusEffect highAltitude;
+	/** Scorched by a Serpent's flames: cannot heal for a moment (see NoHeal). */
+	public static StatusEffect unhealable;
 
 	public static void load(){
 		irradiated = new StatusEffect("irradiated"){{
@@ -33,6 +35,20 @@ public class NukeStatus{
 			effect = Fx.shootSmallSmoke;
 			effectChance = 0.1f;
 		}};
+
+		newhorizon.expand.status.NoHeal.hook();
+		unhealable = new StatusEffect("unhealable"){
+			{
+				color = Color.valueOf("ff7846");
+				effect = Fx.none;
+			}
+
+			@Override
+			public void update(mindustry.gen.Unit unit, mindustry.entities.units.StatusEntry entry){
+				super.update(unit, entry);
+				newhorizon.expand.status.NoHeal.hold(unit);
+			}
+		};
 
 		highAltitude = new StatusEffect("high-altitude"){{
 			show = false;

@@ -92,7 +92,7 @@ public class SerpentArcAbility extends Ability{
 	@Override
 	public void draw(Unit unit){
 		if(charge < 0f && cooldown < 0f) return;
-		Tmp.v1.trns(unit.rotation, 13f).add(unit);
+		Tmp.v1.trns(unit.rotation, 8f).add(unit);
 		float mx = Tmp.v1.x, my = Tmp.v1.y;
 		long frame = (long)(Time.time / 3f);
 
