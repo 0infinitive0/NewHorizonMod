@@ -30,6 +30,13 @@ public class OmniArmorAbility extends Ability{
 		return data;
 	}
 
+	/** Takes up to this much of the stored charge for something else (the head's weapon); returns how much was taken. */
+	public float take(float amount){
+		float took = Math.min(data, Math.max(0f, amount));
+		data -= took;
+		return took;
+	}
+
 	@Override
 	public void update(Unit unit){
 		if(unit.dead) return;

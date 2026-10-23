@@ -5,16 +5,15 @@ import arc.struct.Seq;
 import mindustry.ai.UnitCommand;
 import mindustry.content.Fx;
 import mindustry.entities.bullet.BasicBulletType;
-import mindustry.content.StatusEffects;
-import mindustry.entities.Effect;
-import mindustry.entities.bullet.ContinuousLaserBulletType;
 import mindustry.entities.pattern.ShootAlternate;
 import mindustry.gen.Sounds;
 import mindustry.gen.UnitEntity;
 import newhorizon.NewHorizon;
+import newhorizon.expand.bullets.nuke.ArcStrikeBulletType;
 import newhorizon.expand.units.BoostAbility;
 import newhorizon.expand.units.serpent.OmniArmorAbility;
 import newhorizon.expand.units.serpent.PassiveHealAbility;
+import newhorizon.expand.units.serpent.SerpentArcAbility;
 import newhorizon.expand.units.serpent.SerpentChain;
 import newhorizon.expand.units.serpent.SerpentCommandAI;
 import newhorizon.expand.units.serpent.SerpentFlyingAI;
@@ -26,7 +25,7 @@ import newhorizon.expand.units.serpent.SideWeapon;
 import newhorizon.expand.units.unitType.NHUnitType;
 
 /**
- * The Serpent: a flying head with a laser cannon and a body of sections that grow, a hundred omni-matter at a time, from its tail. Head
+ * The Serpent: a flying head with a lightning cannon and a body of sections that grow, a hundred omni-matter at a time, from its tail. Head
  * and sections are units of their own. A team can have only one; the head is made in the Serpent Nest, and while it has any sections
  * nothing can hurt it or aim at it.
  */
@@ -35,6 +34,8 @@ public class SerpentUnits{
 	public static NHUnitType body;
 	public static UnitCommand growCommand;
 	public static mindustry.ai.UnitStance spreadStance;
+	/** The light purple of the Serpent's lightning. */
+	public static Color light;
 
 	public static void load(){
 		growCommand = new UnitCommand("nh-serpent-grow", "add", u -> new SerpentGrowAI());
@@ -42,7 +43,8 @@ public class SerpentUnits{
 		spreadStance = new newhorizon.expand.units.serpent.SerpentSpreadStance();
 		newhorizon.expand.units.serpent.SerpentSpreadSystem.hook();
 
-		Color purple = Color.valueOf("9c3fe8"), light = Color.valueOf("c885ff");
+		Color purple = Color.valueOf("9c3fe8");
+		light = Color.valueOf("c885ff");
 
 		body = new NHUnitType("serpent-body"){{
 			constructor = UnitEntity::create;
@@ -58,9 +60,9 @@ public class SerpentUnits{
 			commands = new Seq<>();
 			defaultCommand = null;
 			hitSize = SerpentChain.bodyWidth;
-			//The health of an omni wall, which it has the other properties of too (see OmniArmorAbility).
-			health = 5000f;
-			armor = 8f;
+			//Tougher than an omni wall (5000), which it has the other properties of too (see OmniArmorAbility).
+			health = 12000f;
+			armor = 20f;
 			speed = 1.15f;
 			accel = 0.3f;
 			drag = 0.12f;
@@ -139,53 +141,83 @@ public class SerpentUnits{
 			abilities.add(new SerpentGuardAbility());
 			abilities.add(new BoostAbility(2f, 15f));
 			abilities.add(new newhorizon.expand.units.serpent.SerpentSpreadAbility(spreadStance));
+			abilities.add(new SerpentArcAbility());
 
-			//One laser cannon in the middle, straight ahead: a beam like the Meltdown's, which charges, then burns for a few seconds while the
-			//head is slowed.
-			Effect charge = new Effect(40f, 100f, e -> {
-				arc.graphics.g2d.Draw.color(light, Color.white, e.fin());
-				arc.graphics.g2d.Lines.stroke(e.fin() * 2.5f);
-				arc.graphics.g2d.Lines.circle(e.x, e.y, 4f + e.fout() * 22f);
-				arc.graphics.g2d.Fill.circle(e.x, e.y, e.fin() * 5f);
-			}).followParent(true).rotWithParent(true);
+			//The weapons of the head aim at what the AI has chosen, so a target given to it by command is the one struck.
+			singleTarget = true;
 
+			//One lightning cannon in the middle, straight ahead: it charges for a moment, throws one thick bolt at its chosen target (one
+			//hit does what the toughest wall of the base game could take, see ArcStrikeBulletType) and then needs a long time to cool down.
+			//The reload counts from the start of the charge, so the cooldown after the bolt is reload less the charge. The charge and the
+			//cooldown are drawn by SerpentArcAbility, which also lets the body's stored charge shorten the cooldown.
 			weapons.add(new mindustry.type.Weapon(NewHorizon.name("serpent-laser")){{
 				x = 0f;
 				y = 9f;
 				shootY = 4f;
 				mirror = false;
 				rotate = false;
-				continuous = true;
-				reload = 200f;
-				cooldownTime = 200f;
+				reload = 460f;
+				cooldownTime = 360f;
 				shootCone = 6f;
-				recoil = 2f;
-				parentizeEffects = true;
+				recoil = 3f;
 				ejectEffect = Fx.none;
 				chargeSound = Sounds.chargeVela;
-				shootSound = Sounds.beamMeltdown;
-				bullet = new ContinuousLaserBulletType(){{
-					damage = 70f;
-					length = 260f;
-					lifetime = 160f;
-					hitEffect = Fx.hitMeltdown;
-					hitColor = light;
-					drawSize = 420f;
-					shake = 1f;
-					despawnEffect = Fx.smokeCloud;
-					smokeEffect = Fx.none;
-					chargeEffect = charge;
-					//It saps what it burns: slower, and it takes more damage.
-					status = StatusEffects.sapped;
-					statusDuration = 120f;
-					incendChance = 0f;
-					incendAmount = 0;
-					colors = new Color[]{purple.cpy().a(0.35f), purple.cpy().a(0.7f), light, Color.white};
+				shootSound = Sounds.none;
+				bullet = new ArcStrikeBulletType(){{
+					color = purple;
+					light = SerpentUnits.light;
 				}};
-				shoot.firstShotDelay = 40f;
-				shootStatus = StatusEffects.slow;
-				shootStatusDuration = bullet.lifetime + shoot.firstShotDelay;
+				shoot.firstShotDelay = 100f;
 			}});
+
+			//The laser it had before, a continuous beam like the Meltdown's that slowed the head while it burned and sapped what it hit.
+			//Kept so that it can be brought back: take the comment marks off (and the Effect it needs), and remove the arc weapon above.
+			// //One laser cannon in the middle, straight ahead: a beam like the Meltdown's, which charges, then burns for a few seconds while the
+			// //head is slowed.
+			// Effect charge = new Effect(40f, 100f, e -> {
+			// arc.graphics.g2d.Draw.color(light, Color.white, e.fin());
+			// arc.graphics.g2d.Lines.stroke(e.fin() * 2.5f);
+			// arc.graphics.g2d.Lines.circle(e.x, e.y, 4f + e.fout() * 22f);
+			// arc.graphics.g2d.Fill.circle(e.x, e.y, e.fin() * 5f);
+			// }).followParent(true).rotWithParent(true);
+			//
+			// weapons.add(new mindustry.type.Weapon(NewHorizon.name("serpent-laser")){{
+			// x = 0f;
+			// y = 9f;
+			// shootY = 4f;
+			// mirror = false;
+			// rotate = false;
+			// continuous = true;
+			// reload = 200f;
+			// cooldownTime = 200f;
+			// shootCone = 6f;
+			// recoil = 2f;
+			// parentizeEffects = true;
+			// ejectEffect = Fx.none;
+			// chargeSound = Sounds.chargeVela;
+			// shootSound = Sounds.beamMeltdown;
+			// bullet = new ContinuousLaserBulletType(){{
+			// damage = 70f;
+			// length = 260f;
+			// lifetime = 160f;
+			// hitEffect = Fx.hitMeltdown;
+			// hitColor = light;
+			// drawSize = 420f;
+			// shake = 1f;
+			// despawnEffect = Fx.smokeCloud;
+			// smokeEffect = Fx.none;
+			// chargeEffect = charge;
+			// //It saps what it burns: slower, and it takes more damage.
+			// status = StatusEffects.sapped;
+			// statusDuration = 120f;
+			// incendChance = 0f;
+			// incendAmount = 0;
+			// colors = new Color[]{purple.cpy().a(0.35f), purple.cpy().a(0.7f), light, Color.white};
+			// }};
+			// shoot.firstShotDelay = 40f;
+			// shootStatus = StatusEffects.slow;
+			// shootStatusDuration = bullet.lifetime + shoot.firstShotDelay;
+			// }});
 		}};
 
 		SerpentChain.head = head;

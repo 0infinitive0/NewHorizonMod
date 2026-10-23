@@ -20,7 +20,7 @@ import static mindustry.type.ItemStack.with;
  */
 public class OmniBlocks{
 	public static Block omniFactory, omniExtractor, omniShield, omniWall;
-	/** Makes the head of the Serpent. */
+	/** Makes the head of the Serpent and its body sections. */
 	public static Block serpentNest;
 
 	public static void load(){
@@ -53,6 +53,8 @@ public class OmniBlocks{
 			health = 2800;
 			consumePower(6f);
 			plans.add(new UnitFactory.UnitPlan(SerpentUnits.head, 60f * 120f, with(Items.silicon, 400, Items.thorium, 300, Items.surgeAlloy, 200, Items.plastanium, 150, NukeItems.omniMatter, 200)));
+			//A section, like the Add section command, for 100 omni-matter, but paid in items delivered to the Nest. Only while there is a head.
+			plans.add(new UnitFactory.UnitPlan(SerpentUnits.body, 60f * 20f, with(Items.silicon, 120, Items.thorium, 80, Items.surgeAlloy, 50, Items.plastanium, 40, NukeItems.omniMatter, 100)));
 		}};
 
 		omniWall = new OmniWall("omni-wall"){{
