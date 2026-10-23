@@ -38,6 +38,7 @@ import newhorizon.content.nuke.NukeContent;
 import newhorizon.content.jade.JadeFaction;
 import newhorizon.expand.units.ai.gardener.GardenerMind;
 import newhorizon.expand.NHVars;
+import newhorizon.expand.block.env.IceFloor;
 import newhorizon.expand.entities.EntityRegister;
 import newhorizon.expand.entities.WorldEvent;
 import newhorizon.expand.eventsys.AutoEventTrigger;
@@ -443,6 +444,7 @@ public class NewHorizon extends Mod{
 			NHUnitTypes.load();
 			Recipes.load();
 			NHBlocks.load();
+			IceFloor.createAll();
 			JadeFaction.load();
 			ChronosFaction.load();
 			NukeContent.load();

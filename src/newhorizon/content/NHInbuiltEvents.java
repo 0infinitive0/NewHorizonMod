@@ -405,6 +405,13 @@ public class NHInbuiltEvents{
 				spacingBase = 900 * 60;
 				spacingRand = 600 * 60;
 			}}, new AutoEventTrigger(){{
+				items = OV_Pair.seqWith(NHItems.presstanium, 300);
+				eventType = WorldEventType.inbuilt(new WeatherEvent("inbuilt-weather-cold-wave", NHWeathers.coldWave, Color.valueOf("b5e4ff")));
+				
+				minTriggerWave = 0;
+				spacingBase = 600 * 60;
+				spacingRand = 400 * 60;
+			}}, new AutoEventTrigger(){{
 				items = OV_Pair.seqWith(NHItems.seniorProcessor, 1000, NHItems.irayrondPanel, 1000);
 				buildings = OV_Pair.seqWith(NHBlocks.jumpGateJunior, 1);
 				eventType = WorldEventType.inbuilt(new WeatherEvent("inbuilt-weather-quantum-storm", NHWeathers.quantumStorm, NHColor.darkEnrColor));

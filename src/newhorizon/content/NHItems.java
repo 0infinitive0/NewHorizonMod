@@ -13,7 +13,8 @@ public class NHItems{
 	presstanium, seniorProcessor, juniorProcessor,
 	zeta, fusionEnergy, multipleSteel, irayrondPanel,
 	setonAlloy, darkEnergy, upgradeSort, metalOxhydrigen,
-	thermoCorePositive, thermoCoreNegative;
+	thermoCorePositive, thermoCoreNegative,
+	ice;
 	public static void load(){
 		ancimembrane = new Item("ancimembrane"){{
 			cost = 5;
@@ -63,6 +64,10 @@ public class NHItems{
 			cost = 3f;
 		}};
 		metalOxhydrigen = new Item("metal-oxhydrigen", Color.valueOf("#BFF3FF"));
+		ice = new Item("ice", Color.valueOf("#B5E4FF")){{
+			hardness = 1;
+			cost = 0.5f;
+		}};
 	}
 	
 }
