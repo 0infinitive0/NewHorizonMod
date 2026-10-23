@@ -63,7 +63,7 @@ public class LaserWallBlock extends Block{
 		hasPower = true;
 		hasShadow = true;
 		
-		ambientSound = loopSound = Sounds.pulse;
+		ambientSound = Sounds.loopPulse;
 	}
 	
 	@Override
@@ -341,7 +341,7 @@ public class LaserWallBlock extends Block{
 			
 			//damage every 5 ticks
 			if(b.timer(1, 5f)){
-				Damage.collideLine(b, b.team, hitEffect, b.x, b.y, b.rotation(), b.dst(build), true, false);
+				Damage.collideLine(b, b.team, b.x, b.y, b.rotation(), b.dst(build), true, false);
 			}
 			
 			if(hitShake > 0){

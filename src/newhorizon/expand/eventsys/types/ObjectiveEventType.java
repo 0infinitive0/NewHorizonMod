@@ -68,7 +68,7 @@ public class ObjectiveEventType extends WorldEventType{
 	
 	@Override
 	public void trigger(WorldEvent e){
-		Sounds.unlock.play();
+		Sounds.uiUnlock.play();
 		action.get(e);
 		
 		super.trigger(e);

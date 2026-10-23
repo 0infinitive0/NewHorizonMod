@@ -318,7 +318,7 @@ public class NHBlocks{
 			public void load(){
 				super.load();
 				
-				editorIcon = fullIcon = uiIcon = region = Core.atlas.find(NewHorizon.name("quantum-field-disturbing-icon"));
+				fullIcon = uiIcon = region = Core.atlas.find(NewHorizon.name("quantum-field-disturbing-icon"));
 			}
 		};
 		
@@ -619,8 +619,8 @@ public class NHBlocks{
 			}};
 			
 			shootSound = Sounds.none;
-			loopSoundVolume = 1f;
-			loopSound = NHSounds.largeBeam;
+			ambientSoundVolume = 1f;
+			ambientSound = NHSounds.largeBeam;
 			
 			shootWarmupSpeed = 0.08f;
 			shootCone = 360f;
@@ -693,7 +693,7 @@ public class NHBlocks{
 			shootWarmupSpeed /= 2;
 			inaccuracy = 2;
 			shootY -= 5;
-			shootSound = Sounds.largeCannon;
+			shootSound = Sounds.shootRipple;
 			
 			ammo(
 				NHItems.metalOxhydrigen, NHBullets.artilleryHydro,
@@ -760,7 +760,7 @@ public class NHBlocks{
 			heatColor = heatC;
 			
 			shake = 1.1f;
-			shootSound = Sounds.missileLarge;
+			shootSound = Sounds.shootMissileLarge;
 			
 			shoot = new AdaptedShootHelix(){{
 				flip = true;
@@ -797,7 +797,7 @@ public class NHBlocks{
 				status = NHStatusEffects.emp2;
 				statusDuration = 180f;
 				
-				hitSound = despawnSound = Sounds.dullExplosion;
+				hitSound = despawnSound = Sounds.explosionDull;
 				hitSoundVolume = 0.6f;
 				hitSoundPitch -= 0.11f;
 				hitShake = 1.1f;
@@ -857,7 +857,7 @@ public class NHBlocks{
 				
 				reloadMultiplier = 0.25f;
 				
-				hitSound = despawnSound = Sounds.largeExplosion;
+				hitSound = despawnSound = Sounds.explosionReactor;
 				hitShake = despawnShake = 6.1f;
 				
 				shootEffect = EffectWrapper.wrap(NHFx.circleSplash, hitColor);
@@ -1313,7 +1313,7 @@ public class NHBlocks{
 				mag = 8f;
 			}};
 			
-			shootSound = Sounds.pulseBlast;
+			shootSound = Sounds.shockBullet;
 			outlineColor = Pal.darkOutline;
 			warmupMaintainTime = 45f;
 			minWarmup = 0.9f;
@@ -1347,7 +1347,7 @@ public class NHBlocks{
 				
 				maxHit = 8;
 				despawnShake = 5f;
-				hitSound = despawnSound = Sounds.plasmaboom;
+				hitSound = despawnSound = Sounds.explosionPlasmaSmall;
 				statusDuration = 120f;
 				status = NHStatusEffects.emp1;
 				
@@ -1795,7 +1795,7 @@ public class NHBlocks{
 			
 			recoil = 18f;
 			shake = 80f;
-			shootSound = Sounds.laserblast;
+			shootSound = Sounds.shootCorvus;
 			health = 800000;
 			shootCone = 5f;
 			maxAmmo = 80;
@@ -1896,7 +1896,7 @@ public class NHBlocks{
 			shootCone = 30f;
 			inaccuracy = 4f;
 			size = 2;
-			shootSound = Sounds.shootSnap;
+			shootSound = Sounds.shootDuo;
 			shake = 3f;
 			ammo(
 					Items.titanium, new BasicBulletType(5, 24){{
@@ -2087,7 +2087,7 @@ public class NHBlocks{
 				accelerateBegin = 0.1f;
 				accelerateEnd = 0.85f;
 				
-				despawnSound = hitSound = Sounds.dullExplosion;
+				despawnSound = hitSound = Sounds.explosionDull;
 				
 				velocityBegin = 6f;
 				velocityIncrease = -4f;
@@ -2191,9 +2191,9 @@ public class NHBlocks{
 			rotateSpeed = 3f;
 			firingMoveFract = 0.15F;
 			shootDuration = 200.0F;
-			shootSound = Sounds.laserbig;
-			loopSound = Sounds.beam;
-			loopSoundVolume = 2.0F;
+			shootSound = Sounds.shootMeltdown;
+			ambientSound = Sounds.beamPlasma;
+			ambientSoundVolume = 2.0F;
 			shootType = NHBullets.atomSeparator;
 			
 			coolant = consumeCoolant(1f);
@@ -2210,7 +2210,7 @@ public class NHBlocks{
 			reload = 150f;
 			range = 520f;
 			unitSort = (u, x, y) -> -u.hitSize();
-			shootSound = Sounds.laserblast;
+			shootSound = Sounds.shootCorvus;
 			inaccuracy = 0f;
 			shootCone = 15f;
 			heatColor = Items.surgeAlloy.color.cpy().lerp(Color.white, 0.2f);
@@ -2250,7 +2250,7 @@ public class NHBlocks{
 						trailWidth = 2.5f;
 						lifetime = 140f;
 						shrinkX = shrinkY = 0;
-						hitSound = Sounds.explosionbig;
+						hitSound = Sounds.explosionTitan;
 						drawSize = 60f;
 						hitShake = despawnShake = 6f;
 						shootEffect = NHFx.instShoot(backColor, frontColor);
@@ -2337,7 +2337,7 @@ public class NHBlocks{
 			inaccuracy = 9f;
 			
 			xRand = tilesize * size / 6.5f;
-			shootSound = Sounds.missile;
+			shootSound = Sounds.shootMissile;
 			coolantMultiplier = 0.85f;
 		}};
 		
@@ -2598,7 +2598,7 @@ public class NHBlocks{
 			reload = 420f;
 			range = 800f;
 			inaccuracy = 0f;
-			shootSound = Sounds.laserbig;
+			shootSound = Sounds.shootMeltdown;
 		}};
 		
 		executor = new ItemTurret("executor"){{
@@ -2767,7 +2767,7 @@ public class NHBlocks{
 			drawer = new DrawMulti(new DrawRegion("-bottom"), new DrawLiquidTile(Liquids.nitrogen, 5), new DrawRegion("-mid"), new DrawLiquidTile(NHLiquids.quantumEntity, 40f / 4f), new DrawRotator(3f, true), new DrawDefault());
 			craftTime = 120f;
 			size = 3;
-			ambientSound = Sounds.hum;
+			ambientSound = Sounds.loopHum;
 			ambientSoundVolume = 0.06f;
 			hasLiquids = true;
 			boostScale = 1f / 9f;
@@ -3090,7 +3090,7 @@ public class NHBlocks{
 				outputItem = new ItemStack(NHItems.darkEnergy, 2);
 				craftTime = 90f;
 				size = 2;
-				loopSound = Sounds.electricHum;
+				ambientSound = Sounds.loopElectricHum;
 				hasPower = hasItems = true;
 				drawer = new DrawMulti(
 						new DrawRegion("-bottom"),
@@ -3129,8 +3129,8 @@ public class NHBlocks{
 				itemCapacity = 20;
 				liquidCapacity = 60f;
 				hasPower = hasLiquids = hasItems = true;
-				loopSound = Sounds.laserbeam;
-				loopSoundVolume /= 3f;
+				ambientSound = Sounds.beamMeltdown;
+				ambientSoundVolume /= 3f;
 				drawer = new DrawMulti(
 					new DrawRegion("-bottom"),
 					new DrawCrucibleFlame(){{
@@ -3547,8 +3547,8 @@ public class NHBlocks{
 			});
 			//			//NHTechTree.add(Blocks.thoriumReactor,this);
 			powerProduction = 1720f / 60f;
-			loopSound = Sounds.flux;
-			loopSoundVolume = 0.14F;
+			ambientSound = Sounds.loopFlux;
+			ambientSoundVolume = 0.14F;
 			itemCapacity = 40;
 			liquidCapacity = 30;
 			itemDuration = 240f;
@@ -3569,8 +3569,8 @@ public class NHBlocks{
 			size = 3;
 			
 			powerProduction = 70f;
-			loopSound = Sounds.electricHum;
-			loopSoundVolume = 0.24F;
+			ambientSound = Sounds.loopElectricHum;
+			ambientSoundVolume = 0.24F;
 			itemCapacity = 30;
 			liquidCapacity = 30;
 			itemDuration = 2.55f * 60f;
@@ -3624,7 +3624,7 @@ public class NHBlocks{
 			effectColor = NHColor.thermoPst;
 			itemCapacity = 40;
 			itemDuration = 180f;
-			ambientSound = Sounds.pulse;
+			ambientSound = Sounds.loopPulse;
 			ambientSoundVolume = 0.1F;
 			toApplyStatus.add(NHStatusEffects.phased, StatusEffects.overclock);
 			
@@ -3871,7 +3871,7 @@ public class NHBlocks{
 			lightningColor = NHColor.darkEnrColor;
 			generateEffect = NHFx.blastgenerate;
 			acceptEffect = NHFx.blastAccept;
-			blastSound = Sounds.explosionbig;
+			blastSound = Sounds.explosionTitan;
 			status = NHStatusEffects.emp2;
 			range = 240;
 			health = 1200;
@@ -4134,7 +4134,7 @@ public class NHBlocks{
 				homingDelay = 6f;
 				homingPower = 0f; //Custome Homing
 				
-				hitSound = Sounds.explosionbig;
+				hitSound = Sounds.explosionTitan;
 				trailChance = 0.075f;
 				trailEffect = NHFx.polyTrail;
 				drawSize = 120f;
@@ -4227,7 +4227,7 @@ public class NHBlocks{
 				lightningLengthRand = 16;
 				splashDamageRadius = 120f;
 				hitShake = despawnShake = 20f;
-				hitSound = despawnSound = Sounds.explosionbig;
+				hitSound = despawnSound = Sounds.explosionTitan;
 				hitEffect = despawnEffect = new OptionalMultiEffect(NHFx.crossBlast(hitColor, splashDamageRadius * 1.25f), NHFx.blast(hitColor, splashDamageRadius * 1.5f));
 			}};
 			

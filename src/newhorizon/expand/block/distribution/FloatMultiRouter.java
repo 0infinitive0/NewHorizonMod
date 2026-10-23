@@ -76,7 +76,7 @@ public class FloatMultiRouter extends LiquidRouter {
             items.add(item, 1);
             lastItem = item;
             time = 0f;
-            lastInput = source.tile();
+            lastInput = source.tile;
         }
 
         @Override
@@ -91,7 +91,6 @@ public class FloatMultiRouter extends LiquidRouter {
         public Building getTileTarget(Item item, Tile from, boolean set){
             if(unit != null){
                 unit.health(health);
-                unit.ammo(unit.type().ammoCapacity * (items.total() > 0 ? 1f : 0f));
                 unit.team(team);
                 unit.set(x, y);
 

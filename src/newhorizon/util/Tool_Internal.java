@@ -1,5 +1,6 @@
 package newhorizon.util;
 
+import newhorizon.util.ui.FileChoosers;
 import arc.Core;
 import arc.files.Fi;
 import arc.func.Cons2;
@@ -65,7 +66,7 @@ public class Tool_Internal{
 					original.clear();
 					preview.clear();
 					
-					Vars.platform.showMultiFileChooser(fi -> {
+					FileChoosers.choose(fi -> {
 						Vars.ui.loadAnd("[accent]Loading Bundle", () -> {
 							toProcess = fi;
 							PropertiesUtils.load(bundleTG, toProcess.reader());

@@ -62,7 +62,7 @@ public class AdaptConveyor extends AdaptBlock implements Autotiler {
         drawTeamOverlay = false;
         priority = TargetPriority.transport;
 
-        ambientSound = Sounds.conveyor;
+        ambientSound = Sounds.loopConveyor;
         ambientSoundVolume = 0.004f;
 
         requirements(Category.distribution, with(NHItems.presstanium, 1));
@@ -111,7 +111,7 @@ public class AdaptConveyor extends AdaptBlock implements Autotiler {
 
     public boolean blends(Building self, Building other){
         if (other == null) return false;
-        return blends(self.tile(), self.rotation, other.tileX(), other.tileY(), other.rotation, other.block);
+        return blends(self.tile, self.rotation, other.tileX(), other.tileY(), other.rotation, other.block);
     }
 
     public class AdaptConveyorBuild extends AdaptBuilding implements StackTransport{

@@ -43,7 +43,9 @@ public abstract class NHBaseEntity implements Posc, Drawc{
 	@Override public boolean isRemote(){
 		return this instanceof Unitc && ((Unitc)this).isPlayer() && !isLocal();
 	}
-	@Override public boolean isNull(){ return false; }
+	@Override public void beforeWrite(){}
+	@Override public void afterReadAll(){}
+	public boolean isSyncHidden(mindustry.game.Team team){ return false; }
 	@Override public <T extends Entityc> T self(){ return (T)this; }
 	@Override public <T> T as(){ return (T)this; }
 	@Override public void set(float x, float y){

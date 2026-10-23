@@ -279,7 +279,8 @@ public abstract class CommandableBlock extends Block{
 		@Override public void time(float time){this.time = time;}
 		@Override public float lifetime(){return lifetime;}
 		@Override public void lifetime(float lifetime){this.lifetime = lifetime;}
-		@Override public boolean isNull(){ return false; }
+		@Override public void beforeWrite(){}
+	@Override public void afterReadAll(){}
 		@Override public <T extends Entityc> T self(){ return (T)this; }
 		@Override public <T> T as(){ return (T)this; }
 		@Override public void set(float x, float y){

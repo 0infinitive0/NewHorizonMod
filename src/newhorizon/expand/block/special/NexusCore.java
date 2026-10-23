@@ -119,7 +119,7 @@ public class NexusCore extends CoreBlock {
                 trails.clear().add(Seq.with(new Trail(30), new Trail(40), new Trail(50), new Trail(60), new Trail(70), new Trail(80), new Trail(90)));
             });
         }
-        float fout = renderer.getLandTime() / coreLandDuration;
+        float fout = renderer.getLandTime() / landDuration;
         float fin = 1f - fout;
         for (int i = 0; i < trails.size; i++){
             rand.setSeed(build.id + i);
