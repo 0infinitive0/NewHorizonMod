@@ -20,8 +20,8 @@ import newhorizon.expand.status.NoHeal;
 import static arc.graphics.g2d.Draw.color;
 
 /**
- * A flame like the Scorch's, made bigger: a short-lived bullet that goes through units (but stops at a building), sets what it touches
- * alight, and stops it healing for {@link #healBlock} ticks, whether it is a unit (the unhealable status) or a building (see {@link NoHeal}).
+ * A flame like the Scorch's, made bigger: a short-lived bullet that goes through everything in its way (units and buildings alike, until its life ends), sets what it touches
+ * alight (a building it hits catches fire), and stops it healing for {@link #healBlock} ticks, whether it is a unit (the unhealable status) or a building (see {@link NoHeal}).
  * Its look is all in effects: a burst at the nozzle, and puffs that are left along its way and swell as they fade, which is what makes a
  * thrown flame spread out.
  */
@@ -47,7 +47,10 @@ public class FlameBulletType extends BulletType{
 	public FlameBulletType(float speed, float damage){
 		super(speed, damage);
 		pierce = true;
-		pierceBuilding = false;
+		pierceBuilding = true;
+		pierceCap = -1;
+		//A flame that hits an enemy building sets its tile alight (never the shooter's own).
+		makeFire = true;
 		collidesAir = true;
 		collidesGround = true;
 		keepVelocity = false;

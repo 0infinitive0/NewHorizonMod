@@ -183,12 +183,12 @@ public class SerpentUnits{
 				reload = 6f;
 				shootCone = 25f;
 				inaccuracy = 3f;
-				velocityRnd = 0.25f;
+				velocityRnd = 0.12f;
 				recoil = 0f;
 				ejectEffect = Fx.none;
 				shootSound = Sounds.shootFlame;
 				shoot = new mindustry.entities.pattern.ShootSpread(5, 8f);
-				bullet = new FlameBulletType(6.2f, 22f){{
+				bullet = new FlameBulletType(7f, 22f){{
 					lifetime = 30f;
 				}};
 			}});
