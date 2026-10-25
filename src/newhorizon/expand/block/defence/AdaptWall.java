@@ -122,7 +122,7 @@ public class AdaptWall extends Wall {
 		}
 
 		public boolean validTile(int x, int y){
-			return world.build(tileX() + x, tileY() + y) != null && world.build(tileX() + x, tileY() + y).block == block();
+			return world.build(tileX() + x, tileY() + y) != null && world.build(tileX() + x, tileY() + y).block == block;
 		}
 
 		public void findLinkWalls(){
@@ -196,7 +196,7 @@ public class AdaptWall extends Wall {
 			for (Building b: toDamage){
 				damageShared(b, shareDamage);
 			}
-			this.setBars();
+			setBars();
 			return shareDamage;
 		}
 

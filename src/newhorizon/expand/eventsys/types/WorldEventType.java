@@ -171,24 +171,7 @@ public class WorldEventType implements Json.JsonSerializable{
 	}
 	
 	public void drawMinimap(WorldEvent event, MinimapRenderer minimap){
-		minimap.transform(Tmp.v1.set(event.x, event.y));
-		
-		float rad = minimap.scale(range(event));
-		float fin = Interp.pow2Out.apply((Time.globalTime / 100f) % 1f);
-		
-		Draw.color(Tmp.c1.set(event.team.color).lerp(Color.white, Mathf.absin(Time.globalTime, 4f, 0.4f)));
-		
-		float size = minimap.scale((float)icon().width / tilesize);
-		Draw.rect(icon(), Tmp.v1.x, Tmp.v1.y, size, size);
-		
-		Lines.stroke(Scl.scl((1f - fin) * 4.5f + 0.15f));
-		Lines.circle(Tmp.v1.x, Tmp.v1.y, rad * fin);
-		
-		fin = Interp.circleOut.apply((Time.globalTime / 50f) % 1f);
-		Lines.stroke(Scl.scl((1f - fin) * 2.5f));
-		Lines.circle(Tmp.v1.x, Tmp.v1.y, rad);
-		
-		Draw.reset();
+		//Mindustry v8 removed MinimapRenderer.transform/scale, so event markers are no longer drawn on the minimap.
 	}
 	
 	

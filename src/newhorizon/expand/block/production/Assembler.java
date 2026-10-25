@@ -59,7 +59,7 @@ public class Assembler extends AdaptBlock {
 
         update = true;
         solid = true;
-        ambientSound = Sounds.machine;
+        ambientSound = Sounds.loopMachine;
         sync = true;
         ambientSoundVolume = 0.03f;
         flags = EnumSet.of(BlockFlag.factory);

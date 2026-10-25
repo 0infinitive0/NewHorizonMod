@@ -4,7 +4,6 @@ import arc.math.Mathf;
 import arc.struct.Seq;
 import mindustry.graphics.Pal;
 import mindustry.type.UnitType;
-import mindustry.type.ammo.ItemAmmoType;
 import newhorizon.content.NHColor;
 import newhorizon.content.NHItems;
 import newhorizon.content.NHUnitTypes;
@@ -22,7 +21,6 @@ public class AncientUnitType extends NHUnitType {
 		healColor = NHColor.ancientLightMid;
 		lightColor = NHColor.ancientLightMid;
 		
-		ammoType = new ItemAmmoType(NHItems.zeta);
 	}
 	
 	public void addEngine(float x, float y, float relativeRot, float rad, boolean flipAdd){

@@ -34,6 +34,8 @@ public class AdaptedHealAbility extends RepairFieldAbility{
 	public float selfHealAmount = 0.0005f;
 	public float selfHealReloadTime = -1;
 	
+	protected float timer = 0;
+	protected boolean wasHealed = false;
 	protected float lastHealth = 0;
 	protected float selfHealReload = 0;
 	

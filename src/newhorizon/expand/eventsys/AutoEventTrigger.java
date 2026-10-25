@@ -89,7 +89,7 @@ public class AutoEventTrigger implements Entityc, Cloneable{
 		if(!Vars.state.teams.isActive(team) || data.noCores())return false;
 		
 		CoreBlock.CoreBuild core = team.core();
-		for(OV_Pair<Item> stack : items)if(stack.value > core.items().get(stack.item))return false;
+		for(OV_Pair<Item> stack : items)if(stack.value > core.items.get(stack.item))return false;
 		
 		for(OV_Pair<UnitType> pair : units)if(pair.value > data.countType(pair.item))return false;
 		
@@ -227,7 +227,8 @@ public class AutoEventTrigger implements Entityc, Cloneable{
 	@Override public boolean isRemote(){
 		return true;
 	}
-	@Override public boolean isNull(){ return false; }
+	@Override public void beforeWrite(){}
+	@Override public void afterReadAll(){}
 	@Override public <T extends Entityc> T self(){ return (T)this; }
 	@Override public <T> T as(){ return (T)this; }
 

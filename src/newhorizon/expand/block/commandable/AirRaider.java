@@ -19,7 +19,7 @@ public class AirRaider extends CommandableAttackerBlock{
 	public Effect smokeEffect = Fx.none;
 	public Effect triggeredEffect = Fx.none;
 	
-	public Sound shootSound = Sounds.artillery;
+	public Sound shootSound = Sounds.shootArtillery;
 	public float shake = 4f;
 	
 	protected int totalShots = 0;

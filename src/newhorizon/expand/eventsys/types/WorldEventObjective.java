@@ -113,7 +113,6 @@ public class WorldEventObjective extends MapObjectives.MapObjective{
 	}
 	
 	public static class WorldEventMarker extends MapObjectives.ObjectiveMarker{
-		@Override
 		public void drawMinimap(MinimapRenderer minimap){
 			NHGroups.events.each(e -> e.type.minimapMarkable, e -> {
 				e.type.drawMinimap(e, minimap);

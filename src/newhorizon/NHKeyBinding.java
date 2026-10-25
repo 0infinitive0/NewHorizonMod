@@ -1,31 +1,15 @@
 package newhorizon;
 
-import arc.KeyBinds;
-import arc.input.InputDevice;
+import arc.input.KeyBind;
 import arc.input.KeyCode;
 
-public enum NHKeyBinding implements KeyBinds.KeyBind{
-	teleport(KeyCode.j);
+/** Key bindings of the mod. Registered through {@link KeyBind#add}, which is all the game needs to list and save them. */
+public class NHKeyBinding{
+	public static KeyBind teleport, unitInfo;
 	
-	private final KeyBinds.KeybindValue defaultValue;
-	private final String category;
-	
-	NHKeyBinding(KeyBinds.KeybindValue defaultValue, String category){
-		this.defaultValue = defaultValue;
-		this.category = category;
-	}
-	
-	NHKeyBinding(KeyBinds.KeybindValue defaultValue){
-		this(defaultValue, "new-horizon");
-	}
-	
-	@Override
-	public KeyBinds.KeybindValue defaultValue(InputDevice.DeviceType type){
-		return defaultValue;
-	}
-	
-	@Override
-	public String category(){
-		return category;
+	public static void load(){
+		if(teleport != null) return;
+		teleport = KeyBind.add("teleport", new KeyBind.Axis(KeyCode.j), "new-horizon");
+		unitInfo = KeyBind.add("unit_info", new KeyBind.Axis(KeyCode.i), "new-horizon");
 	}
 }

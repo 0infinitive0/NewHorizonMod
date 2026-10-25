@@ -49,7 +49,7 @@ public class LaserBeamDrill extends Drill{
 		hasItems = true;
 		itemCapacity = 50;
 		hardnessDrillMultiplier = 20f;
-		ambientSound = Sounds.minebeam;
+		ambientSound = Sounds.loopMineBeam;
 		ambientSoundVolume = 0.18f;
 		drillEffect = Fx.none;
 		updateEffectChance = 0.2f;
@@ -101,7 +101,7 @@ public class LaserBeamDrill extends Drill{
 			}
 			
 			
-			float stroke = laserScl * Mathf.curve(warmup, 0, (items.total() < itemCapacity && dominantItems > 0 && efficiency > 0) ? efficiency() : 1);
+			float stroke = laserScl * Mathf.curve(warmup, 0, (items.total() < itemCapacity && dominantItems > 0 && efficiency > 0) ? efficiency : 1);
 			Draw.mixcol(laserColor, Mathf.absin(4f, 0.6f));
 			Draw.alpha(laserAlpha + Mathf.absin(8f, laserAlphaSine));
 			Draw.blend(Blending.additive);

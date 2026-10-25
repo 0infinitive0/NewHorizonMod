@@ -60,7 +60,7 @@ public abstract class WaveEnergyState{
 	
 	public void updateTrans(){
 		if(hasOutput()){
-			src.proximity().each(b -> {
+			src.proximity.each(b -> {
 				if(b instanceof WaveEnergyBuilding){
 					WaveEnergyState ee = ((WaveEnergyBuilding)b).getWave();
 					

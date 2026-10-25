@@ -33,7 +33,7 @@ public class NHWeathers{
 			
 			buildingEmp = 0.125f;
 			force = 4;
-			noise = Sounds.fire;
+			noise = Sounds.loopFire;
 			
 			primaryColor = Pal.accent;
 			textureColor = secondaryColor = Pal.ammo;
