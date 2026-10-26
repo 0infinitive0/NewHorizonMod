@@ -29,7 +29,7 @@ public class NukeAI extends AIController{
 	private Building lureTarget;
 	/** Whether a jammer or a cloak has made it lose its target for good: it flies on without one, and does not go off on what it meets. */
 	private boolean lost, jammedNow;
-	private float defenseTimer, jamTimer, jamTurn;
+	private float defenseTimer, jamTimer, jamTurn, brainTimer;
 	private Vec2 targetPos;
 	private Unit targetUnit;
 	private float lastDst = Float.MAX_VALUE;
@@ -58,6 +58,15 @@ public class NukeAI extends AIController{
 		if(lost){
 			drift();
 			return;
+		}
+
+		//On an AI team with nothing to fly at, it chooses a target worth the warhead, and flies at it as it would at an ordered one.
+		if(brainTimer > 0f) brainTimer -= Time.delta;
+		if(brainTimer <= 0f && unit.team.isAI() && !(this instanceof MiniNukeAI) && targetPos == null && targetUnit == null && lureTarget == null
+			&& !(unit.controller() instanceof CommandAI)){
+			brainTimer = 120f;
+			Vec2 chosen = NukeBrain.pick(unit.team, ability.warhead, unit);
+			if(chosen != null) commandPosition(chosen);
 		}
 
 		boolean aimed = aim(aimPoint);

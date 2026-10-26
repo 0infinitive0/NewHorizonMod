@@ -22,6 +22,7 @@ import newhorizon.expand.units.nuke.NukeCarrierAbility;
 import newhorizon.expand.units.nuke.DetonateAI;
 import newhorizon.expand.units.nuke.MiniNukeAI;
 import newhorizon.expand.units.nuke.NukeAI;
+import newhorizon.expand.units.nuke.NukeArmAI;
 import newhorizon.expand.units.nuke.NukeAbility;
 import newhorizon.expand.units.nuke.WallStance;
 import newhorizon.expand.units.nuke.Warhead;
@@ -275,7 +276,8 @@ public class NukeUnits{
 				omniMovement = true;
 				engineOffset = 9f;
 				engineSize = 2.6f;
-				aiController = AIController::new;
+				//On an AI team it looks for a target worth a nuke, and either flies into a launcher or arms itself (see NukeArmAI).
+				aiController = NukeArmAI::new;
 				//It can also fly into a launcher (or any payload block that takes it), and arm itself.
 				commands = Seq.with(UnitCommand.moveCommand, UnitCommand.enterPayloadCommand, armCommand);
 				defaultCommand = UnitCommand.moveCommand;

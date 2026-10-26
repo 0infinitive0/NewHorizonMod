@@ -38,6 +38,7 @@ import mindustry.world.meta.BlockGroup;
 import mindustry.world.meta.Env;
 import newhorizon.content.nuke.NukeFx;
 import newhorizon.content.nuke.NukeUnits;
+import newhorizon.expand.units.nuke.NukeBrain;
 import newhorizon.expand.units.nuke.NukeDefense;
 
 import static mindustry.Vars.tilesize;
@@ -125,6 +126,9 @@ public class NukeLauncher extends PayloadBlock{
 		public boolean wantArmed;
 		public float armProgress;
 		public float cooldown;
+		/** What an AI team's launcher keeps between its checks (see NukeBrain.driveLauncher): the next check, the last count of nukes and when it changed. */
+		public float aiNext, aiSince;
+		public int aiCount;
 
 		public void setTarget(Vec2 pos){
 			//An enemy cloak hides what is under it: no target can be picked there.
@@ -183,6 +187,7 @@ public class NukeLauncher extends PayloadBlock{
 		public void updateTile(){
 			unit();
 			cooldown = Math.max(0f, cooldown - Time.delta);
+			NukeBrain.driveLauncher(this);
 			//A cloak put up over the target after it was picked takes it away.
 			if(hasTarget && NukeDefense.cloaked(team, target.x, target.y)){
 				hasTarget = false;
