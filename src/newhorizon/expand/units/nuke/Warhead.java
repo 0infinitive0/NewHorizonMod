@@ -48,8 +48,6 @@ public abstract class Warhead{
 		psychic, gravity, spatial, shockwave, cluster, wall, temporal, infantry, overload,
 		laser, swarm, storm, decoy, mini, lightning, siphon, quake,
 		scatter, magnet, hijack, scramble, sabotage, breach, devolve, meteor, neoplasm;
-	/** How many points of damage one unit of the energy an EMP drains is worth. */
-	public static float empDamagePerEnergy = 0.1f;
 	public static final Seq<Warhead> all = new Seq<>();
 
 	public final String name;
@@ -146,9 +144,9 @@ public abstract class Warhead{
 			}
 		};
 
-		//The pulse has no blast of its own. It kills every flying unit in reach on the spot, stops every other unit and everything that
-		//runs on power for fifteen seconds, and drains every battery in reach: all the energy it took comes back as one blast, as many
-		//points of damage as the energy was worth ({@link #empDamagePerEnergy}), on every unit on the ground and every structure in reach.
+		//The pulse has no blast. Every flying unit in reach dies on the spot; every other unit is stopped and disarmed for fifteen seconds.
+		//Every battery, power generator and power node (and diode and beam node) in reach is destroyed outright, and whatever else runs on
+		//power loses what it had and is switched off for fifteen seconds. Nothing is damaged by the pulse itself.
 		emp = new Warhead("emp", Color.valueOf("7fd8ff"), 260f, 0f){
 			@Override
 			public void special(float x, float y, Team team, Unit nuke){
@@ -162,24 +160,20 @@ public abstract class Warhead{
 				});
 				for(Unit u : flying) u.kill();
 
-				//What runs on power stops, and every battery in reach is emptied: a network is counted once, however many of its parts are in reach.
-				float absorbed = 0f;
-				arc.struct.ObjectSet<mindustry.world.blocks.power.PowerGraph> drained = new arc.struct.ObjectSet<>();
 				Seq<Building> powered = new Seq<>();
 				Units.nearbyBuildings(x, y, radius, b -> {
-					if(b.dst2(x, y) <= r2 && b.power != null) powered.add(b);
+					if(b.isValid() && b.dst2(x, y) <= r2 && (b.power != null || fried(b.block))) powered.add(b);
 				});
 				for(Building b : powered){
-					if(b.power.graph != null && drained.add(b.power.graph)){
-						float stored = b.power.graph.getBatteryStored();
-						b.power.graph.useBatteries(stored);
-						absorbed += stored;
+					if(fried(b.block)){
+						//Emptied first, so that a charged battery does not blow up with what it held.
+						if(b.power != null) b.power.status = 0f;
+						b.kill();
+					}else{
+						b.power.status = 0f;
+						TemporalDisable.disable(b, 60f * 15f, true);
 					}
-					TemporalDisable.disable(b, 60f * 15f, true);
 				}
-
-				float blast = absorbed * empDamagePerEnergy;
-				if(blast > 0f) Damage.damage(Team.derelict, x, y, radius, blast, true, false, true);
 				NukeFx.empPulse.at(x, y, radius, color);
 			}
 		};
@@ -765,6 +759,13 @@ public abstract class Warhead{
 			Tile tile = Vars.world.tileWorld(x + Mathf.cosDeg(a) * d, y + Mathf.sinDeg(a) * d);
 			if(tile != null) Puddles.deposit(tile, liquid, Mathf.random(30f, 70f));
 		}
+	}
+
+	/** What an EMP destroys outright rather than switching off: batteries, power generators and everything that only moves power about. */
+	public static boolean fried(Block block){
+		return block instanceof mindustry.world.blocks.power.Battery || block instanceof mindustry.world.blocks.power.PowerGenerator
+			|| block instanceof mindustry.world.blocks.power.PowerNode || block instanceof mindustry.world.blocks.power.PowerDiode
+			|| block instanceof mindustry.world.blocks.power.BeamNode;
 	}
 
 	/** Whether the unit would change sides: an enemy of the nuke's team that nobody is flying. */
