@@ -47,7 +47,7 @@ public abstract class Warhead{
 		explosive, incendiary, radiation, emp,
 		psychic, gravity, spatial, shockwave, cluster, wall, temporal, infantry, overload,
 		laser, swarm, storm, decoy, mini, lightning, siphon, quake,
-		scatter, magnet, hijack, scramble, sabotage, breach, devolve;
+		scatter, magnet, hijack, scramble, sabotage, breach, devolve, meteor, neoplasm;
 	public static final Seq<Warhead> all = new Seq<>();
 
 	public final String name;
@@ -242,12 +242,13 @@ public abstract class Warhead{
 			}
 		};
 
-		//Fills every free tile with the wall type the nuke was set to.
+		//Fills every free tile with the wall type the nuke was set to. The walls belong to no one (the derelict team), so they hold for
+		//everybody alike: nobody's turrets and units take them for an enemy or an ally, and anyone can break them or take them over.
 		wall = new Warhead("wall", Color.valueOf("aab2c0"), 170f, 300f){
 			@Override
 			public void special(float x, float y, Team team, Unit nuke){
 				NukeAbility ability = NukeAI.abilityOf(nuke);
-				NukeBlast.fill(x, y, radius, ability == null ? NukeAbility.defaultWall() : ability.wallType(), team);
+				NukeBlast.fill(x, y, radius, ability == null ? NukeAbility.defaultWall() : ability.wallType(), Team.derelict);
 			}
 		};
 
@@ -525,6 +526,38 @@ public abstract class Warhead{
 			}
 		};
 
+		//Ten seconds of meteors, one every fifth of a second, each landing on a random spot in reach with a shadow and a warning ring first
+		//and a blast of its own. The nuke's own blast hurts nothing. Everything on the ground and every structure is hit, of every team.
+		meteor = new Warhead("meteor", Color.valueOf("d9822b"), 230f, 0f){
+			@Override
+			public void visual(float x, float y){
+				NukeFx.empPulse.at(x, y, radius, color);
+			}
+
+			@Override
+			public void spawn(float x, float y, Team team, Unit nuke){
+				NukeBullets.meteorStorm.create(null, Team.derelict, x, y, 0f);
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+			}
+		};
+
+		//Covers every tile in reach with neoplasm, the red liquid of the base game: it settles in puddles that keep creeping through
+		//blocks and over the ground for a while. Nothing is damaged: the neoplasm of the base game has no effect of its own.
+		neoplasm = new Warhead("neoplasm", Color.valueOf("c33e2b"), 170f, 0f){
+			@Override
+			public void visual(float x, float y){
+				NukeFx.empPulse.at(x, y, radius, color);
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+				cover(Liquids.neoplasm, x, y, radius);
+			}
+		};
+
 		//A tough bait that breaks into three mini nukes, which fly off at whatever is near. The blast itself hurts nothing.
 		decoy = new Warhead("decoy", Color.valueOf("c3ccd8"), 60f, 0f){
 			@Override
@@ -691,6 +724,18 @@ public abstract class Warhead{
 	}
 
 	/** Spills {@code count} puddles of the liquid at random places within range. */
+	/** Puts a puddle of the liquid on every tile within the range, as much as a tile holds. */
+	public static int cover(Liquid liquid, float x, float y, float range){
+		int[] count = {0};
+		arc.math.geom.Geometry.circle(Vars.world.toTile(x), Vars.world.toTile(y), (int)(range / tilesize), (tx, ty) -> {
+			Tile tile = Vars.world.tile(tx, ty);
+			if(tile == null) return;
+			Puddles.deposit(tile, liquid, Mathf.random(30f, 60f));
+			count[0]++;
+		});
+		return count[0];
+	}
+
 	protected static void splash(Liquid liquid, int count, float x, float y, float range){
 		for(int i = 0; i < count; i++){
 			float a = Mathf.random(360f), d = Mathf.sqrt(Mathf.random()) * range;

@@ -57,6 +57,8 @@ public class NukeUnits{
 		lightning, lightningActive,
 		siphon, siphonActive,
 		quake, quakeActive,
+		meteor, meteorActive,
+		neoplasm, neoplasmActive,
 		scatter, scatterActive,
 		magnet, magnetActive,
 		hijack, hijackActive,
@@ -174,6 +176,12 @@ public class NukeUnits{
 		siphon = nuke(Warhead.siphon, false);
 		siphonActive = nuke(Warhead.siphon, true);
 		pair(siphon, siphonActive);
+		meteor = nuke(Warhead.meteor, false);
+		meteorActive = nuke(Warhead.meteor, true);
+		pair(meteor, meteorActive);
+		neoplasm = nuke(Warhead.neoplasm, false);
+		neoplasmActive = nuke(Warhead.neoplasm, true);
+		pair(neoplasm, neoplasmActive);
 		quake = nuke(Warhead.quake, false);
 		quakeActive = nuke(Warhead.quake, true);
 		pair(quake, quakeActive);
