@@ -174,13 +174,14 @@ public class SerpentUnits{
 			//The flame thrower comes out of the head's mouth, at the front edge, and cannot turn: it throws a cone of flames straight ahead, a
 			//Scorch's scaled up. The flames burn, go through units, and stop what they touch healing for a moment. They reach a little past
 			//the ring the head goes round its target on. The mouth is part of the head's sprite, so the weapon has none of its own.
-			weapons.add(new mindustry.type.Weapon(){{
+			weapons.add(new newhorizon.expand.units.serpent.FlameWeapon(){{
 				x = 0f;
 				y = 11f;
 				shootY = 2f;
 				mirror = false;
 				rotate = false;
 				reload = 6f;
+				cone = 25f;
 				shootCone = 25f;
 				inaccuracy = 3f;
 				velocityRnd = 0.12f;

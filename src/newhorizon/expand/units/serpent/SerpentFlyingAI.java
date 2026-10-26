@@ -4,7 +4,12 @@ import mindustry.ai.types.FlyingAI;
 import mindustry.entities.Units;
 
 /** An enemy Serpent head: it goes round its target, see {@link SerpentOrbit}. */
-public class SerpentFlyingAI extends FlyingAI{
+public class SerpentFlyingAI extends FlyingAI implements SerpentLock{
+	@Override
+	public mindustry.gen.Teamc lockedTarget(){
+		return target != null && !Units.invalidateTarget(target, unit.team, unit.x, unit.y) ? target : null;
+	}
+
 	@Override
 	public void circleAttack(float circleLength){
 		if(target == null) return;
