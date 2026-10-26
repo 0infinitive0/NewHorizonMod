@@ -48,6 +48,8 @@ public abstract class Warhead{
 		psychic, gravity, spatial, shockwave, cluster, wall, temporal, infantry, overload,
 		laser, swarm, storm, decoy, mini, lightning, siphon, quake,
 		scatter, magnet, hijack, scramble, sabotage, breach, devolve, meteor, neoplasm;
+	/** How many points of damage one unit of the energy an EMP drains is worth. */
+	public static float empDamagePerEnergy = 0.1f;
 	public static final Seq<Warhead> all = new Seq<>();
 
 	public final String name;
@@ -144,19 +146,40 @@ public abstract class Warhead{
 			}
 		};
 
-		emp = new Warhead("emp", Color.valueOf("7fd8ff"), 260f, 260f){
+		//The pulse has no blast of its own. It kills every flying unit in reach on the spot, stops every other unit and everything that
+		//runs on power for fifteen seconds, and drains every battery in reach: all the energy it took comes back as one blast, as many
+		//points of damage as the energy was worth ({@link #empDamagePerEnergy}), on every unit on the ground and every structure in reach.
+		emp = new Warhead("emp", Color.valueOf("7fd8ff"), 260f, 0f){
 			@Override
 			public void special(float x, float y, Team team, Unit nuke){
 				float r2 = radius * radius;
+				Seq<Unit> flying = new Seq<>();
 				Units.nearby(x - radius, y - radius, radius * 2f, radius * 2f, u -> {
-					if(u.within(x, y, radius + u.hitSize / 2f)) u.apply(NukeStatus.empShock, 60f * 15f);
+					if(u == nuke || u.dead() || !u.within(x, y, radius + u.hitSize / 2f)) return;
+					//A nuke that was launched from orbit is too high for it.
+					if(u.isFlying() && !u.hasEffect(NukeStatus.highAltitude)) flying.add(u);
+					else u.apply(NukeStatus.empShock, 60f * 15f);
 				});
+				for(Unit u : flying) u.kill();
+
+				//What runs on power stops, and every battery in reach is emptied: a network is counted once, however many of its parts are in reach.
+				float absorbed = 0f;
+				arc.struct.ObjectSet<mindustry.world.blocks.power.PowerGraph> drained = new arc.struct.ObjectSet<>();
+				Seq<Building> powered = new Seq<>();
 				Units.nearbyBuildings(x, y, radius, b -> {
-					if(b.dst2(x, y) > r2 || b.power == null) return;
-					//Whatever is stored is gone, and whatever runs on power stops for a while.
-					if(b.power.graph != null) b.power.graph.useBatteries(b.power.graph.getBatteryStored());
-					TemporalDisable.disable(b, 60f * 15f, true);
+					if(b.dst2(x, y) <= r2 && b.power != null) powered.add(b);
 				});
+				for(Building b : powered){
+					if(b.power.graph != null && drained.add(b.power.graph)){
+						float stored = b.power.graph.getBatteryStored();
+						b.power.graph.useBatteries(stored);
+						absorbed += stored;
+					}
+					TemporalDisable.disable(b, 60f * 15f, true);
+				}
+
+				float blast = absorbed * empDamagePerEnergy;
+				if(blast > 0f) Damage.damage(Team.derelict, x, y, radius, blast, true, false, true);
 				NukeFx.empPulse.at(x, y, radius, color);
 			}
 		};
