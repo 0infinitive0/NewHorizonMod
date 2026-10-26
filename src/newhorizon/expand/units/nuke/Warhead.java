@@ -145,7 +145,7 @@ public abstract class Warhead{
 		};
 
 		//The pulse has no blast. Every flying unit in reach dies on the spot; every other unit is stopped and disarmed for fifteen seconds.
-		//Every battery, power generator and power node (and diode and beam node) in reach is destroyed outright, and whatever else runs on
+		//Every battery, power generator and power node (and diode and beam node) in reach is destroyed outright (a charged battery explodes with what it held), and whatever else runs on
 		//power loses what it had and is switched off for fifteen seconds. Nothing is damaged by the pulse itself.
 		emp = new Warhead("emp", Color.valueOf("7fd8ff"), 260f, 0f){
 			@Override
@@ -166,8 +166,7 @@ public abstract class Warhead{
 				});
 				for(Building b : powered){
 					if(fried(b.block)){
-						//Emptied first, so that a charged battery does not blow up with what it held.
-						if(b.power != null) b.power.status = 0f;
+						//A charged battery blows up with what it held, and a generator with what it burns.
 						b.kill();
 					}else{
 						b.power.status = 0f;
