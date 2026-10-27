@@ -136,7 +136,8 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 
 		@Override
 		public void generateSector(Sector sector){
-			//no bases right now
+			sector.generateEnemyBase = HiemaraBase.tier(sector) > 0;
+			HiemaraBase.log(sector);
 		}
 
 		@Override
@@ -252,8 +253,9 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 			
 			richWater(coreX, coreY);
 			
-			tiles.getn(spawnX, spawnY).setOverlay(Blocks.spawn);
 			boolean first = sector.id == sector.planet.startSector;
+			int baseTier = HiemaraBase.tier(sector);
+			if(baseTier == 0)tiles.getn(spawnX, spawnY).setOverlay(Blocks.spawn);
 			
 			Schematics.placeLoadout(Loadouts.basicShard, coreX, coreY);
 			
@@ -264,6 +266,18 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 			state.rules.fog = false;
 			
 			if(state.rules.sector.preset != null)return;
+			
+			if(baseTier > 0){
+				//An enemy base instead of waves: it is won by destroying the core. The enemy needs no resources and no power.
+				HiemaraBase.build(tiles, baseTier, spawnX, spawnY, new Rand(sector.id * 31L + 5L));
+				Team.malis.rules().cheat = true;
+				Team.malis.rules().infiniteResources = true;
+				state.rules.attackMode = sector.info.attack = true;
+				state.rules.waves = sector.info.waves = false;
+				state.rules.winWave = 0;
+				state.rules.spawns = new Seq<>();
+				return;
+			}
 			
 			if(first){
 				//The waves still count and the sector is captured at the win wave, but nothing ever spawns. The spawn tile stays,
