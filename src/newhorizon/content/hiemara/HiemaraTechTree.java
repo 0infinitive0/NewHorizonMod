@@ -26,7 +26,23 @@ public class HiemaraTechTree{
 				node(HiemaraBlocks.iceHarvester);
 				node(HiemaraBlocks.sporeCultivator, () -> {
 					node(HiemaraBlocks.floatingSporePress, () -> {
-						node(HiemaraBlocks.floatingCoalCentrifuge);
+						node(HiemaraBlocks.floatingCoalCentrifuge, () -> {
+							node(HiemaraFactories.graphitePress, with(Items.copper, 200, Items.lead, 120, Items.coal, 60), null, () -> {
+								node(HiemaraFactories.kiln, with(Items.copper, 200, Items.lead, 150, Items.sand, 100), null, () -> {});
+								node(HiemaraFactories.melter, with(Items.copper, 200, Items.lead, 150, Items.coal, 100), null, () -> {
+									node(HiemaraFactories.cryofluidMixer, with(Items.lead, 300, Items.silicon, 150, Items.titanium, 200), null, () -> {});
+								});
+								node(HiemaraFactories.plastaniumCompressor, with(Items.silicon, 300, Items.lead, 300, Items.titanium, 250), null, () -> {
+									node(HiemaraFactories.surgeSmelter, with(Items.silicon, 500, Items.lead, 400, Items.thorium, 200, Items.titanium, 300), null, () -> {});
+								});
+								node(HiemaraFactories.phaseWeaver, with(Items.silicon, 450, Items.lead, 350, Items.thorium, 200), null, () -> {});
+							});
+						});
+						node(HiemaraFactories.arkyciteFermenter, with(Items.lead, 300, Items.silicon, 200, Items.beryllium, 150), null, () -> {
+							node(HiemaraFactories.cyanogenSynthesizer, with(Items.tungsten, 300, Items.silicon, 400, Items.beryllium, 400), null, () -> {
+								node(HiemaraFactories.neoplasmCulture, with(Items.tungsten, 500, Items.silicon, 600, Items.beryllium, 500, Items.thorium, 300), null, () -> {});
+							});
+						});
 					});
 				});
 			});
@@ -115,7 +131,9 @@ public class HiemaraTechTree{
 				});
 				node(HiemaraBlocks.floatingSiliconSmelter, () -> {
 					node(HiemaraBlocks.floatingSiliconCrucible);
-					node(HiemaraBlocks.floatingPyratiteMixer);
+					node(HiemaraBlocks.floatingPyratiteMixer, () -> {
+						node(HiemaraFactories.blastMixer, with(Items.lead, 150, Items.titanium, 100, Items.silicon, 80), null, () -> {});
+					});
 				});
 			});
 			
@@ -125,6 +143,10 @@ public class HiemaraTechTree{
 				});
 				node(HiemaraBlocks.floatingRotaryPump, () -> {
 					node(HiemaraBlocks.electricSeparator, () -> {
+						node(HiemaraFactories.oxidationChamber, with(Items.tungsten, 300, Items.silicon, 300, Items.beryllium, 300), null, () -> {
+							node(HiemaraFactories.carbideCrucible, with(Items.tungsten, 400, Items.thorium, 300, Items.silicon, 300), null, () -> {});
+							node(HiemaraFactories.airCondenser, with(Items.beryllium, 400, Items.silicon, 350, Items.tungsten, 150), null, () -> {});
+						});
 						node(HiemaraBlocks.fusionReactor, Seq.with(new Objectives.Research(HiemaraBlocks.battery3), new Objectives.Research(HiemaraBlocks.surgeTower)), () -> {});
 					});
 				});

@@ -3,6 +3,8 @@ package newhorizon.content.hiemara;
 import mindustry.content.Items;
 import mindustry.content.Liquids;
 import mindustry.ctype.UnlockableContent;
+import mindustry.type.Item;
+import mindustry.type.Liquid;
 import newhorizon.content.NHPlanets;
 import newhorizon.expand.hiemara.CargoCap;
 
@@ -19,6 +21,7 @@ public class HiemaraContent{
 		HiemaraWarships.load();
 		HiemaraBlocks.load();
 		HiemaraDefense.load();
+		HiemaraFactories.load();
 		CargoCap.load();
 	}
 	
@@ -26,6 +29,7 @@ public class HiemaraContent{
 	public static arc.struct.Seq<mindustry.world.Block> buildable(){
 		var list = HiemaraBlocks.all.copy();
 		list.addAll(HiemaraDefense.all);
+		list.addAll(HiemaraFactories.all);
 		list.addAll(mindustry.Vars.content.blocks().select(b -> b instanceof mindustry.world.blocks.storage.CoreBlock));
 		return list;
 	}
@@ -38,6 +42,7 @@ public class HiemaraContent{
 		for(var unit : HiemaraUnits.navalLine)unit.shownPlanets.add(planet);
 		for(var unit : HiemaraUnits.tankerLine)unit.shownPlanets.add(planet);
 		for(var block : HiemaraDefense.all)block.shownPlanets.add(planet);
+		for(var block : HiemaraFactories.all)block.shownPlanets.add(planet);
 		for(var unit : HiemaraWarships.all)unit.shownPlanets.add(planet);
 		for(var item : HiemaraFloors.ores)item.shownPlanets.add(planet);
 		Items.copper.shownPlanets.add(planet);
@@ -45,6 +50,8 @@ public class HiemaraContent{
 		Items.silicon.shownPlanets.add(planet);
 		Items.sporePod.shownPlanets.add(planet);
 		Items.pyratite.shownPlanets.add(planet);
+		for(var item : new Item[]{Items.graphite, Items.metaglass, Items.plastanium, Items.phaseFabric, Items.surgeAlloy, Items.blastCompound, Items.oxide, Items.carbide})item.shownPlanets.add(planet);
+		for(var liquid : new Liquid[]{Liquids.slag, Liquids.cryofluid, Liquids.nitrogen, Liquids.arkycite, Liquids.cyanogen, Liquids.neoplasm})liquid.shownPlanets.add(planet);
 		Liquids.oil.shownPlanets.add(planet);
 		Liquids.water.shownPlanets.add(planet);
 		Liquids.hydrogen.shownPlanets.add(planet);

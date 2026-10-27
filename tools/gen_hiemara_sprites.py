@@ -339,6 +339,26 @@ def hub(name, size, tier, kind):
     finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
 
 
+# Core colour of the factories that make a base game resource, by the resource.
+FACTORY_COLORS = {
+    "graphite": (178, 198, 210), "metaglass": (235, 238, 245), "plastanium": (203, 217, 127), "phase": (244, 186, 110),
+    "surge": (243, 233, 121), "blast": (255, 121, 94), "oxide": (228, 255, 214), "carbide": (137, 118, 154),
+    "slag": (255, 161, 102), "cryo": (110, 205, 236), "nitrogen": (239, 227, 255), "arkycite": (132, 169, 75),
+    "cyanogen": (137, 232, 182), "neoplasm": (223, 80, 100),
+}
+
+
+def factory_sprites():
+    for name, size, motif in (("floating-graphite-press", 64, "graphite"), ("floating-kiln", 64, "metaglass"),
+                              ("floating-plastanium-compressor", 64, "plastanium"), ("floating-phase-weaver", 64, "phase"),
+                              ("floating-surge-smelter", 96, "surge"), ("floating-blast-mixer", 64, "blast"),
+                              ("floating-oxidation-chamber", 96, "oxide"), ("floating-carbide-crucible", 96, "carbide"),
+                              ("floating-melter", 64, "slag"), ("floating-cryofluid-mixer", 64, "cryo"),
+                              ("floating-air-condenser", 96, "nitrogen"), ("floating-arkycite-fermenter", 64, "arkycite"),
+                              ("floating-cyanogen-synthesizer", 96, "cyanogen"), ("floating-neoplasm-culture", 96, "neoplasm")):
+        crafter(name, size, tuple(int(v * 0.45 + 60) for v in FACTORY_COLORS[motif]), motif)
+
+
 def crafter(name, size, tint, motif):
     img = canvas(size)
     d = ImageDraw.Draw(img)
@@ -364,6 +384,11 @@ def crafter(name, size, tint, motif):
     elif motif == "silicon":
         d.polygon([(c, c - 8 * SS), (c + 8 * SS, c), (c, c + 8 * SS), (c - 8 * SS, c)], fill=(150, 160, 180), outline=HULL_D)
         d.line([c - 8 * SS, c, c + 8 * SS, c], fill=ICE_L, width=SS)
+    elif motif in FACTORY_COLORS:
+        col = FACTORY_COLORS[motif]
+        d.ellipse([c - r + 3 * SS, c - r + 3 * SS, c + r - 3 * SS, c + r - 3 * SS], fill=tuple(int(v * 0.35) for v in col), outline=HULL_D, width=SS)
+        d.polygon([(c, c - 8 * SS), (c + 6 * SS, c + 2 * SS), (c + 3 * SS, c + 8 * SS), (c - 3 * SS, c + 8 * SS), (c - 6 * SS, c + 2 * SS)], fill=col, outline=HULL_D)
+        d.ellipse([c - 2 * SS, c - 2 * SS, c + 2 * SS, c + 2 * SS], fill=ICE_L)
     elif motif == "sand":
         d.rectangle([c - r + 3 * SS, c, c + r - 3 * SS, c + r - 3 * SS], fill=(230, 195, 150))
         d.rectangle([c - r + 3 * SS, c - 4 * SS, c + r - 3 * SS, c], fill=(40, 120, 190))
@@ -646,6 +671,7 @@ def main():
 
     planet_icon("hiemara")
     defense_sprites()
+    factory_sprites()
     filter_block("water-filter-1", 64, 1)
     filter_block("water-filter-2", 96, 2)
     filter_block("water-filter-3", 96, 3)
