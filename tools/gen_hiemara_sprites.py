@@ -395,6 +395,44 @@ def power(name, size, motif):
     finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
 
 
+def shrink(name, size=32, folder=None):
+    """Port and depot are one tile. They are drawn on a 64px plate and scaled down."""
+    path = os.path.join(folder or BLOCK_DIR, name + ".png")
+    Image.open(path).convert("RGBA").resize((size, size), Image.LANCZOS).save(path)
+
+
+def planet_icon(name):
+    """The icon of the planet in the tech tree and the database: a sphere of deep and shallow water with an ice cap."""
+    import math
+    size = 32
+    img = canvas(size)
+    px = img.load()
+    n = size * SS
+    c = n / 2.0
+    r = c - 1.5 * SS
+    rng = random.Random(name)
+    blobs = [(rng.uniform(-0.8, 0.8), rng.uniform(-0.8, 0.8), rng.uniform(0.18, 0.4)) for _ in range(9)]
+    for y in range(n):
+        for x in range(n):
+            dx, dy = (x + 0.5 - c) / r, (y + 0.5 - c) / r
+            q = dx * dx + dy * dy
+            if q > 1:
+                continue
+            dz = math.sqrt(1 - q)
+            col = (29, 79, 149)
+            if any((dx - bx) ** 2 + (dy - by) ** 2 < br * br for bx, by, br in blobs):
+                col = (74, 159, 220)
+            if dy < -0.55 + 0.12 * math.sin(dx * 7.0):
+                col = (227, 244, 255)
+            light = 0.55 + 0.6 * (-dx * 0.45 - dy * 0.55 + dz * 0.7)
+            col = tuple(max(0, min(255, int(v * light))) for v in col)
+            px[x, y] = col + (255,)
+    # a thin atmosphere ring
+    d = ImageDraw.Draw(img)
+    d.ellipse([c - r, c - r, c + r, c + r], outline=(143, 201, 242, 255), width=SS)
+    finish(img, size, os.path.join(ROOT, "others", name + ".png"))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--vanilla", help="path to the vanilla deep-water.png")
@@ -403,12 +441,15 @@ def main():
     if args.vanilla:
         rich_water(args.vanilla)
 
+    planet_icon("hiemara")
     filter_block("water-filter-1", 64, 1)
     filter_block("water-filter-2", 96, 2)
     filter_block("water-filter-3", 96, 3)
     filter_block("water-filter-4", 128, 4)
     port("cargo-port", 64)
+    shrink("cargo-port")
     depot("cargo-depot", 64)
+    shrink("cargo-depot")
     pad("cargo-air-pad", 96, False)
     pad("cargo-boat-yard", 96, True)
     cap_block("cargo-hangar", 96, False)
@@ -424,7 +465,9 @@ def main():
     hub("distributor-2", 96, 2, "distributor")
     hub("distributor-3", 128, 3, "distributor")
     hub("liquid-port", 64, 1, "liquid")
+    shrink("liquid-port")
     hub("liquid-depot", 64, 2, "liquid")
+    shrink("liquid-depot")
     crafter("sand-dredger", 96, (110, 100, 80), "sand")
     crafter("floating-cultivator", 64, (70, 96, 84), "spore")
     crafter("floating-spore-press", 64, (84, 80, 100), "oil")

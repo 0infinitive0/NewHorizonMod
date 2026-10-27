@@ -62,7 +62,7 @@ public class HiemaraBlocks{
 	
 	public static void load(){
 		filterMk1 = new FilterBlock("water-filter-1"){{
-			requirements(Category.production, with(Items.copper, 35, Items.lead, 25));
+			requirements(Category.production, with(Items.copper, 8, Items.lead, 4));
 			size = 2;
 			tier = 1;
 			baseRate = 0.010f;
@@ -92,15 +92,15 @@ public class HiemaraBlocks{
 		}};
 		
 		port = new Port("cargo-port"){{
-			requirements(Category.distribution, with(Items.copper, 60, Items.lead, 40));
-			size = 2;
+			requirements(Category.distribution, with(Items.copper, 6, Items.lead, 3));
+			size = 1;
 			health = 200;
 			maxBound = 4;
 			alwaysUnlocked = true;
 		}};
 		depot = new Depot("cargo-depot"){{
-			requirements(Category.distribution, with(Items.copper, 50, Items.lead, 30));
-			size = 2;
+			requirements(Category.distribution, with(Items.copper, 5, Items.lead, 2));
+			size = 1;
 			health = 200;
 			alwaysUnlocked = true;
 		}};
@@ -178,12 +178,12 @@ public class HiemaraBlocks{
 		
 		liquidPort = new LiquidPort("liquid-port"){{
 			requirements(Category.liquid, with(Items.copper, 60, Items.lead, 60, Items.sand, 40));
-			size = 2;
+			size = 1;
 			health = 200;
 		}};
 		liquidDepot = new LiquidDepot("liquid-depot"){{
 			requirements(Category.liquid, with(Items.copper, 60, Items.lead, 60, Items.sand, 40));
-			size = 2;
+			size = 1;
 			health = 200;
 		}};
 		
