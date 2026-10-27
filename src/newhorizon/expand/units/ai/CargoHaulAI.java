@@ -12,7 +12,8 @@ import newhorizon.expand.block.cargo.Port;
 import newhorizon.expand.hiemara.Hold;
 
 /**
- * Hauls items from the port the unit is bound to into the depots. A unit that is not bound to a port does nothing.
+ * Hauls items from the port the unit is bound to into the depots. A unit that is not bound to a port takes items from
+ * whichever port has something a depot wants.
  * Ships that carry several kinds of item take as many kinds as there are depots for, and visit depots until they are empty.
  */
 public class CargoHaulAI extends HaulAI{
@@ -22,9 +23,15 @@ public class CargoHaulAI extends HaulAI{
 	
 	@Override
 	public void updateMovement(){
-		if(port == null || !port.isValid() || !port.bound.contains(unit.id) || timer.get(timerTarget2, 45f)){
+		if(port == null || !port.isValid() || timer.get(timerTarget2, 45f)){
 			HubBlock.HubBuild hub = HubBlock.boundHub(unit);
-			port = hub instanceof Port.PortBuild ? (Port.PortBuild)hub : null;
+			if(hub instanceof Port.PortBuild){
+				port = (Port.PortBuild)hub;
+			}else if(port == null || !port.isValid() || Hold.empty(unit)){
+				//Not bound: take items from any port that has something a depot wants. With cargo on board the unit
+				//keeps its port, so it can put the cargo back.
+				port = closestStockedPort();
+			}
 		}
 		
 		if(port == null){
@@ -62,6 +69,30 @@ public class CargoHaulAI extends HaulAI{
 			travel(depot);
 			if(near(depot))unload();
 		}
+	}
+	
+	/** @return the closest port of the team that holds an item some depot wants, or null. */
+	protected Port.PortBuild closestStockedPort(){
+		Port.PortBuild closest = null;
+		float dst = Float.MAX_VALUE;
+		for(HubBlock hub : HubBlock.all){
+			if(!(hub instanceof Port))continue;
+			for(Building build : unit.team.data().getBuildings(hub)){
+				Port.PortBuild candidate = (Port.PortBuild)build;
+				float d = candidate.dst2(unit);
+				if(d >= dst || !hasWantedStock(candidate))continue;
+				dst = d;
+				closest = candidate;
+			}
+		}
+		return closest;
+	}
+	
+	protected boolean hasWantedStock(Port.PortBuild candidate){
+		for(Item item : Vars.content.items()){
+			if(candidate.items.get(item) > 0 && closestDepotFor(Seq.with(item)) != null)return true;
+		}
+		return false;
 	}
 	
 	protected boolean wantsAny(Depot.DepotBuild depot){

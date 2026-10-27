@@ -58,6 +58,7 @@ public class NHPlanets{
 			danthami = new MidanthaPlanet();
 		}
 		hiemara = new HiemaraPlanet();
+		HiemaraPlanet.registerGrace();
 		Log.info("Hiemara registered: @ | sectors: @ | always unlocked: @", hiemara.name, hiemara.sectors.size, hiemara.alwaysUnlocked);
 		midantha = new NHPlanet("midantha", ceito, 1, 3){{
 			bloom = true;

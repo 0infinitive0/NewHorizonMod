@@ -1,5 +1,7 @@
 package newhorizon.expand.map.planet;
 
+import arc.Core;
+import arc.Events;
 import arc.graphics.Color;
 import arc.math.Mathf;
 import arc.math.Rand;
@@ -19,6 +21,7 @@ import newhorizon.content.hiemara.HiemaraContent;
 import newhorizon.content.hiemara.HiemaraFloors;
 import newhorizon.expand.block.env.RichWater;
 import mindustry.content.Loadouts;
+import mindustry.game.EventType;
 import mindustry.game.Rules;
 import mindustry.game.Schematics;
 import mindustry.game.Team;
@@ -36,6 +39,7 @@ import mindustry.world.meta.Env;
 import newhorizon.content.NHOverride;
 import newhorizon.content.NHPlanets;
 import newhorizon.content.NHWeathers;
+import newhorizon.expand.weather.ColdWave;
 
 import static mindustry.Vars.state;
 
@@ -48,6 +52,22 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 			deepColor = Color.valueOf("1d4f95"),
 			shallowColor = Color.valueOf("4a9fdc"),
 			iceColor = Color.valueOf("e3f4ff");
+
+	/** No cold wave this long after a sector starts or is loaded, in ticks. */
+	public static float coldWaveGrace = 10f * Time.toMinutes;
+
+	/**
+	 * The game sets every weather cooldown to a random value when play starts, which is 3 minutes at most for the cold
+	 * wave. This runs right after that and sets the first wave to the grace time plus the usual wait.
+	 */
+	public static void registerGrace(){
+		Events.on(EventType.PlayEvent.class, e -> Core.app.post(() -> {
+			if(state.rules.sector == null || state.rules.sector.planet != NHPlanets.hiemara)return;
+			for(Weather.WeatherEntry entry : state.rules.weather){
+				if(entry.weather instanceof ColdWave)entry.cooldown = coldWaveGrace + Mathf.random(entry.minFrequency, entry.maxFrequency);
+			}
+		}));
+	}
 
 	public HiemaraPlanet(){
 		super("hiemara", NHPlanets.ceito, 1f, 3);

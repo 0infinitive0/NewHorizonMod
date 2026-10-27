@@ -10,7 +10,7 @@ import newhorizon.expand.block.cargo.LiquidPort;
 import newhorizon.expand.units.hiemara.TankerUnitType;
 import newhorizon.expand.units.unitEntity.TankerEntity;
 
-/** Hauls the liquid of the liquid port it is bound to into the liquid depots. */
+/** Hauls the liquid of the liquid port it is bound to, or of any liquid port with something a depot wants, into the liquid depots. */
 public class TankerHaulAI extends HaulAI{
 	public LiquidPort.LiquidPortBuild port;
 	public LiquidDepot.LiquidDepotBuild depot;
@@ -22,9 +22,14 @@ public class TankerHaulAI extends HaulAI{
 		if(!(unit instanceof TankerEntity))return;
 		TankerEntity tanker = (TankerEntity)unit;
 		
-		if(port == null || !port.isValid() || !port.bound.contains(unit.id) || timer.get(timerTarget2, 45f)){
+		if(port == null || !port.isValid() || timer.get(timerTarget2, 45f)){
 			HubBlock.HubBuild hub = HubBlock.boundHub(unit);
-			port = hub instanceof LiquidPort.LiquidPortBuild ? (LiquidPort.LiquidPortBuild)hub : null;
+			if(hub instanceof LiquidPort.LiquidPortBuild){
+				port = (LiquidPort.LiquidPortBuild)hub;
+			}else if(port == null || !port.isValid() || tanker.liquidAmount < 1f){
+				//Not bound: use any liquid port that has a liquid some depot wants.
+				port = closestStockedPort();
+			}
 		}
 		
 		if(port == null)return;
@@ -75,6 +80,23 @@ public class TankerHaulAI extends HaulAI{
 				}
 			}
 		}
+	}
+	
+	/** @return the closest liquid port of the team that holds a liquid some depot wants, or null. */
+	protected LiquidPort.LiquidPortBuild closestStockedPort(){
+		LiquidPort.LiquidPortBuild closest = null;
+		float dst = Float.MAX_VALUE;
+		for(HubBlock hub : HubBlock.all){
+			if(!(hub instanceof LiquidPort))continue;
+			for(Building build : unit.team.data().getBuildings(hub)){
+				LiquidPort.LiquidPortBuild candidate = (LiquidPort.LiquidPortBuild)build;
+				float d = candidate.dst2(unit);
+				if(d >= dst || candidate.liquids.currentAmount() <= 1f || closestDepot(candidate.liquids.current()) == null)continue;
+				dst = d;
+				closest = candidate;
+			}
+		}
+		return closest;
 	}
 	
 	protected LiquidDepot.LiquidDepotBuild closestDepot(Liquid liquid){
