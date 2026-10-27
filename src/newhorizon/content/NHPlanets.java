@@ -6,6 +6,7 @@ import arc.math.Rand;
 import arc.math.geom.*;
 import arc.struct.GridBits;
 import arc.struct.Seq;
+import arc.util.Log;
 import arc.util.Structs;
 import arc.util.Time;
 import arc.util.Tmp;
@@ -57,6 +58,7 @@ public class NHPlanets{
 			danthami = new MidanthaPlanet();
 		}
 		hiemara = new HiemaraPlanet();
+		Log.info("Hiemara registered: @ | sectors: @ | always unlocked: @", hiemara.name, hiemara.sectors.size, hiemara.alwaysUnlocked);
 		midantha = new NHPlanet("midantha", ceito, 1, 3){{
 			bloom = true;
 			visible = true;

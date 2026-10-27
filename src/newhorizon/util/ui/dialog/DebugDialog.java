@@ -396,6 +396,10 @@ public class DebugDialog extends BaseDialog{
 				state.rules.fog = false;
 			});
 			
+			t.button("Infinite Resources", () -> {
+				state.rules.infiniteResources = !state.rules.infiniteResources;
+			});
+			
 			t.button("Remove Limit", () -> {
 				state.rules.limitMapArea = false;
 			});
