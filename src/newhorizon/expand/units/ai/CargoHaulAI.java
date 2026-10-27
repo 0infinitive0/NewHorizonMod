@@ -13,7 +13,7 @@ import newhorizon.expand.hiemara.Hold;
 
 /**
  * Hauls items from the port the unit is bound to into the depots. A unit that is not bound to a port takes items from
- * whichever port has something a depot wants.
+ * the port that has the most of what the depots want.
  * Ships that carry several kinds of item take as many kinds as there are depots for, and visit depots until they are empty.
  */
 public class CargoHaulAI extends HaulAI{
@@ -30,7 +30,7 @@ public class CargoHaulAI extends HaulAI{
 			}else if(port == null || !port.isValid() || Hold.empty(unit)){
 				//Not bound: take items from any port that has something a depot wants. With cargo on board the unit
 				//keeps its port, so it can put the cargo back.
-				port = closestStockedPort();
+				port = fullestPort();
 			}
 		}
 		
@@ -71,28 +71,34 @@ public class CargoHaulAI extends HaulAI{
 		}
 	}
 	
-	/** @return the closest port of the team that holds an item some depot wants, or null. */
-	protected Port.PortBuild closestStockedPort(){
-		Port.PortBuild closest = null;
+	/** @return the port of the team that holds the most of what the depots want, the closest one if equal, or null. */
+	protected Port.PortBuild fullestPort(){
+		Port.PortBuild best = null;
+		int most = 0;
 		float dst = Float.MAX_VALUE;
 		for(HubBlock hub : HubBlock.all){
 			if(!(hub instanceof Port))continue;
 			for(Building build : unit.team.data().getBuildings(hub)){
 				Port.PortBuild candidate = (Port.PortBuild)build;
+				int stock = wantedStock(candidate);
 				float d = candidate.dst2(unit);
-				if(d >= dst || !hasWantedStock(candidate))continue;
+				if(stock <= 0 || stock < most || (stock == most && d >= dst))continue;
+				most = stock;
 				dst = d;
-				closest = candidate;
+				best = candidate;
 			}
 		}
-		return closest;
+		return best;
 	}
 	
-	protected boolean hasWantedStock(Port.PortBuild candidate){
+	/** @return how many items the port holds that some depot wants. */
+	protected int wantedStock(Port.PortBuild candidate){
+		int stock = 0;
 		for(Item item : Vars.content.items()){
-			if(candidate.items.get(item) > 0 && closestDepotFor(Seq.with(item)) != null)return true;
+			int amount = candidate.items.get(item);
+			if(amount > 0 && closestDepotFor(Seq.with(item)) != null)stock += amount;
 		}
-		return false;
+		return stock;
 	}
 	
 	protected boolean wantsAny(Depot.DepotBuild depot){

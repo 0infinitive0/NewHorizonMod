@@ -36,7 +36,7 @@ public class RichWater extends Floor{
 		supportsOverlay = true;
 		playerUnmineable = true;
 		blendGroup = Blocks.deepwater;
-		mapColor = Blocks.deepwater.mapColor.cpy().lerp(item.color, 0.35f);
+		mapColor = Blocks.deepwater.mapColor.cpy().lerp(item.color, 0.6f);
 	}
 	
 	/** @return the ore this tile is rich in, also while it is frozen, or null. */

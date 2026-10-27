@@ -65,19 +65,79 @@ def rivets(d, size, inset=5):
         d.ellipse([x * SS - 2 * SS, y * SS - 2 * SS, x * SS + 2 * SS, y * SS + 2 * SS], fill=HULL_L, outline=HULL_D)
 
 
+# Tint of the water and light colour of the specks, one per ore. Not the item colours: lead, scrap and tungsten are all grey.
+RICH = {
+    "scrap": ((170, 150, 120), (235, 150, 70)),
+    "copper": ((225, 120, 55), (255, 190, 110)),
+    "lead": ((125, 95, 205), (200, 175, 255)),
+    "coal": ((38, 38, 46), (120, 120, 135)),
+    "titanium": ((60, 130, 255), (170, 220, 255)),
+    "beryllium": ((35, 200, 115), (170, 255, 195)),
+    "thorium": ((235, 70, 150), (255, 175, 215)),
+    "tungsten": ((70, 190, 190), (200, 245, 240)),
+}
+
+
+def rich_shape(name, d, x, y, light, dark, rng):
+    """One speck of the ore, each ore with a shape of its own. Drawn on a 4x canvas."""
+    k = SS
+    if name == "copper":      # round nuggets
+        r = rng.choice((2, 3))
+        d.ellipse([(x - r) * k, (y - r) * k, (x + r) * k, (y + r) * k], fill=light, outline=dark, width=k // 2)
+    elif name == "lead":      # cubes
+        r = rng.choice((2, 3))
+        d.rectangle([(x - r) * k, (y - r) * k, (x + r) * k, (y + r) * k], fill=light, outline=dark, width=k // 2)
+        d.rectangle([(x - r) * k, (y - r) * k, (x) * k, (y) * k], fill=tuple(min(255, c + 25) for c in light))
+    elif name == "scrap":     # bars at an angle
+        n = rng.choice((3, 4))
+        d.line([(x - n) * k, (y + n) * k, (x + n) * k, (y - n) * k], fill=dark, width=3 * k)
+        d.line([(x - n) * k, (y + n) * k, (x + n) * k, (y - n) * k], fill=light, width=2 * k)
+    elif name == "coal":      # chunky blocks
+        r = rng.choice((2, 3))
+        d.polygon([((x - r) * k, (y - r + 1) * k), ((x - 1) * k, (y - r - 1) * k), ((x + r) * k, (y - 1) * k),
+                   ((x + r - 1) * k, (y + r) * k), ((x - r + 1) * k, (y + r) * k)], fill=light, outline=dark)
+    elif name == "titanium":  # diamonds
+        r = rng.choice((3, 4))
+        d.polygon([(x * k, (y - r) * k), ((x + r) * k, y * k), (x * k, (y + r) * k), ((x - r) * k, y * k)],
+                  fill=light, outline=dark)
+    elif name == "beryllium":  # thin crystal needles
+        n = rng.choice((3, 4))
+        d.line([x * k, (y + n) * k, x * k, (y - n) * k], fill=dark, width=2 * k)
+        d.line([x * k, (y + n) * k, x * k, (y - n) * k], fill=light, width=k)
+        d.line([(x - 2) * k, (y + n - 1) * k, (x - 1) * k, (y - 1) * k], fill=light, width=k)
+    elif name == "thorium":   # glowing dots with a halo
+        d.ellipse([(x - 3) * k, (y - 3) * k, (x + 3) * k, (y + 3) * k], fill=dark)
+        d.ellipse([(x - 1) * k, (y - 1) * k, (x + 1) * k, (y + 1) * k], fill=light)
+    elif name == "tungsten":  # small hexagons
+        r = 3
+        d.polygon([((x - r) * k, y * k), ((x - 1) * k, (y - r) * k), ((x + 1) * k, (y - r) * k), ((x + r) * k, y * k),
+                   ((x + 1) * k, (y + r) * k), ((x - 1) * k, (y + r) * k)], fill=light, outline=dark)
+
+
 def rich_water(vanilla):
     base = Image.open(vanilla).convert("RGBA")
-    for name, color in ORES.items():
+    for name, (tint, light) in RICH.items():
         rng = random.Random(name)
+        # the vanilla water pulled towards the tint, the wave detail stays
         img = base.copy()
         px = img.load()
-        for _ in range(26):
-            x, y = rng.randrange(32), rng.randrange(32)
-            for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1)):
-                if x + dx < 32 and y + dy < 32 and rng.random() < 0.8:
-                    light = rng.uniform(0.85, 1.15)
-                    px[x + dx, y + dy] = tuple(min(255, int(c * light)) for c in color) + (255,)
-        img.save(os.path.join(ENV_DIR, "rich-water-%s.png" % name))
+        for x in range(32):
+            for y in range(32):
+                r, g, b, a = px[x, y]
+                px[x, y] = tuple(int(c * 0.45 + t * 0.55 * (0.7 + 0.3 * c / 255.0)) for c, t in zip((r, g, b), tint)) + (a,)
+        big = img.resize((32 * SS, 32 * SS), Image.NEAREST)
+        d = ImageDraw.Draw(big)
+        dark = tuple(int(c * 0.35) for c in tint)
+        placed = []
+        for _ in range(60):
+            if len(placed) >= 9:
+                break
+            x, y = rng.randrange(4, 28), rng.randrange(4, 28)
+            if any((x - px_) ** 2 + (y - py_) ** 2 < 36 for px_, py_ in placed):
+                continue
+            placed.append((x, y))
+            rich_shape(name, d, x, y, light, dark, rng)
+        big.resize((32, 32), Image.LANCZOS).save(os.path.join(ENV_DIR, "rich-water-%s.png" % name))
 
 
 def filter_block(name, size, tier):

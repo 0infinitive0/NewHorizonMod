@@ -58,11 +58,13 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 
 	/**
 	 * The game sets every weather cooldown to a random value when play starts, which is 3 minutes at most for the cold
-	 * wave. This runs right after that and sets the first wave to the grace time plus the usual wait.
+	 * wave. This runs right after that and sets the first wave to the grace time plus the usual wait. The campaign rules
+	 * are applied over the rules of the planet, so hiding the spawn of the peaceful first sector has to be done here too.
 	 */
 	public static void registerGrace(){
 		Events.on(EventType.PlayEvent.class, e -> Core.app.post(() -> {
 			if(state.rules.sector == null || state.rules.sector.planet != NHPlanets.hiemara)return;
+			if(state.rules.sector.id == NHPlanets.hiemara.startSector && state.rules.spawns.isEmpty())state.rules.hideSpawns = true;
 			for(Weather.WeatherEntry entry : state.rules.weather){
 				if(entry.weather instanceof ColdWave)entry.cooldown = coldWaveGrace + Mathf.random(entry.minFrequency, entry.maxFrequency);
 			}
@@ -120,6 +122,8 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 		public float shallowShare = 0.2f;
 		/** Smallest all-shallow square, in tiles, that the core is put on, and that the enemy spawn needs. */
 		public int coreSquare = 7, spawnSquare = 5;
+		/** The wave at which the peaceful first sector is captured. */
+		public int firstSectorWinWave = 15;
 
 		{
 			baseSeed = 11;
@@ -249,6 +253,7 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 			richWater(coreX, coreY);
 			
 			tiles.getn(spawnX, spawnY).setOverlay(Blocks.spawn);
+			boolean first = sector.id == sector.planet.startSector;
 			
 			Schematics.placeLoadout(Loadouts.basicShard, coreX, coreY);
 			
@@ -259,6 +264,14 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 			state.rules.fog = false;
 			
 			if(state.rules.sector.preset != null)return;
+			
+			if(first){
+				//The waves still count and the sector is captured at the win wave, but nothing ever spawns. The spawn tile stays,
+				//the game turns waves off in a sector that has none, and then it could never be captured; it is hidden instead.
+				state.rules.winWave = firstSectorWinWave;
+				state.rules.spawns = new Seq<>();
+				return;
+			}
 			
 			state.rules.winWave = Mathf.round(60 + 60 * difficulty, 5);
 			

@@ -23,7 +23,7 @@ public class CargoCap{
 	public static final Seq<UnitType> cargoTypes = new Seq<>();
 	/** Every block that raises the cap, filled by their constructors. */
 	public static final Seq<CargoCapBlock> capBlocks = new Seq<>();
-	/** Cap given by a core, by block. Cores that are not in here give half of their normal unit cap bonus, at least 2. */
+	/** Cap given by a core, by block. Cores that are not in here give 2.5 times their normal unit cap bonus, at least 20 (a shard gives 20). */
 	public static final ObjectIntMap<Block> coreCaps = new ObjectIntMap<>();
 	
 	protected static float timer;
@@ -47,7 +47,7 @@ public class CargoCap{
 	}
 	
 	public static int coreCap(CoreBlock core){
-		return coreCaps.get(core, Math.max(2, core.unitCapModifier / 2));
+		return coreCaps.get(core, Math.max(20, core.unitCapModifier * 5 / 2));
 	}
 	
 	public static int cap(Team team){

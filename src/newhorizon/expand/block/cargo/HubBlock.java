@@ -10,15 +10,21 @@ import arc.util.Strings;
 import arc.util.Time;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
+import mindustry.Vars;
 import mindustry.gen.Building;
+import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Icon;
 import mindustry.gen.Unit;
 import mindustry.graphics.Pal;
+import mindustry.type.Item;
+import mindustry.type.ItemStack;
 import mindustry.type.UnitType;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.Block;
+import mindustry.world.blocks.storage.CoreBlock;
+import mindustry.world.blocks.units.UnitFactory;
 import mindustry.world.meta.Stat;
 import newhorizon.expand.hiemara.CargoCap;
 import newhorizon.expand.hiemara.Hold;
@@ -50,7 +56,27 @@ public abstract class HubBlock extends Block{
 			if(id > 0)build.bind(id);else build.unbind(-id);
 		});
 		
+		//A unit to recycle.
+		config(Long.class, (HubBuild build, Long id) -> build.recycle(id.intValue()));
+		
 		all.add(this);
+	}
+	
+	/** @return what recycling a unit of this type gives back: part of the cost of the plan it is built by. */
+	public static ItemStack[] refund(UnitType type){
+		for(Block block : Vars.content.blocks()){
+			if(!(block instanceof CargoUnitPad))continue;
+			for(UnitFactory.UnitPlan plan : ((CargoUnitPad)block).plans){
+				if(plan.unit != type)continue;
+				ItemStack[] out = new ItemStack[plan.requirements.length];
+				for(int i = 0; i < out.length; i++){
+					ItemStack stack = plan.requirements[i];
+					out[i] = new ItemStack(stack.item, Math.round(stack.amount * Vars.state.rules.deconstructRefundMultiplier));
+				}
+				return out;
+			}
+		}
+		return new ItemStack[0];
 	}
 	
 	/** @return whether units of this type can be bound to this kind of hub. */
@@ -104,6 +130,31 @@ public abstract class HubBlock extends Block{
 			bound.removeValue(id);
 		}
 		
+		/** Removes a cargo unit and gives part of what it cost, and what it carries, to the core. */
+		public void recycle(int id){
+			Unit unit = Groups.unit.getByID(id);
+			if(unit == null || unit.team != team || !accepts(unit.type) || unit.dead || !unit.isAdded())return;
+			
+			unbind(id);
+			if(Vars.net.client())return;
+			
+			CoreBlock.CoreBuild core = team.core();
+			if(core != null){
+				for(ItemStack stack : refund(unit.type))give(core, stack.item, stack.amount);
+				if(Hold.multi(unit)){
+					for(Item item : Hold.items(unit))give(core, item, Hold.get(unit, item));
+				}else if(unit.stack.amount > 0){
+					give(core, unit.stack.item, unit.stack.amount);
+				}
+			}
+			Call.unitDespawn(unit);
+		}
+		
+		protected void give(CoreBlock.CoreBuild core, Item item, int amount){
+			int room = core.storageCapacity - core.items.get(item);
+			if(amount > 0 && room > 0)core.items.add(item, Math.min(amount, room));
+		}
+		
 		/** Forgets units that are gone. */
 		public void prune(){
 			for(int i = bound.size - 1; i >= 0; i--){
@@ -142,7 +193,7 @@ public abstract class HubBlock extends Block{
 					unitRow(content, unit, "@port.unbind", () -> {
 						configure(-unit.id);
 						rebuild[0].run();
-					}, true);
+					}, true, () -> askRecycle(unit, rebuild[0]));
 				}
 				if(!any)content.add("@port.none-bound").color(Color.lightGray).left().row();
 				
@@ -156,7 +207,7 @@ public abstract class HubBlock extends Block{
 					unitRow(content, unit, "@port.bind", () -> {
 						configure(unit.id);
 						rebuild[0].run();
-					}, !full());
+					}, !full(), () -> askRecycle(unit, rebuild[0]));
 				}
 				if(!any)content.add("@port.none-free").color(Color.lightGray).left().row();
 			};
@@ -181,12 +232,25 @@ public abstract class HubBlock extends Block{
 			deselect();
 		}
 		
-		protected void unitRow(Table table, Unit unit, String label, Runnable action, boolean enabled){
+		protected void askRecycle(Unit unit, Runnable rebuild){
+			StringBuilder refund = new StringBuilder();
+			for(ItemStack stack : refund(unit.type)){
+				if(stack.amount > 0)refund.append(stack.amount).append(' ').append(stack.item.localizedName).append(", ");
+			}
+			String text = refund.length() > 0 ? refund.substring(0, refund.length() - 2) : Core.bundle.get("port.recycle.nothing");
+			Vars.ui.showConfirm("@port.recycle", Core.bundle.format("port.recycle.confirm", unit.type.localizedName + " #" + unit.id, text), () -> {
+				configure(Long.valueOf(unit.id));
+				rebuild.run();
+			});
+		}
+		
+		protected void unitRow(Table table, Unit unit, String label, Runnable action, boolean enabled, Runnable recycle){
 			table.table(Styles.grayPanel, row -> {
 				row.image(unit.type.uiIcon).size(40f).scaling(Scaling.fit).pad(6f);
 				row.add(unit.type.localizedName + " #" + unit.id).left().growX();
 				row.add(loadText(unit)).color(Color.lightGray).padRight(8f);
 				row.button(label, Styles.defaultt, action).size(110f, 40f).disabled(b -> !enabled).pad(4f);
+				row.button("@port.recycle", Styles.defaultt, recycle).size(110f, 40f).pad(4f);
 			}).growX().padBottom(4f).row();
 		}
 		
