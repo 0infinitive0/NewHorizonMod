@@ -6,6 +6,7 @@ import mindustry.entities.bullet.BulletType;
 import mindustry.entities.bullet.MissileBulletType;
 import newhorizon.expand.bullets.nuke.ArcOrbBulletType;
 import newhorizon.expand.bullets.nuke.ForceZoneBulletType;
+import newhorizon.expand.bullets.nuke.MeteorStormBulletType;
 import newhorizon.expand.bullets.nuke.QuakeBulletType;
 import newhorizon.expand.bullets.nuke.SpinLaserBulletType;
 import newhorizon.expand.bullets.nuke.SwarmSpawnerBulletType;
@@ -27,6 +28,8 @@ public class NukeBullets{
 	/** The lightning nuke's ball of light, and the earthquake nuke's quake. */
 	public static ArcOrbBulletType arcOrb, siphonOrb;
 	public static QuakeBulletType quake;
+	/** The meteor nuke's shower. */
+	public static MeteorStormBulletType meteorStorm;
 
 	public static void load(){
 		radiationZone = new ZoneBulletType(){{
@@ -155,6 +158,17 @@ public class NukeBullets{
 			onPulled = (b, age) -> newhorizon.expand.block.env.OmniDeposit.leave(b.x, b.y, age);
 			color = Color.valueOf("9c3fe8");
 			arcColor = Color.valueOf("c885ff");
+		}};
+
+		//Ten seconds of meteors, one every 12 ticks, each a 34-wide blast of 450.
+		meteorStorm = new MeteorStormBulletType(){{
+			radius = 220f;
+			duration = 60f * 10f;
+			interval = 12f;
+			fall = 48f;
+			impactRadius = 34f;
+			impactDamage = 450f;
+			color = Color.valueOf("d9822b");
 		}};
 
 		quake = new QuakeBulletType(){{

@@ -55,6 +55,8 @@ public class NukeBlocks{
 				new UnitFactory.UnitPlan(NukeUnits.storm, 60f * 35f, with(Items.silicon, 90, Items.graphite, 110, Items.thorium, 50, Items.phaseFabric, 15)),
 				new UnitFactory.UnitPlan(NukeUnits.lightning, 60f * 38f, with(Items.silicon, 120, Items.graphite, 80, Items.thorium, 40, Items.surgeAlloy, 25)),
 				new UnitFactory.UnitPlan(NukeUnits.siphon, 60f * 60f, with(Items.silicon, 240, Items.graphite, 180, Items.thorium, 100, Items.phaseFabric, 50, Items.surgeAlloy, 50)),
+				new UnitFactory.UnitPlan(NukeUnits.meteor, 60f * 40f, with(Items.silicon, 100, Items.graphite, 140, Items.thorium, 70, Items.phaseFabric, 15)),
+				new UnitFactory.UnitPlan(NukeUnits.neoplasm, 60f * 35f, with(Items.silicon, 80, Items.graphite, 110, Items.thorium, 60)),
 				new UnitFactory.UnitPlan(NukeUnits.quake, 60f * 35f, with(Items.silicon, 80, Items.graphite, 150, Items.thorium, 80)),
 				new UnitFactory.UnitPlan(NukeUnits.scatter, 60f * 35f, with(Items.silicon, 90, Items.graphite, 100, Items.thorium, 60, Items.phaseFabric, 10)),
 				new UnitFactory.UnitPlan(NukeUnits.magnet, 60f * 35f, with(Items.silicon, 90, Items.graphite, 90, Items.thorium, 60, Items.phaseFabric, 15)),

@@ -7,7 +7,13 @@ import mindustry.gen.Teamc;
  * A player team's Serpent head: the usual commands, but when it attacks it goes round its target (the base game's circling attack
  * flies through it and back), see {@link SerpentOrbit}.
  */
-public class SerpentCommandAI extends CommandAI{
+public class SerpentCommandAI extends CommandAI implements SerpentLock{
+	@Override
+	public Teamc lockedTarget(){
+		Teamc aim = attackTarget != null ? attackTarget : target;
+		return aim != null && !mindustry.entities.Units.invalidateTarget(aim, unit.team, unit.x, unit.y) ? aim : null;
+	}
+
 	@Override
 	public void circleAttack(float circleLength){
 		Teamc aim = attackTarget != null ? attackTarget : target;

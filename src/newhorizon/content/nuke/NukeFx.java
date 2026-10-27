@@ -169,6 +169,21 @@ public class NukeFx{
 			Draw.reset();
 		}),
 
+		/** A meteor landing: a flash, a ring, dust and flung rock. The rotation is the size of the blast. */
+		meteorImpact = new Effect(46f, 300f, e -> {
+			Draw.z(Layer.effect + 1f);
+			Draw.color(Color.white, e.color, e.fin() * 2f);
+			Fill.circle(e.x, e.y, e.rotation * 0.7f * e.fout() * e.fout());
+			Draw.color(e.color, 0.9f * e.fout());
+			Lines.stroke(3.2f * e.fout());
+			Lines.circle(e.x, e.y, e.rotation * (0.35f + 1.05f * e.finpow()));
+			Draw.color(Color.valueOf("5a4636"), e.fout());
+			arc.math.Angles.randLenVectors(e.id, 9, e.rotation * 1.5f * e.finpow(), (x, y) -> Fill.circle(e.x + x, e.y + y, 1.2f + 2.6f * e.fout()));
+			Draw.color(Color.gray, 0.45f * e.fout());
+			arc.math.Angles.randLenVectors(e.id + 1, 7, e.rotation * 0.9f * e.finpow(), (x, y) -> Fill.circle(e.x + x, e.y + y, 3f + 7f * e.fin()));
+			Draw.reset();
+		}),
+
 		/** Sparks when a nuke is armed. */
 		armed = new Effect(24f, 80f, e -> {
 			Draw.color(Color.white, Color.scarlet, e.fin());

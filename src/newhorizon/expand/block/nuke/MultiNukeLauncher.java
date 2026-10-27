@@ -26,6 +26,7 @@ import mindustry.world.blocks.payloads.Payload;
 import mindustry.world.blocks.payloads.UnitPayload;
 import newhorizon.content.nuke.NukeFx;
 import newhorizon.content.nuke.NukeUnits;
+import newhorizon.expand.units.nuke.NukeBrain;
 import newhorizon.expand.units.nuke.NukeDefense;
 
 /**
@@ -173,6 +174,7 @@ public class MultiNukeLauncher extends NukeLauncher{
 		public void updateTile(){
 			unit();
 			cooldown = Math.max(0f, cooldown - Time.delta);
+			NukeBrain.driveLauncher(this);
 			//A cloak put up over the target after it was picked takes it away.
 			if(hasTarget && NukeDefense.cloaked(team, target.x, target.y)){
 				hasTarget = false;
