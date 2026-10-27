@@ -335,6 +335,66 @@ def ship(name, size, tier, tank=False, big=False):
     finish(img, size, os.path.join(UNIT_DIR, name + ".png"))
 
 
+def power(name, size, motif):
+    """Generators, batteries, nodes and the reactor."""
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    c = s // 2
+    if motif == "node":
+        d.rounded_rectangle([4 * SS, 4 * SS, s - 4 * SS, s - 4 * SS], radius=3 * SS, fill=HULL, outline=HULL_D, width=2 * SS)
+        d.ellipse([c - 7 * SS, c - 7 * SS, c + 7 * SS, c + 7 * SS], fill=ICE, outline=HULL_D, width=SS)
+        d.line([c, c - 12 * SS, c, c + 12 * SS], fill=WARM, width=2 * SS)
+        finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+        return
+    plate(d, size, color=(70, 90, 112) if motif != "reactor" else (60, 70, 96))
+    rivets(d, size)
+    r = c - 10 * SS
+    if motif == "wind":
+        import math
+        for k in range(3):
+            a = k * 2.0944
+            d.polygon([(c, c), (c + math.cos(a) * r, c + math.sin(a) * r),
+                       (c + math.cos(a + 0.35) * r * 0.8, c + math.sin(a + 0.35) * r * 0.8)], fill=ICE_L, outline=HULL_D)
+        d.ellipse([c - 3 * SS, c - 3 * SS, c + 3 * SS, c + 3 * SS], fill=WARM, outline=HULL_D)
+    elif motif == "hydro":
+        d.rounded_rectangle([c - r, c - r, c + r, c + r], radius=3 * SS, fill=(26, 60, 100), outline=HULL_D, width=2 * SS)
+        for k in range(4):
+            y = c - r + (k + 1) * (2 * r) // 5
+            d.line([c - r + 2 * SS, y, c + r - 2 * SS, y], fill=(110, 170, 230), width=2 * SS)
+        d.ellipse([c - 5 * SS, c - 5 * SS, c + 5 * SS, c + 5 * SS], fill=WARM, outline=HULL_D)
+    elif motif == "solar":
+        d.rounded_rectangle([c - r, c - r, c + r, c + r], radius=2 * SS, fill=(24, 40, 86), outline=HULL_D, width=SS)
+        for k in range(1, 4):
+            x = c - r + k * (2 * r) // 4
+            d.line([x, c - r, x, c + r], fill=(80, 110, 190), width=SS)
+            d.line([c - r, x, c + r, x], fill=(80, 110, 190), width=SS)
+    elif motif == "battery":
+        d.rounded_rectangle([c - r, c - r, c + r, c + r], radius=2 * SS, fill=(34, 52, 70), outline=HULL_D, width=SS)
+        d.rectangle([c - r // 2, c - r // 2, c + r // 2, c + r // 2], fill=WARM)
+    elif motif == "tower":
+        d.polygon([(c, c - r), (c + r, c + r), (c - r, c + r)], fill=HULL_L, outline=HULL_D)
+        d.ellipse([c - 4 * SS, c - r - 2 * SS, c + 4 * SS, c - r + 6 * SS], fill=WARM, outline=HULL_D)
+    elif motif == "reactor":
+        d.ellipse([c - r, c - r, c + r, c + r], fill=(20, 26, 44), outline=HULL_D, width=3 * SS)
+        d.ellipse([c - r + 6 * SS, c - r + 6 * SS, c + r - 6 * SS, c + r - 6 * SS], fill=(40, 70, 130), outline=ICE, width=2 * SS)
+        d.ellipse([c - r // 3, c - r // 3, c + r // 3, c + r // 3], fill=ICE_L)
+    elif motif == "separator":
+        d.rounded_rectangle([c - r, c - r, c + r, c + r], radius=3 * SS, fill=(30, 46, 66), outline=HULL_D, width=2 * SS)
+        d.ellipse([c - r + 3 * SS, c - r + 3 * SS, c, c + r - 3 * SS], fill=(90, 150, 220))
+        d.ellipse([c, c - r + 3 * SS, c + r - 3 * SS, c + r - 3 * SS], fill=(230, 210, 120))
+    elif motif == "pump":
+        d.ellipse([c - r, c - r, c + r, c + r], fill=(26, 60, 100), outline=HULL_D, width=2 * SS)
+        d.ellipse([c - r // 2, c - r // 2, c + r // 2, c + r // 2], fill=ICE, outline=HULL_D, width=SS)
+    elif motif == "tank":
+        d.ellipse([c - r, c - r, c + r, c + r], fill=(50, 120, 190), outline=HULL_D, width=2 * SS)
+        d.ellipse([c - r // 2, c - r // 2, c + r // 2, c + r // 2], fill=(110, 180, 235))
+    elif motif == "harvester":
+        d.rounded_rectangle([c - r, c - r, c + r, c + r], radius=3 * SS, fill=(30, 46, 66), outline=HULL_D, width=2 * SS)
+        d.polygon([(c, c - r + 4 * SS), (c + r - 4 * SS, c), (c, c + r - 4 * SS), (c - r + 4 * SS, c)], fill=ICE, outline=HULL_D)
+    finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--vanilla", help="path to the vanilla deep-water.png")
@@ -372,6 +432,22 @@ def main():
     crafter("floating-pyratite-mixer", 64, (100, 78, 70), "pyratite")
     crafter("floating-silicon-smelter", 64, (80, 86, 98), "silicon")
     crafter("floating-silicon-crucible", 96, (80, 86, 98), "silicon")
+
+    power("wind-turbine", 64, "wind")
+    power("hydro-generator", 96, "hydro")
+    power("floating-solar-panel", 96, "solar")
+    power("floating-battery-1", 32, "battery")
+    power("floating-battery-2", 64, "battery")
+    power("floating-battery-3", 96, "battery")
+    power("floating-node-large", 64, "node")
+    power("floating-surge-tower", 64, "tower")
+    power("electric-separator", 96, "separator")
+    power("fusion-reactor", 160, "reactor")
+    power("floating-pump", 32, "pump")
+    power("floating-rotary-pump", 64, "pump")
+    power("floating-liquid-container", 64, "tank")
+    power("floating-liquid-tank", 96, "tank")
+    power("floating-ice-harvester", 96, "harvester")
 
     ship("cargo-galleon", 64, 4, big=True)
     ship("cargo-leviathan", 88, 5, big=True)

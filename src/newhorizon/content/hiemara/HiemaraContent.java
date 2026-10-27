@@ -42,5 +42,8 @@ public class HiemaraContent{
 		Items.pyratite.shownPlanets.add(planet);
 		Liquids.oil.shownPlanets.add(planet);
 		Liquids.water.shownPlanets.add(planet);
+		Liquids.hydrogen.shownPlanets.add(planet);
+		Liquids.ozone.shownPlanets.add(planet);
+		newhorizon.content.NHItems.ice.shownPlanets.add(planet);
 	}
 }

@@ -23,6 +23,7 @@ public class HiemaraTechTree{
 					});
 				});
 				node(HiemaraBlocks.sandDredger);
+				node(HiemaraBlocks.iceHarvester);
 				node(HiemaraBlocks.sporeCultivator, () -> {
 					node(HiemaraBlocks.floatingSporePress, () -> {
 						node(HiemaraBlocks.floatingCoalCentrifuge);
@@ -77,11 +78,34 @@ public class HiemaraTechTree{
 			});
 			
 			node(HiemaraBlocks.generator, () -> {
-				node(HiemaraBlocks.node);
+				node(HiemaraBlocks.node, () -> {
+					node(HiemaraBlocks.nodeLarge, () -> {
+						node(HiemaraBlocks.surgeTower);
+					});
+				});
 				node(HiemaraBlocks.heater, Seq.with(new Objectives.Research(HiemaraBlocks.generator)), () -> {});
+				node(HiemaraBlocks.windTurbine);
+				node(HiemaraBlocks.hydroGenerator);
+				node(HiemaraBlocks.floatingSolar);
+				node(HiemaraBlocks.battery1, () -> {
+					node(HiemaraBlocks.battery2, () -> {
+						node(HiemaraBlocks.battery3);
+					});
+				});
 				node(HiemaraBlocks.floatingSiliconSmelter, () -> {
 					node(HiemaraBlocks.floatingSiliconCrucible);
 					node(HiemaraBlocks.floatingPyratiteMixer);
+				});
+			});
+			
+			node(HiemaraBlocks.floatingPump, () -> {
+				node(HiemaraBlocks.floatingRotaryPump, () -> {
+					node(HiemaraBlocks.electricSeparator, () -> {
+						node(HiemaraBlocks.fusionReactor, Seq.with(new Objectives.Research(HiemaraBlocks.battery3), new Objectives.Research(HiemaraBlocks.surgeTower)), () -> {});
+					});
+				});
+				node(HiemaraBlocks.liquidContainer, () -> {
+					node(HiemaraBlocks.liquidTank);
 				});
 			});
 		});

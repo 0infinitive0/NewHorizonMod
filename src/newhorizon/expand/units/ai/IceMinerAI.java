@@ -6,7 +6,7 @@ import mindustry.gen.Building;
 import mindustry.gen.Call;
 import mindustry.world.Tile;
 import newhorizon.content.NHItems;
-import newhorizon.content.blocks.ProductionBlocks;
+import newhorizon.expand.block.production.ice.IceMiningStation;
 import newhorizon.expand.block.env.IceFloor;
 import newhorizon.expand.block.production.ice.IceMiningStation.IceMiningStationBuild;
 
@@ -94,11 +94,13 @@ public class IceMinerAI extends AIController{
 		IceMiningStationBuild closest = null;
 		float dst = Float.MAX_VALUE;
 		
-		for(Building build : unit.team.data().getBuildings(ProductionBlocks.iceMiningStation)){
-			float d = unit.dst2(build);
-			if(build instanceof IceMiningStationBuild && d < dst){
-				dst = d;
-				closest = (IceMiningStationBuild)build;
+		for(IceMiningStation block : IceMiningStation.all){
+			for(Building build : unit.team.data().getBuildings(block)){
+				float d = unit.dst2(build);
+				if(build instanceof IceMiningStationBuild && d < dst){
+					dst = d;
+					closest = (IceMiningStationBuild)build;
+				}
 			}
 		}
 		

@@ -25,6 +25,9 @@ import static mindustry.Vars.tilesize;
 
 /** Spawns drones that mine {@link IceFloor} in a radius around the station and bring the ice back. */
 public class IceMiningStation extends Block{
+	/** Every ice mining station block, filled by the constructor. */
+	public static final arc.struct.Seq<IceMiningStation> all = new arc.struct.Seq<>();
+	
 	public UnitType unitType;
 	public int maxUnits = 3;
 	/** Mining radius in world units. */
@@ -43,6 +46,8 @@ public class IceMiningStation extends Block{
 		hasPower = true;
 		itemCapacity = 60;
 		ambientSound = mindustry.gen.Sounds.none;
+		
+		all.add(this);
 	}
 	
 	@Override

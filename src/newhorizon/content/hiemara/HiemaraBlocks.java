@@ -2,11 +2,21 @@ package newhorizon.content.hiemara;
 
 import arc.struct.Seq;
 import mindustry.content.Items;
-import mindustry.content.Liquids;
 import mindustry.type.LiquidStack;
 import mindustry.world.Block;
 import mindustry.world.blocks.production.GenericCrafter;
+import mindustry.content.Liquids;
+import mindustry.world.blocks.liquid.LiquidRouter;
+import mindustry.world.blocks.power.Battery;
+import mindustry.world.blocks.power.SolarGenerator;
+import mindustry.world.blocks.production.Pump;
+import newhorizon.content.NHItems;
+import newhorizon.content.NHUnitTypes;
+import newhorizon.expand.block.hiemara.FusionReactor;
+import newhorizon.expand.block.hiemara.HydroGenerator;
+import newhorizon.expand.block.hiemara.WindTurbine;
 import newhorizon.expand.block.production.SandDredger;
+import newhorizon.expand.block.production.ice.IceMiningStation;
 import mindustry.type.Category;
 import mindustry.type.ItemStack;
 import mindustry.world.blocks.units.UnitFactory.UnitPlan;
@@ -34,6 +44,17 @@ public class HiemaraBlocks{
 	public static LiquidPort liquidPort;
 	public static LiquidDepot liquidDepot;
 	public static SandDredger sandDredger;
+	public static IceMiningStation iceHarvester;
+	
+	public static WindTurbine windTurbine;
+	public static HydroGenerator hydroGenerator;
+	public static SolarGenerator floatingSolar;
+	public static Battery battery1, battery2, battery3;
+	public static FloatingNode nodeLarge, surgeTower;
+	public static GenericCrafter electricSeparator;
+	public static FusionReactor fusionReactor;
+	public static Pump floatingPump, floatingRotaryPump;
+	public static LiquidRouter liquidContainer, liquidTank;
 	public static GenericCrafter sporeCultivator, floatingSporePress, floatingCoalCentrifuge, floatingPyratiteMixer, floatingSiliconSmelter, floatingSiliconCrucible;
 	
 	/** Every block of Hiemara. */
@@ -249,28 +270,150 @@ public class HiemaraBlocks{
 			improvedPort1, improvedPort2, improvedPort3, distributor1, distributor2, distributor3, liquidPort, liquidDepot,
 			sandDredger, sporeCultivator, floatingSporePress, floatingCoalCentrifuge, floatingPyratiteMixer, floatingSiliconSmelter, floatingSiliconCrucible
 		);
+		
+		iceHarvester = new IceMiningStation("floating-ice-harvester"){{
+			requirements(Category.production, with(Items.copper, 100, Items.lead, 80, Items.silicon, 30));
+			size = 3;
+			health = 360;
+			unitType = NHUnitTypes.iceMiner;
+			maxUnits = 3;
+			radius = 12 * 8f;
+			consumePower(1f);
+			placeableLiquid = true;
+		}};
+		
+		windTurbine = new WindTurbine("wind-turbine"){{
+			requirements(Category.power, with(Items.copper, 60, Items.lead, 40, Items.sand, 20));
+			size = 2;
+			health = 160;
+			powerProduction = 0.6f;
+		}};
+		hydroGenerator = new HydroGenerator("hydro-generator"){{
+			requirements(Category.power, with(Items.copper, 120, Items.lead, 100, Items.silicon, 40));
+			size = 3;
+			health = 360;
+			powerProduction = 2.4f;
+		}};
+		floatingSolar = new SolarGenerator("floating-solar-panel"){{
+			requirements(Category.power, with(Items.lead, 100, Items.silicon, 70, Items.copper, 60));
+			size = 3;
+			health = 240;
+			powerProduction = 1.2f;
+			placeableLiquid = true;
+		}};
+		
+		battery1 = battery("floating-battery-1", 1, 4000f, with(Items.copper, 5, Items.lead, 20));
+		battery2 = battery("floating-battery-2", 2, 20000f, with(Items.copper, 40, Items.lead, 100, Items.silicon, 30));
+		battery3 = battery("floating-battery-3", 3, 100000f, with(Items.lead, 150, Items.titanium, 60, Items.silicon, 90));
+		
+		nodeLarge = new FloatingNode("floating-node-large"){{
+			requirements(Category.power, with(Items.lead, 20, Items.titanium, 5, Items.silicon, 5));
+			size = 2;
+			health = 200;
+			maxNodes = 15;
+			laserRange = 15f;
+		}};
+		surgeTower = new FloatingNode("floating-surge-tower"){{
+			requirements(Category.power, with(Items.lead, 100, Items.titanium, 80, Items.silicon, 80));
+			size = 2;
+			health = 300;
+			maxNodes = 2;
+			laserRange = 40f;
+		}};
+		
+		floatingPump = new Pump("floating-pump"){{
+			requirements(Category.liquid, with(Items.copper, 20, Items.lead, 15));
+			pumpAmount = 7f / 60f;
+			liquidCapacity = 20f;
+			placeableLiquid = true;
+		}};
+		floatingRotaryPump = new Pump("floating-rotary-pump"){{
+			requirements(Category.liquid, with(Items.copper, 70, Items.lead, 60, Items.silicon, 20, Items.titanium, 30));
+			size = 2;
+			pumpAmount = 0.2f;
+			liquidCapacity = 80f;
+			hasPower = true;
+			consumePower(0.3f);
+			placeableLiquid = true;
+		}};
+		liquidContainer = new LiquidRouter("floating-liquid-container"){{
+			requirements(Category.liquid, with(Items.copper, 40, Items.lead, 60, Items.sand, 20));
+			size = 2;
+			solid = true;
+			liquidCapacity = 700f;
+			placeableLiquid = true;
+		}};
+		liquidTank = new LiquidRouter("floating-liquid-tank"){{
+			requirements(Category.liquid, with(Items.lead, 120, Items.titanium, 40, Items.silicon, 30));
+			size = 3;
+			solid = true;
+			health = 500;
+			liquidCapacity = 1800f;
+			placeableLiquid = true;
+		}};
+		
+		electricSeparator = new GenericCrafter("electric-separator"){{
+			requirements(Category.crafting, with(Items.copper, 100, Items.lead, 150, Items.silicon, 60, Items.titanium, 60));
+			size = 3;
+			health = 400;
+			craftTime = 10f;
+			itemCapacity = 0;
+			liquidCapacity = 120f;
+			hasLiquids = true;
+			hasPower = true;
+			placeableLiquid = true;
+			consumeLiquid(Liquids.water, 0.5f);
+			consumePower(1.5f);
+			outputLiquids = LiquidStack.with(Liquids.ozone, 0.2f, Liquids.hydrogen, 0.3f);
+			//Ozone nobody needs is let out into the air, so the hydrogen never waits for it.
+			ignoreLiquidFullness = true;
+			dumpExtraLiquid = true;
+		}};
+		
+		fusionReactor = new FusionReactor("fusion-reactor"){{
+			requirements(Category.power, with(Items.lead, 800, Items.copper, 400, Items.titanium, 600, Items.silicon, 500, Items.thorium, 200));
+			size = 5;
+			health = 3000;
+			fuelItem = NHItems.ice;
+			powerProduction = 80f;
+		}};
+		
+		all.addAll(
+			iceHarvester, windTurbine, hydroGenerator, floatingSolar, battery1, battery2, battery3, nodeLarge, surgeTower,
+			floatingPump, floatingRotaryPump, liquidContainer, liquidTank, electricSeparator, fusionReactor
+		);
 	}
 	
-	private static ImprovedPort improvedPort(String name, int size, int capacity, float range, int collect, ItemStack[] cost){
-		return new ImprovedPort(name){{
-			requirements(Category.distribution, cost);
-			this.size = size;
-			health = 150 * size * size;
-			itemCapacity = capacity;
-			this.range = range;
-			collectPerItem = collect;
-			maxBound = 4 + size * 2;
+	private static Battery battery(String name, int blockSize, float stored, ItemStack[] cost){
+		return new Battery(name){{
+			requirements(Category.power, cost);
+			size = blockSize;
+			health = 80 * blockSize * blockSize;
+			consumePowerBuffered(stored);
+			placeableLiquid = true;
 		}};
 	}
 	
-	private static Distributor distributor(String name, int size, int capacity, float range, int perSecond, ItemStack[] cost){
+	private static ImprovedPort improvedPort(String name, int blockSize, int stored, float reach, int collect, ItemStack[] cost){
+		return new ImprovedPort(name){{
+			requirements(Category.distribution, cost);
+			size = blockSize;
+			health = 150 * blockSize * blockSize;
+			itemCapacity = stored;
+			range = reach;
+			collectPerItem = collect;
+			maxBound = 4 + blockSize * 2;
+		}};
+	}
+	
+	private static Distributor distributor(String name, int blockSize, int stored, float reach, int rate, ItemStack[] cost){
 		return new Distributor(name){{
 			requirements(Category.distribution, cost);
-			this.size = size;
-			health = 150 * size * size;
-			itemCapacity = capacity;
-			this.range = range;
-			this.perSecond = perSecond;
+			size = blockSize;
+			health = 150 * blockSize * blockSize;
+			itemCapacity = stored;
+			range = reach;
+			perSecond = rate;
 		}};
 	}
 }

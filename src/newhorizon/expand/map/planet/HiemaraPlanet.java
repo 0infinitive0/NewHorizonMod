@@ -61,6 +61,8 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 		);
 
 		bloom = false;
+		//A bright sea: the day and night of a sector would leave solar panels with a third of their power.
+		updateLighting = false;
 		visible = true;
 		accessible = true;
 		alwaysUnlocked = true;
