@@ -30,6 +30,8 @@ public class IceFloor extends Floor{
 		speedMultiplier = 0.95f;
 		blendGroup = Blocks.ice;
 		inEditor = false;
+		//ore that lay under the water stays visible and mineable under the ice
+		supportsOverlay = melted.supportsOverlay;
 		albedo = 0.65f;
 	}
 

@@ -43,18 +43,20 @@ import mindustry.world.meta.Attribute;
 import mindustry.world.meta.Env;
 import newhorizon.NHSetting;
 import newhorizon.expand.map.planet.CeitoPlanet;
+import newhorizon.expand.map.planet.HiemaraPlanet;
 import newhorizon.expand.map.planet.MidanthaPlanet;
 
 import static mindustry.Vars.state;
 
 public class NHPlanets{
-	public static Planet midantha, sentourt, danthami, ceito;
+	public static Planet midantha, sentourt, danthami, ceito, hiemara;
 	
 	public static void load(){
 		ceito = new CeitoPlanet();
 		if (NHSetting.getBool(NHSetting.EXPERIMENTAL)){
 			danthami = new MidanthaPlanet();
 		}
+		hiemara = new HiemaraPlanet();
 		midantha = new NHPlanet("midantha", ceito, 1, 3){{
 			bloom = true;
 			visible = true;

@@ -327,6 +327,9 @@ public class NHTechTree{
 		root.planet = NHPlanets.midantha;
 		root.children.each(c -> c.planet = NHPlanets.midantha);
 
+		//Hiemara has a tree of its own, which has nothing in it yet.
+		nodeRoot("hiemara", NHPlanets.hiemara, () -> {}).planet = NHPlanets.hiemara;
+
 		//Chronos is available on every planet.
 		ChronosTechTree.loadOtherPlanets();
 		NukeTechTree.loadOtherPlanets();
