@@ -25,6 +25,7 @@ import mindustry.game.EventType;
 import mindustry.game.Rules;
 import mindustry.game.Schematics;
 import mindustry.game.Team;
+import mindustry.game.Waves;
 import mindustry.graphics.g3d.HexMesh;
 import mindustry.graphics.g3d.HexSkyMesh;
 import mindustry.graphics.g3d.MultiMesh;
@@ -36,7 +37,6 @@ import mindustry.world.Tile;
 import mindustry.world.TileGen;
 import mindustry.world.blocks.environment.Floor;
 import mindustry.world.meta.Env;
-import newhorizon.content.NHOverride;
 import newhorizon.content.NHPlanets;
 import newhorizon.content.NHWeathers;
 import newhorizon.expand.weather.ColdWave;
@@ -275,7 +275,8 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 			
 			state.rules.winWave = Mathf.round(60 + 60 * difficulty, 5);
 			
-			state.rules.spawns = NHOverride.generate(difficulty, new Rand(sector.id), false, false, true);
+			//only the naval and flying units of the base game
+			state.rules.spawns = Waves.generate(difficulty, new Rand(sector.id), false, false, true);
 		}
 		
 		/** For every tile, the size of the biggest all-shallow square that has the tile as its corner. */

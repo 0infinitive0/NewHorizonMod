@@ -455,6 +455,149 @@ def power(name, size, motif):
     finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
 
 
+def turret(name, size, kind):
+    """Turret heads. They point up, the game turns them."""
+    import math
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    c = s // 2
+    r = int(s * 0.36)
+    d.ellipse([c - r, c - r, c + r, c + r], fill=HULL, outline=HULL_D, width=2 * SS)
+    d.ellipse([c - r + 3 * SS, c - r + 3 * SS, c + r - 3 * SS, c + r - 3 * SS], fill=(86, 112, 136))
+    if kind == "arc":
+        for dx in (-1, 1):
+            d.line([c + dx * 4 * SS, c, c + dx * 4 * SS, 3 * SS], fill=(150, 215, 255), width=2 * SS)
+            d.ellipse([c + dx * 4 * SS - 2 * SS, 2 * SS, c + dx * 4 * SS + 2 * SS, 6 * SS], fill=ICE_L, outline=HULL_D)
+        d.ellipse([c - 3 * SS, c - 3 * SS, c + 3 * SS, c + 3 * SS], fill=(120, 200, 255), outline=HULL_D)
+    elif kind == "lance":
+        d.rounded_rectangle([c - 3 * SS, 2 * SS, c + 3 * SS, c], radius=SS, fill=HULL_L, outline=HULL_D, width=SS)
+        d.polygon([(c - 3 * SS, 2 * SS), (c, 0), (c + 3 * SS, 2 * SS)], fill=(150, 215, 255), outline=HULL_D)
+        d.ellipse([c - 5 * SS, c - 5 * SS, c + 5 * SS, c + 5 * SS], fill=(80, 180, 255), outline=HULL_D, width=SS)
+    elif kind == "cannon":
+        d.polygon([(c - 4 * SS, c), (c - 6 * SS, 3 * SS), (c + 6 * SS, 3 * SS), (c + 4 * SS, c)], fill=(60, 130, 190), outline=HULL_D)
+        d.rectangle([c - 3 * SS, 3 * SS, c + 3 * SS, 7 * SS], fill=(24, 40, 62))
+        d.ellipse([c - 4 * SS, c - 4 * SS, c + 4 * SS, c + 4 * SS], fill=(90, 190, 240), outline=HULL_D, width=SS)
+    else:  # mortar
+        d.rounded_rectangle([c - 6 * SS, 2 * SS, c + 6 * SS, c + 2 * SS], radius=2 * SS, fill=(70, 96, 120), outline=HULL_D, width=SS)
+        d.ellipse([c - 4 * SS, 3 * SS, c + 4 * SS, 9 * SS], fill=(20, 30, 44), outline=HULL_D)
+        d.ellipse([c - 5 * SS, c - 3 * SS, c + 5 * SS, c + 7 * SS], fill=(110, 180, 230), outline=HULL_D, width=SS)
+    finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+
+
+def vortex_gen(name, size):
+    import math
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    c = s // 2
+    plate(d, size, color=(60, 86, 112))
+    rivets(d, size)
+    r = c - 9 * SS
+    d.ellipse([c - r, c - r, c + r, c + r], fill=(18, 44, 78), outline=HULL_D, width=2 * SS)
+    pts = []
+    for i in range(70):
+        a = i * 0.28
+        rr = r * (0.1 + 0.88 * i / 70.0)
+        pts.append((c + math.cos(a) * rr, c + math.sin(a) * rr))
+    d.line(pts, fill=(130, 215, 255), width=2 * SS)
+    d.ellipse([c - 3 * SS, c - 3 * SS, c + 3 * SS, c + 3 * SS], fill=ICE_L, outline=HULL_D)
+    finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+
+
+def mine(name, size):
+    import math
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    c = s // 2
+    r = int(s * 0.26)
+    for k in range(8):
+        a = k * math.pi / 4
+        d.line([c + math.cos(a) * r, c + math.sin(a) * r, c + math.cos(a) * (r + 5 * SS), c + math.sin(a) * (r + 5 * SS)],
+               fill=HULL_D, width=3 * SS)
+    d.ellipse([c - r, c - r, c + r, c + r], fill=(52, 62, 76), outline=HULL_D, width=2 * SS)
+    d.ellipse([c - 2 * SS, c - 2 * SS, c + 2 * SS, c + 2 * SS], fill=(255, 80, 70))
+    finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+
+
+def warship(name, size, kind):
+    """Warships point up. The hull is the same family as the cargo ships, in grey and blue with red-orange trim."""
+    import math
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    c = s // 2
+    hull, dark, deck = (96, 120, 144), (44, 58, 76), (66, 86, 108)
+    if kind == "abyss":
+        d.ellipse([c - int(s * 0.17), 2 * SS, c + int(s * 0.17), s - 2 * SS], fill=(52, 70, 94), outline=HULL_D, width=2 * SS)
+        d.rounded_rectangle([c - 4 * SS, s // 3, c + 4 * SS, s // 3 + int(s * 0.2)], radius=2 * SS, fill=deck, outline=HULL_D)
+        d.rectangle([c - SS, s // 3 - 3 * SS, c + SS, s // 3 + 2 * SS], fill=ICE_L)
+        for dx in (-1, 1):
+            d.rectangle([c + dx * int(s * 0.17) - SS, s - int(s * 0.22), c + dx * int(s * 0.17) + SS, s - int(s * 0.08)], fill=HULL_D)
+    elif kind == "carrier":
+        w = int(s * 0.3)
+        d.polygon([(c, 2 * SS), (c + w, s // 5), (c + w, s - 4 * SS), (c - w, s - 4 * SS), (c - w, s // 5)], fill=hull, outline=HULL_D)
+        d.rectangle([c - w + 3 * SS, s // 4, c + w - 3 * SS, s - 8 * SS], fill=deck)
+        for i in range(5):
+            y = s // 4 + 4 * SS + i * ((s - 8 * SS - s // 4 - 8 * SS) // 5)
+            d.rectangle([c - SS, y, c + SS, y + 4 * SS], fill=ICE_L)
+        d.line([c - w + 5 * SS, s // 4 + 3 * SS, c - w + 5 * SS, s - 11 * SS], fill=WARM, width=SS)
+        d.rectangle([c + w - 11 * SS, s // 3, c + w - 3 * SS, s // 3 + 14 * SS], fill=(54, 70, 92), outline=HULL_D)
+    else:
+        w = int(s * {"patrol": 0.2, "corvette": 0.22, "torpedo": 0.15, "mortar": 0.22, "frigate": 0.21, "longbow": 0.2}.get(kind, 0.2))
+        d.polygon([(c, 2 * SS), (c + w, s // 5), (c + w, s - 3 * SS), (c - w, s - 3 * SS), (c - w, s // 5)], fill=hull, outline=HULL_D)
+        d.rectangle([c - w + 2 * SS, s // 4, c + w - 2 * SS, s - 6 * SS], fill=deck)
+        d.rectangle([c - 3 * SS, s // 2, c + 3 * SS, s // 2 + 6 * SS], fill=ICE_L, outline=HULL_D)
+        if kind == "patrol":
+            d.ellipse([c - 3 * SS, s // 4, c + 3 * SS, s // 4 + 6 * SS], fill=WARM, outline=HULL_D)
+        elif kind == "corvette":
+            for dx in (-1, 1):
+                d.rectangle([c + dx * 6 * SS - 3 * SS, s // 4, c + dx * 6 * SS + 3 * SS, s // 4 + 8 * SS], fill=WARM, outline=HULL_D)
+        elif kind == "torpedo":
+            for dx in (-1, 1):
+                d.rectangle([c + dx * 3 * SS - SS, s // 6, c + dx * 3 * SS + SS, s // 3], fill=(200, 230, 255), outline=HULL_D)
+        elif kind == "mortar":
+            d.ellipse([c - 6 * SS, s // 3 - 2 * SS, c + 6 * SS, s // 3 + 10 * SS], fill=(40, 52, 68), outline=HULL_D, width=SS)
+            d.ellipse([c - 3 * SS, s // 3 + SS, c + 3 * SS, s // 3 + 7 * SS], fill=(14, 20, 30))
+        elif kind == "frigate":
+            for dy in (0, 1):
+                for dx in (-1, 1):
+                    d.rectangle([c + dx * 7 * SS - 4 * SS, s // 4 + 3 * SS + dy * 12 * SS, c + dx * 7 * SS + 4 * SS, s // 4 + 3 * SS + dy * 12 * SS + 9 * SS],
+                                fill=WARM, outline=HULL_D)
+        elif kind == "longbow":
+            for dx in (-1, 1):
+                d.ellipse([c + dx * 7 * SS - 5 * SS, s // 5, c + dx * 7 * SS + 5 * SS, s // 5 + 10 * SS], fill=(52, 66, 84), outline=HULL_D)
+                d.rectangle([c + dx * 7 * SS - SS, 0, c + dx * 7 * SS + SS, s // 5 + 2 * SS], fill=HULL_L, outline=HULL_D)
+    finish(img, size, os.path.join(UNIT_DIR, name + ".png"))
+
+
+def interceptor(name, size):
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    c = s // 2
+    d.polygon([(c, 2 * SS), (c + int(s * 0.42), s - 4 * SS), (c, s - 8 * SS), (c - int(s * 0.42), s - 4 * SS)], fill=(110, 140, 168), outline=HULL_D)
+    d.polygon([(c, s // 4), (c + 3 * SS, s // 2), (c - 3 * SS, s // 2)], fill=ICE_L, outline=HULL_D)
+    d.rectangle([c - SS, s - 12 * SS, c + SS, s - 6 * SS], fill=WARM)
+    finish(img, size, os.path.join(UNIT_DIR, name + ".png"))
+
+
+def defense_sprites():
+    turret("arc-coil", 64, "arc")
+    turret("pulse-lance", 96, "lance")
+    turret("tide-cannon", 64, "cannon")
+    turret("whirl-mortar", 96, "mortar")
+    vortex_gen("vortex-generator", 96)
+    mine("naval-mine", 32)
+    pad("warship-yard", 128, True)
+    for name, size, kind in (("patrol-boat", 28, "patrol"), ("corvette", 36, "corvette"), ("torpedo-boat", 28, "torpedo"),
+                             ("mortar-skiff", 34, "mortar"), ("missile-frigate", 54, "frigate"), ("abyss", 44, "abyss"),
+                             ("longbow", 74, "longbow"), ("aircraft-carrier", 108, "carrier")):
+        warship(name, size, kind)
+    interceptor("interceptor", 24)
+
+
 def shrink(name, size=32, folder=None):
     """Port and depot are one tile. They are drawn on a 64px plate and scaled down."""
     path = os.path.join(folder or BLOCK_DIR, name + ".png")
@@ -502,6 +645,7 @@ def main():
         rich_water(args.vanilla)
 
     planet_icon("hiemara")
+    defense_sprites()
     filter_block("water-filter-1", 64, 1)
     filter_block("water-filter-2", 96, 2)
     filter_block("water-filter-3", 96, 3)

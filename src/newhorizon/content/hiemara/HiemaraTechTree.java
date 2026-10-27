@@ -59,6 +59,21 @@ public class HiemaraTechTree{
 			});
 			
 			node(HiemaraBlocks.boatYard, () -> {
+				node(HiemaraDefense.warshipYard, with(Items.copper, 200, Items.lead, 150, Items.sand, 80), null, () -> {
+					node(HiemaraWarships.patrolBoat, () -> {
+						node(HiemaraWarships.corvette, with(Items.copper, 200, Items.lead, 200, Items.sand, 100), null, () -> {
+							node(HiemaraWarships.missileFrigate, with(Items.lead, 500, Items.titanium, 300, Items.silicon, 200, Items.coal, 120), null, () -> {
+								node(HiemaraWarships.longbow, with(Items.lead, 900, Items.titanium, 600, Items.silicon, 400, Items.thorium, 150), null, () -> {
+									node(HiemaraWarships.aircraftCarrier, with(Items.titanium, 2000, Items.silicon, 1200, Items.thorium, 500, Items.tungsten, 250), null, () -> {});
+								});
+							});
+						});
+						node(HiemaraWarships.torpedoBoat, with(Items.copper, 180, Items.lead, 200, Items.sand, 100, Items.coal, 60), null, () -> {
+							node(HiemaraWarships.abyss, with(Items.lead, 400, Items.titanium, 250, Items.silicon, 180, Items.sand, 150), null, () -> {});
+						});
+						node(HiemaraWarships.mortarSkiff, with(Items.copper, 180, Items.lead, 160, Items.sand, 100, Items.coal, 60), null, () -> {});
+					});
+				});
 				node(HiemaraUnits.cargoSkiff, () -> {
 					node(HiemaraUnits.cargoBarge, with(Items.copper, 250, Items.lead, 250, Items.sand, 120, Items.coal, 80), null, () -> {
 						node(HiemaraUnits.cargoCarrier, with(Items.lead, 500, Items.titanium, 250, Items.coal, 150, Items.thorium, 60), null, () -> {
@@ -84,6 +99,12 @@ public class HiemaraTechTree{
 					});
 				});
 				node(HiemaraBlocks.heater, Seq.with(new Objectives.Research(HiemaraBlocks.generator)), () -> {});
+				node(HiemaraDefense.arcCoil, () -> {
+					node(HiemaraDefense.navalMine);
+					node(HiemaraDefense.pulseLance, with(Items.lead, 300, Items.titanium, 150, Items.silicon, 100), null, () -> {
+						node(HiemaraDefense.vortexGenerator, with(Items.lead, 500, Items.titanium, 250, Items.silicon, 200, Items.sand, 200), null, () -> {});
+					});
+				});
 				node(HiemaraBlocks.windTurbine);
 				node(HiemaraBlocks.hydroGenerator);
 				node(HiemaraBlocks.floatingSolar);
@@ -99,6 +120,9 @@ public class HiemaraTechTree{
 			});
 			
 			node(HiemaraBlocks.floatingPump, () -> {
+				node(HiemaraDefense.tideCannon, () -> {
+					node(HiemaraDefense.whirlMortar, with(Items.lead, 400, Items.titanium, 200, Items.silicon, 150, Items.coal, 100), null, () -> {});
+				});
 				node(HiemaraBlocks.floatingRotaryPump, () -> {
 					node(HiemaraBlocks.electricSeparator, () -> {
 						node(HiemaraBlocks.fusionReactor, Seq.with(new Objectives.Research(HiemaraBlocks.battery3), new Objectives.Research(HiemaraBlocks.surgeTower)), () -> {});

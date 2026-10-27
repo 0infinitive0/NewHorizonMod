@@ -16,13 +16,16 @@ public class HiemaraContent{
 	public static void load(){
 		HiemaraFloors.load();
 		HiemaraUnits.load();
+		HiemaraWarships.load();
 		HiemaraBlocks.load();
+		HiemaraDefense.load();
 		CargoCap.load();
 	}
 	
 	/** @return every block that can be built on Hiemara: its own blocks and the cores. */
 	public static arc.struct.Seq<mindustry.world.Block> buildable(){
 		var list = HiemaraBlocks.all.copy();
+		list.addAll(HiemaraDefense.all);
 		list.addAll(mindustry.Vars.content.blocks().select(b -> b instanceof mindustry.world.blocks.storage.CoreBlock));
 		return list;
 	}
@@ -34,6 +37,8 @@ public class HiemaraContent{
 		for(var unit : HiemaraUnits.airLine)unit.shownPlanets.add(planet);
 		for(var unit : HiemaraUnits.navalLine)unit.shownPlanets.add(planet);
 		for(var unit : HiemaraUnits.tankerLine)unit.shownPlanets.add(planet);
+		for(var block : HiemaraDefense.all)block.shownPlanets.add(planet);
+		for(var unit : HiemaraWarships.all)unit.shownPlanets.add(planet);
 		for(var item : HiemaraFloors.ores)item.shownPlanets.add(planet);
 		Items.copper.shownPlanets.add(planet);
 		Items.lead.shownPlanets.add(planet);
