@@ -3,11 +3,15 @@ package newhorizon.expand.game;
 import arc.Events;
 import arc.math.Mathf;
 import arc.struct.IntSeq;
+import arc.struct.ObjectFloatMap;
+import arc.struct.Seq;
 import arc.util.Time;
 import mindustry.Vars;
 import mindustry.entities.Units;
 import mindustry.game.EventType;
+import mindustry.gen.Building;
 import mindustry.gen.WaterMovec;
+import mindustry.world.Block;
 import mindustry.world.Tile;
 import newhorizon.expand.block.env.IceFloor;
 import newhorizon.expand.weather.ColdWave;
@@ -19,20 +23,28 @@ import newhorizon.expand.weather.ColdWave;
  */
 public class IceManager{
 	/** Time scale (ticks) in which most of the water freezes / melts. */
-	public static float freezeTicks = 45f * 60f, meltTicks = 90f * 60f;
-	/** Tiles changed per second even if only a few candidates are left, so the tail does not take forever. */
-	public static float minPerTick = 0.15f;
+	public static float freezeTicks = 45f * 60f, meltTicks = 8f * 60f * 60f;
+	/** Ice stays untouched this long after the last cold wave before it starts to thaw. */
+	public static float thawDelay = 2.5f * 60f * 60f;
+	/** Tiles changed per tick even if only a few candidates are left, so the tail does not take forever. */
+	public static float minPerTick = 0.02f;
 	/** Limits the amount of floor packets per tick. */
 	public static int maxPerTick = 48;
 	/** Time between two scans of the whole map. */
 	public static float rescanTime = 10f * 60f;
 
 	protected static final IntSeq candidates = new IntSeq();
-	protected static boolean wasCold = false;
+	protected static boolean wasCold = false, wasActive = false;
 	protected static float rescanTimer = 0f;
 	protected static float budget = 0f;
 
 	protected static boolean navalFound = false;
+	/** Ticks since the last cold wave. */
+	protected static float sinceCold = 0f;
+	/** Powered heaters, they keep water from freezing and thaw the ice around them. */
+	public static final Seq<Building> heaters = new Seq<>();
+	/** Radius in world units of a heater, set by the heater block that registered. */
+	public static final ObjectFloatMap<Block> heaterRadius = new ObjectFloatMap<>();
 
 	public static void load(){
 		Events.on(EventType.WorldLoadEvent.class, e -> {
@@ -40,6 +52,8 @@ public class IceManager{
 			wasCold = false;
 			rescanTimer = 0f;
 			budget = 0f;
+			sinceCold = 0f;
+			heaters.clear();
 		});
 
 		Events.run(EventType.Trigger.update, IceManager::update);
@@ -51,14 +65,25 @@ public class IceManager{
 		float strength = ColdWave.strength();
 		boolean cold = strength > 0.01f;
 
+		if(cold){
+			sinceCold = 0f;
+		}else{
+			sinceCold += Time.delta;
+		}
+		
+		//Nothing thaws before the delay is over, and a new cold wave stops it again.
+		boolean thawing = !cold && sinceCold >= thawDelay;
+		boolean active = cold || thawing;
+		
 		rescanTimer -= Time.delta;
-		if(cold != wasCold || rescanTimer <= 0f){
+		if(active != wasActive || cold != wasCold || rescanTimer <= 0f){
 			wasCold = cold;
+			wasActive = active;
 			rescanTimer = rescanTime;
-			scan(cold);
+			if(active)scan(cold);else candidates.clear();
 		}
 
-		if(candidates.isEmpty())return;
+		if(!active || candidates.isEmpty())return;
 
 		budget += (candidates.size / (cold ? freezeTicks : meltTicks) + minPerTick) * (cold ? strength : 1f) * Time.delta;
 		int amount = Math.min((int)budget, maxPerTick);
@@ -72,6 +97,7 @@ public class IceManager{
 
 			Tile tile = Vars.world.tile(pos);
 			if(tile == null)continue;
+			if(cold && heated(tile))continue;
 
 			if(cold){
 				freeze(tile);
@@ -106,6 +132,17 @@ public class IceManager{
 		((IceFloor)tile.floor()).melt(tile);
 	}
 
+	/** @return whether a powered heater covers the tile. */
+	public static boolean heated(Tile tile){
+		for(int i = 0; i < heaters.size; i++){
+			Building heater = heaters.get(i);
+			if(heater.isValid() && heater.efficiency > 0f && heater.within(tile.worldx(), tile.worldy(), heaterRadius.get(heater.block, 0f))){
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	/** Naval units die on solid ground, so do not freeze the water below them. */
 	protected static boolean navalOn(Tile tile){
 		navalFound = false;

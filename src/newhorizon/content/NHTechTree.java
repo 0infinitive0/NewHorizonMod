@@ -11,6 +11,7 @@ import newhorizon.content.blocks.ProductionBlocks;
 import newhorizon.content.blocks.SpecialBlock;
 import newhorizon.content.blocks.TurretBlock;
 import newhorizon.content.chronos.ChronosTechTree;
+import newhorizon.content.hiemara.HiemaraTechTree;
 import newhorizon.content.nuke.NukeTechTree;
 import newhorizon.content.jade.JadeTechTree;
 import newhorizon.expand.units.unitType.NHUnitType;
@@ -327,8 +328,8 @@ public class NHTechTree{
 		root.planet = NHPlanets.midantha;
 		root.children.each(c -> c.planet = NHPlanets.midantha);
 
-		//Hiemara has a tree of its own, which has nothing in it yet.
-		nodeRoot("hiemara", NHPlanets.hiemara, () -> {}).planet = NHPlanets.hiemara;
+		//Hiemara has a tree of its own.
+		HiemaraTechTree.load();
 
 		//Chronos is available on every planet.
 		ChronosTechTree.loadOtherPlanets();
