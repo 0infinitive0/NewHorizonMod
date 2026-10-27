@@ -1,6 +1,7 @@
 package newhorizon.content.hiemara;
 
 import mindustry.content.Items;
+import mindustry.content.Liquids;
 import mindustry.ctype.UnlockableContent;
 import newhorizon.content.NHPlanets;
 import newhorizon.expand.hiemara.CargoCap;
@@ -21,11 +22,7 @@ public class HiemaraContent{
 	
 	/** @return every block that can be built on Hiemara: its own blocks and the cores. */
 	public static arc.struct.Seq<mindustry.world.Block> buildable(){
-		var list = arc.struct.Seq.<mindustry.world.Block>with(
-			HiemaraBlocks.filterMk1, HiemaraBlocks.filterMk2, HiemaraBlocks.filterMk3, HiemaraBlocks.filterMk4,
-			HiemaraBlocks.port, HiemaraBlocks.depot, HiemaraBlocks.airPad, HiemaraBlocks.boatYard,
-			HiemaraBlocks.hangar, HiemaraBlocks.dock, HiemaraBlocks.heater, HiemaraBlocks.generator, HiemaraBlocks.node
-		);
+		var list = HiemaraBlocks.all.copy();
 		list.addAll(mindustry.Vars.content.blocks().select(b -> b instanceof mindustry.world.blocks.storage.CoreBlock));
 		return list;
 	}
@@ -33,17 +30,17 @@ public class HiemaraContent{
 	/** Shows the content, and the base game items it needs, on Hiemara. */
 	public static void showOnPlanet(){
 		var planet = NHPlanets.hiemara;
-		for(UnlockableContent content : new UnlockableContent[]{
-			HiemaraBlocks.filterMk1, HiemaraBlocks.filterMk2, HiemaraBlocks.filterMk3, HiemaraBlocks.filterMk4,
-			HiemaraBlocks.port, HiemaraBlocks.depot, HiemaraBlocks.airPad, HiemaraBlocks.boatYard,
-			HiemaraBlocks.hangar, HiemaraBlocks.dock, HiemaraBlocks.heater, HiemaraBlocks.generator, HiemaraBlocks.node,
-		}){
-			content.shownPlanets.add(planet);
-		}
+		for(var block : HiemaraBlocks.all)block.shownPlanets.add(planet);
 		for(var unit : HiemaraUnits.airLine)unit.shownPlanets.add(planet);
 		for(var unit : HiemaraUnits.navalLine)unit.shownPlanets.add(planet);
+		for(var unit : HiemaraUnits.tankerLine)unit.shownPlanets.add(planet);
 		for(var item : HiemaraFloors.ores)item.shownPlanets.add(planet);
 		Items.copper.shownPlanets.add(planet);
 		Items.lead.shownPlanets.add(planet);
+		Items.silicon.shownPlanets.add(planet);
+		Items.sporePod.shownPlanets.add(planet);
+		Items.pyratite.shownPlanets.add(planet);
+		Liquids.oil.shownPlanets.add(planet);
+		Liquids.water.shownPlanets.add(planet);
 	}
 }

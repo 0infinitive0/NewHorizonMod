@@ -1,35 +1,30 @@
 package newhorizon.expand.units.ai;
 
-import arc.math.geom.Position;
-import arc.math.geom.Vec2;
 import arc.struct.Seq;
+import arc.util.Time;
 import mindustry.Vars;
-import mindustry.entities.units.AIController;
 import mindustry.gen.Building;
 import mindustry.gen.Call;
 import mindustry.type.Item;
-import mindustry.world.Tile;
 import newhorizon.expand.block.cargo.Depot;
+import newhorizon.expand.block.cargo.HubBlock;
 import newhorizon.expand.block.cargo.Port;
-
-import static mindustry.Vars.tilesize;
+import newhorizon.expand.hiemara.Hold;
 
 /**
  * Hauls items from the port the unit is bound to into the depots. A unit that is not bound to a port does nothing.
+ * Ships that carry several kinds of item take as many kinds as there are depots for, and visit depots until they are empty.
  */
-public class CargoHaulAI extends AIController{
+public class CargoHaulAI extends HaulAI{
 	public Port.PortBuild port;
 	public Depot.DepotBuild depot;
-	/** Extra reach on top of the size of the block, in world units. */
-	public float reach = 14f;
-	
 	protected float waited;
-	protected final Vec2 dest = new Vec2();
 	
 	@Override
 	public void updateMovement(){
 		if(port == null || !port.isValid() || !port.bound.contains(unit.id) || timer.get(timerTarget2, 45f)){
-			port = Port.boundPort(unit);
+			HubBlock.HubBuild hub = HubBlock.boundHub(unit);
+			port = hub instanceof Port.PortBuild ? (Port.PortBuild)hub : null;
 		}
 		
 		if(port == null){
@@ -37,70 +32,104 @@ public class CargoHaulAI extends AIController{
 			return;
 		}
 		
-		if(unit.stack.amount <= 0){
+		if(Hold.empty(unit)){
 			depot = null;
 			waited = 0f;
 			
 			if(!near(port))travel(port);
 			if(near(port) && timer.get(timerTarget3, 15f)){
-				Item item = bestItem();
-				if(item != null){
-					depot = closestDepot(item);
-					Call.takeItems(port, item, Math.min(unit.type.itemCapacity, port.items.get(item)), unit);
-				}
+				load();
 			}
 		}else{
-			Item item = unit.item();
-			if(depot == null || !depot.isValid() || !depot.wants(item)){
-				depot = timer.get(timerTarget4, 30f) ? closestDepot(item) : null;
+			if(depot == null || !depot.isValid() || !wantsAny(depot)){
+				depot = timer.get(timerTarget4, 30f) ? closestDepotFor(Hold.items(unit)) : null;
 			}
 			
 			if(depot == null){
 				//Nowhere to go with it: wait at the port, and put it back if that takes too long.
 				if(!near(port))travel(port);
-				waited += arc.util.Time.delta;
+				waited += Time.delta;
 				if(waited > 600f && near(port) && !Vars.net.client()){
-					port.handleStack(item, unit.stack.amount, unit);
-					unit.clearItem();
+					for(Item item : Hold.items(unit)){
+						port.handleStack(item, Hold.get(unit, item), unit);
+					}
+					Hold.clear(unit);
 				}
 				return;
 			}
 			
 			waited = 0f;
 			travel(depot);
-			if(near(depot)){
-				int accepted = depot.acceptStack(item, unit.stack.amount, unit);
-				if(accepted > 0)Call.transferItemTo(unit, item, accepted, unit.x, unit.y, depot);
-			}
+			if(near(depot))unload();
 		}
 	}
 	
-	protected boolean near(Building build){
-		return unit.within(build, build.block.size * tilesize / 2f + reach);
+	protected boolean wantsAny(Depot.DepotBuild depot){
+		for(Item item : Hold.items(unit)){
+			if(depot.wants(item))return true;
+		}
+		return false;
 	}
 	
-	/** The item with the largest stock in the port that some depot wants. */
-	protected Item bestItem(){
-		Item best = null;
-		int most = 0;
+	/** Takes what the depots want from the port. */
+	protected void load(){
+		if(Vars.net.client())return;
+		
+		//Most stocked first.
+		Seq<Item> candidates = new Seq<>();
 		for(Item item : Vars.content.items()){
-			int amount = port.items.get(item);
-			if(amount > most && closestDepot(item) != null){
-				best = item;
-				most = amount;
+			if(port.items.get(item) > 0 && closestDepotFor(Seq.with(item)) != null)candidates.add(item);
+		}
+		candidates.sort(item -> -port.items.get(item));
+		
+		for(Item item : candidates){
+			int room = Hold.room(unit, item);
+			int amount = Math.min(room, port.items.get(item));
+			if(amount <= 0)continue;
+			
+			if(Hold.multi(unit)){
+				port.items.remove(item, amount);
+				Hold.add(unit, item, amount);
+			}else{
+				//A plain unit carries one kind of item, and the call also shows the item flying in.
+				Call.takeItems(port, item, amount, unit);
+				break;
 			}
 		}
-		return best;
+		
+		if(!Hold.empty(unit))depot = closestDepotFor(Hold.items(unit));
 	}
 	
-	protected Depot.DepotBuild closestDepot(Item item){
+	/** Puts what the depot wants into it. */
+	protected void unload(){
+		for(Item item : Hold.items(unit)){
+			int accepted = depot.acceptStack(item, Hold.get(unit, item), unit);
+			if(accepted <= 0)continue;
+			
+			if(Hold.multi(unit)){
+				Hold.remove(unit, item, accepted);
+				depot.handleStack(item, accepted, unit);
+			}else{
+				Call.transferItemTo(unit, item, accepted, unit.x, unit.y, depot);
+			}
+		}
+	}
+	
+	protected Depot.DepotBuild closestDepotFor(Seq<Item> items){
 		Depot.DepotBuild closest = null;
 		float dst = Float.MAX_VALUE;
 		for(Depot block : Depot.all){
 			for(Building build : unit.team.data().getBuildings(block)){
 				Depot.DepotBuild candidate = (Depot.DepotBuild)build;
-				if(!candidate.wants(item))continue;
-				float d = candidate.dst2(port);
+				boolean wants = false;
+				for(Item item : items){
+					if(candidate.wants(item)){
+						wants = true;
+						break;
+					}
+				}
+				if(!wants)continue;
+				float d = candidate.dst2(unit);
 				if(d < dst){
 					dst = d;
 					closest = candidate;
@@ -108,49 +137,5 @@ public class CargoHaulAI extends AIController{
 			}
 		}
 		return closest;
-	}
-	
-	/** Moves towards a block. Boats follow a path through the water, as they cannot go through anything else. */
-	protected void travel(Building target){
-		if(!unit.type.naval){
-			moveTo(target, target.block.size * tilesize / 2f + reach * 0.5f, 20f);
-			return;
-		}
-		
-		Vec2 approach = approachPoint(target);
-		if(unit.within(approach, tilesize * 3f)){
-			moveTo(approach, 0f, 20f);
-			return;
-		}
-		
-		var result = Vars.controlPath.getPathPosition(unit, approach);
-		if(result.move){
-			moveTo(result.dest, 0f, 40f);
-		}
-	}
-	
-	/** The water tile right next to the block that is closest to the unit. */
-	protected Vec2 approachPoint(Building target){
-		int size = target.block.size;
-		//Blocks with an even size have their origin tile in the lower left of the middle.
-		int minX = target.tile.x - (size - 1) / 2, minY = target.tile.y - (size - 1) / 2;
-		int maxX = minX + size - 1, maxY = minY + size - 1;
-		float best = Float.MAX_VALUE;
-		dest.set(target.x, target.y);
-		
-		for(int x = minX - 1; x <= maxX + 1; x++){
-			for(int y = minY - 1; y <= maxY + 1; y++){
-				boolean inside = x >= minX && x <= maxX && y >= minY && y <= maxY;
-				if(inside)continue;
-				Tile tile = Vars.world.tile(x, y);
-				if(tile == null || !unit.canPass(tile.x, tile.y))continue;
-				float d = unit.dst2(tile.worldx(), tile.worldy());
-				if(d < best){
-					best = d;
-					dest.set(tile.worldx(), tile.worldy());
-				}
-			}
-		}
-		return dest;
 	}
 }

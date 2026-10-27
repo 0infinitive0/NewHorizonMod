@@ -30,7 +30,6 @@ ICE_L = (225, 245, 255)
 WARM = (255, 160, 80)
 
 ORES = {
-    "sand": (247, 203, 164),
     "scrap": (150, 150, 150),
     "copper": (217, 157, 115),
     "lead": (140, 127, 169),
@@ -247,6 +246,95 @@ def naval_unit(name, size, tier):
     finish(img, size, os.path.join(UNIT_DIR, name + ".png"))
 
 
+def hub(name, size, tier, kind):
+    """Improved ports (arrows out of a crate), distributors (a hub with spokes) and the liquid port and depot."""
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    color = (74, 98, 120) if kind != "liquid" else (60, 92, 118)
+    plate(d, size, color=color)
+    rivets(d, size)
+    c = s // 2
+    r = c - 11 * SS
+    d.ellipse([c - r, c - r, c + r, c + r], fill=(26, 40, 58), outline=HULL_D, width=2 * SS)
+    if kind == "improved":
+        for k in range(4):
+            dx, dy = ((1, 0), (0, 1), (-1, 0), (0, -1))[k]
+            d.polygon([(c + dx * (r - 2 * SS), c + dy * (r - 2 * SS)),
+                       (c + dx * (r - 9 * SS) - dy * 4 * SS, c + dy * (r - 9 * SS) + dx * 4 * SS),
+                       (c + dx * (r - 9 * SS) + dy * 4 * SS, c + dy * (r - 9 * SS) - dx * 4 * SS)], fill=ICE)
+        d.ellipse([c - 5 * SS, c - 5 * SS, c + 5 * SS, c + 5 * SS], fill=ICE_L, outline=HULL_D, width=SS)
+    elif kind == "distributor":
+        for k in range(8):
+            ang = k * 3.14159 / 4
+            import math
+            d.line([c, c, c + math.cos(ang) * (r - 2 * SS), c + math.sin(ang) * (r - 2 * SS)], fill=WARM, width=2 * SS)
+        d.ellipse([c - 6 * SS, c - 6 * SS, c + 6 * SS, c + 6 * SS], fill=WARM, outline=HULL_D, width=SS)
+    else:
+        d.ellipse([c - r + 4 * SS, c - r + 4 * SS, c + r - 4 * SS, c + r - 4 * SS], fill=(40, 120, 190))
+        d.polygon([(c, c - 8 * SS), (c + 6 * SS, c + 2 * SS), (c - 6 * SS, c + 2 * SS)], fill=ICE_L)
+        d.ellipse([c - 6 * SS, c - 1 * SS, c + 6 * SS, c + 8 * SS], fill=ICE_L)
+    for t in range(tier):
+        d.rectangle([(8 + t * 5) * SS, 3 * SS, (11 + t * 5) * SS, 5 * SS], fill=WARM)
+    finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+
+
+def crafter(name, size, tint, motif):
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    plate(d, size, color=tint)
+    rivets(d, size)
+    c = s // 2
+    r = c - 11 * SS
+    d.rounded_rectangle([c - r, c - r, c + r, c + r], radius=3 * SS, fill=(26, 40, 58), outline=HULL_D, width=2 * SS)
+    if motif == "spore":
+        for dx, dy in ((-5, -4), (4, -5), (0, 4), (6, 5), (-6, 6)):
+            d.ellipse([c + (dx - 4) * SS, c + (dy - 4) * SS, c + (dx + 4) * SS, c + (dy + 4) * SS], fill=(150, 110, 200), outline=HULL_D)
+    elif motif == "oil":
+        d.ellipse([c - r + 3 * SS, c - r + 3 * SS, c + r - 3 * SS, c + r - 3 * SS], fill=(30, 26, 28), outline=HULL_D, width=SS)
+        d.ellipse([c - 4 * SS, c - 6 * SS, c + 4 * SS, c + 2 * SS], fill=(90, 80, 90))
+    elif motif == "coal":
+        for dx, dy in ((-5, -3), (3, -5), (-1, 4), (6, 3)):
+            d.polygon([(c + (dx - 4) * SS, c + dy * SS), (c + dx * SS, c + (dy - 4) * SS), (c + (dx + 4) * SS, c + dy * SS),
+                       (c + dx * SS, c + (dy + 4) * SS)], fill=(60, 60, 66), outline=HULL_D)
+    elif motif == "pyratite":
+        d.ellipse([c - 7 * SS, c - 7 * SS, c + 7 * SS, c + 7 * SS], fill=(230, 120, 40), outline=HULL_D, width=SS)
+        d.ellipse([c - 3 * SS, c - 3 * SS, c + 3 * SS, c + 3 * SS], fill=(255, 220, 120))
+    elif motif == "silicon":
+        d.polygon([(c, c - 8 * SS), (c + 8 * SS, c), (c, c + 8 * SS), (c - 8 * SS, c)], fill=(150, 160, 180), outline=HULL_D)
+        d.line([c - 8 * SS, c, c + 8 * SS, c], fill=ICE_L, width=SS)
+    elif motif == "sand":
+        d.rectangle([c - r + 3 * SS, c, c + r - 3 * SS, c + r - 3 * SS], fill=(230, 195, 150))
+        d.rectangle([c - r + 3 * SS, c - 4 * SS, c + r - 3 * SS, c], fill=(40, 120, 190))
+    finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+
+
+def ship(name, size, tier, tank=False, big=False):
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    c = s // 2
+    w = int(s * (0.2 if not big else 0.18))
+    d.polygon([(c, 2 * SS), (c + w, s // 6), (c + w, s - 3 * SS), (c - w, s - 3 * SS), (c - w, s // 6)],
+              fill=(74, 110, 150), outline=HULL_D)
+    d.rectangle([c - w + 2 * SS, s // 4, c + w - 2 * SS, s - 7 * SS], fill=(40, 62, 90))
+    if tank:
+        n = tier + 1
+        for t in range(n):
+            y = s // 4 + 2 * SS + t * ((s - 7 * SS - s // 4 - 4 * SS) // n)
+            h = (s - 7 * SS - s // 4 - 4 * SS) // n - 2 * SS
+            d.ellipse([c - w + 3 * SS, y, c + w - 3 * SS, y + h], fill=(60, 150, 210), outline=HULL_D)
+    else:
+        n = 2 + tier
+        for t in range(n):
+            x = c - w + 3 * SS + (t % 3) * ((2 * w - 6 * SS) // 3)
+            y = s // 4 + 2 * SS + (t // 3) * 9 * SS
+            d.rectangle([x, y, x + (2 * w - 6 * SS) // 3 - 2 * SS, y + 7 * SS], fill=WARM, outline=HULL_D)
+    d.rectangle([c - 3 * SS, s // 6, c + 3 * SS, s // 6 + 4 * SS], fill=ICE_L)
+    finish(img, size, os.path.join(UNIT_DIR, name + ".png"))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--vanilla", help="path to the vanilla deep-water.png")
@@ -268,6 +356,29 @@ def main():
     heater("floating-heater", 64)
     generator("floating-generator", 64)
     node("floating-node", 32)
+
+    hub("improved-port-1", 96, 1, "improved")
+    hub("improved-port-2", 96, 2, "improved")
+    hub("improved-port-3", 128, 3, "improved")
+    hub("distributor-1", 64, 1, "distributor")
+    hub("distributor-2", 96, 2, "distributor")
+    hub("distributor-3", 128, 3, "distributor")
+    hub("liquid-port", 64, 1, "liquid")
+    hub("liquid-depot", 64, 2, "liquid")
+    crafter("sand-dredger", 96, (110, 100, 80), "sand")
+    crafter("floating-cultivator", 64, (70, 96, 84), "spore")
+    crafter("floating-spore-press", 64, (84, 80, 100), "oil")
+    crafter("floating-coal-centrifuge", 64, (74, 80, 90), "coal")
+    crafter("floating-pyratite-mixer", 64, (100, 78, 70), "pyratite")
+    crafter("floating-silicon-smelter", 64, (80, 86, 98), "silicon")
+    crafter("floating-silicon-crucible", 96, (80, 86, 98), "silicon")
+
+    ship("cargo-galleon", 64, 4, big=True)
+    ship("cargo-leviathan", 88, 5, big=True)
+    ship("cargo-titan", 120, 6, big=True)
+    ship("tanker-cutter", 32, 1, tank=True)
+    ship("tanker-bulk", 48, 2, tank=True)
+    ship("tanker-super", 72, 3, tank=True)
 
     for i, name in enumerate(("cargo-drone", "cargo-hauler", "cargo-freighter"), start=1):
         air_unit(name, 24 + i * 8, i)

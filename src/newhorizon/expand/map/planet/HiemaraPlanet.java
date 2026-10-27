@@ -271,16 +271,16 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 		
 		/** Scatters blobs of rich water. Common ores lie close to the core, the rare ones far away. */
 		void richWater(int coreX, int coreY){
-			Seq<Item> ores = HiemaraFloors.ores;
+			Seq<Item> ores = HiemaraFloors.richOres;
 			for(int i = 0; i < ores.size; i++){
 				Item ore = ores.get(i);
 				RichWater rich = RichWater.byItem.get(ore);
 				if(rich == null)continue;
 				
-				//The first ores (sand, scrap, copper, lead, coal) are near the core, the last (thorium, tungsten) far.
+				//The first ores (scrap, copper, lead, coal) are near the core, the last (thorium, tungsten) far.
 				float rank = i / (float)(ores.size - 1);
 				float min = 14f + rank * 60f, max = 40f + rank * 120f;
-				int blobs = i < 5 ? rand.random(4, 6) : rand.random(3, 4);
+				int blobs = i < 4 ? rand.random(4, 6) : rand.random(3, 4);
 				
 				for(int n = 0; n < blobs; n++){
 					for(int tries = 0; tries < 80; tries++){

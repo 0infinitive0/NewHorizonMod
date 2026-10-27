@@ -75,7 +75,7 @@ public class NHRegister{
 		
 		Events.run(EventType.Trigger.draw, () -> {
 			NHVars.renderer.draw();
-			if (NHSetting.getBool(NHSetting.TERRAIN_MODE)){
+			if (NHSetting.getBool(NHSetting.TERRAIN_MODE) && NHVars.control != null){
 				NHVars.control.terrainSelect();
 			}
 			NHGroups.draw();

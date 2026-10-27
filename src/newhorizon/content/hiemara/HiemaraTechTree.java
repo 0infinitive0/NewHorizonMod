@@ -3,14 +3,13 @@ package newhorizon.content.hiemara;
 import arc.struct.Seq;
 import mindustry.content.Items;
 import mindustry.game.Objectives;
-import mindustry.type.ItemStack;
-import newhorizon.content.NHPlanets;
 
 import static mindustry.content.TechTree.*;
 import static mindustry.type.ItemStack.with;
+import newhorizon.content.NHPlanets;
 
 /**
- * The tech tree of Hiemara. Besides the blocks it has one branch per cargo unit line: the pad, then the three tiers of
+ * The tech tree of Hiemara. Besides the blocks it has one branch per cargo unit line: the pad or yard, then the tiers of
  * unit. The first tier of each line, and the blocks needed to get going, are unlocked from the start.
  */
 public class HiemaraTechTree{
@@ -23,12 +22,30 @@ public class HiemaraTechTree{
 						node(HiemaraBlocks.filterMk4);
 					});
 				});
+				node(HiemaraBlocks.sandDredger);
+				node(HiemaraBlocks.sporeCultivator, () -> {
+					node(HiemaraBlocks.floatingSporePress, () -> {
+						node(HiemaraBlocks.floatingCoalCentrifuge);
+					});
+				});
 			});
 			
 			node(HiemaraBlocks.port, () -> {
+				node(HiemaraBlocks.improvedPort1, () -> {
+					node(HiemaraBlocks.improvedPort2, () -> {
+						node(HiemaraBlocks.improvedPort3);
+					});
+				});
+				node(HiemaraBlocks.liquidPort);
 				node(HiemaraBlocks.depot, () -> {
 					node(HiemaraBlocks.hangar);
 					node(HiemaraBlocks.dock);
+					node(HiemaraBlocks.liquidDepot);
+					node(HiemaraBlocks.distributor1, () -> {
+						node(HiemaraBlocks.distributor2, () -> {
+							node(HiemaraBlocks.distributor3);
+						});
+					});
 				});
 			});
 			
@@ -43,7 +60,18 @@ public class HiemaraTechTree{
 			node(HiemaraBlocks.boatYard, () -> {
 				node(HiemaraUnits.cargoSkiff, () -> {
 					node(HiemaraUnits.cargoBarge, with(Items.copper, 250, Items.lead, 250, Items.sand, 120, Items.coal, 80), null, () -> {
-						node(HiemaraUnits.cargoCarrier, with(Items.lead, 500, Items.titanium, 250, Items.coal, 150, Items.thorium, 60), null, () -> {});
+						node(HiemaraUnits.cargoCarrier, with(Items.lead, 500, Items.titanium, 250, Items.coal, 150, Items.thorium, 60), null, () -> {
+							node(HiemaraUnits.cargoGalleon, with(Items.lead, 900, Items.titanium, 500, Items.silicon, 300, Items.coal, 200), null, () -> {
+								node(HiemaraUnits.cargoLeviathan, with(Items.lead, 1500, Items.titanium, 1000, Items.silicon, 700, Items.thorium, 200), null, () -> {
+									node(HiemaraUnits.cargoTitan, with(Items.titanium, 2500, Items.silicon, 1500, Items.thorium, 600, Items.tungsten, 300), null, () -> {});
+								});
+							});
+						});
+					});
+				});
+				node(HiemaraUnits.tankerCutter, () -> {
+					node(HiemaraUnits.tankerBulk, with(Items.copper, 200, Items.lead, 250, Items.sand, 120, Items.coal, 60), null, () -> {
+						node(HiemaraUnits.tankerSuper, with(Items.lead, 500, Items.titanium, 250, Items.silicon, 100, Items.coal, 120), null, () -> {});
 					});
 				});
 			});
@@ -51,6 +79,10 @@ public class HiemaraTechTree{
 			node(HiemaraBlocks.generator, () -> {
 				node(HiemaraBlocks.node);
 				node(HiemaraBlocks.heater, Seq.with(new Objectives.Research(HiemaraBlocks.generator)), () -> {});
+				node(HiemaraBlocks.floatingSiliconSmelter, () -> {
+					node(HiemaraBlocks.floatingSiliconCrucible);
+					node(HiemaraBlocks.floatingPyratiteMixer);
+				});
 			});
 		});
 		

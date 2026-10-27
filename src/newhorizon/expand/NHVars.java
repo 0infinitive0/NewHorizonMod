@@ -22,7 +22,8 @@ public class NHVars{
 	public static void init(){
 		worldData = new NHWorldData();
 		listener = new NHInputListener();
-		control = new NHInputControl();
+		//It is a desktop input handler, which a server has no player for.
+		if(!Vars.headless)control = new NHInputControl();
 
 		core = new NHModCore();
 
