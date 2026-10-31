@@ -51,6 +51,15 @@ public class Depot extends Block{
 			return matches(item) && items.total() < itemCapacity;
 		}
 		
+		/** @return how many more items fit: a core next to the depot takes everything. */
+		public int room(){
+			int room = itemCapacity - items.total();
+			for(Building other : proximity){
+				if(other instanceof CoreBlock.CoreBuild)return Integer.MAX_VALUE / 2;
+			}
+			return Math.max(0, room);
+		}
+		
 		@Override
 		public boolean acceptItem(Building source, Item item){
 			//Only cargo units fill a depot.

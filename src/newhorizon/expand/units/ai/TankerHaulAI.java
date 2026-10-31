@@ -15,7 +15,7 @@ public class TankerHaulAI extends HaulAI{
 	public LiquidPort.LiquidPortBuild port;
 	public LiquidDepot.LiquidDepotBuild depot;
 	
-	protected float waited;
+	protected float waited, nextSearch;
 	
 	@Override
 	public void updateMovement(){
@@ -55,7 +55,12 @@ public class TankerHaulAI extends HaulAI{
 			}
 		}else{
 			if(depot == null || !depot.isValid() || ignored(depot) || !depot.wants(tanker.liquid)){
-				depot = timer.get(timerTarget4, 30f) ? closestDepot(tanker.liquid) : null;
+				//The depot is full or gone: look for another one at once, but not every tick when there is none.
+				depot = null;
+				if(Time.time >= nextSearch){
+					depot = closestDepot(tanker.liquid, tanker.liquidAmount);
+					if(depot == null)nextSearch = Time.time + 30f;
+				}
 			}
 			
 			if(depot == null){
@@ -106,8 +111,13 @@ public class TankerHaulAI extends HaulAI{
 	}
 	
 	protected LiquidDepot.LiquidDepotBuild closestDepot(Liquid liquid){
-		LiquidDepot.LiquidDepotBuild closest = null;
-		float dst = Float.MAX_VALUE;
+		return closestDepot(liquid, 0f);
+	}
+	
+	/** The closest depot that wants the liquid and has room for all of it; if none has, the closest with any room. */
+	protected LiquidDepot.LiquidDepotBuild closestDepot(Liquid liquid, float needed){
+		LiquidDepot.LiquidDepotBuild closest = null, fits = null;
+		float dst = Float.MAX_VALUE, fitDst = Float.MAX_VALUE;
 		for(LiquidDepot block : LiquidDepot.all){
 			for(Building build : unit.team.data().getBuildings(block)){
 				LiquidDepot.LiquidDepotBuild candidate = (LiquidDepot.LiquidDepotBuild)build;
@@ -117,8 +127,12 @@ public class TankerHaulAI extends HaulAI{
 					dst = d;
 					closest = candidate;
 				}
+				if(d < fitDst && candidate.block.liquidCapacity - candidate.liquids.get(liquid) >= needed){
+					fitDst = d;
+					fits = candidate;
+				}
 			}
 		}
-		return closest;
+		return fits != null ? fits : closest;
 	}
 }

@@ -19,7 +19,7 @@ import newhorizon.expand.hiemara.Hold;
 public class CargoHaulAI extends HaulAI{
 	public Port.PortBuild port;
 	public Depot.DepotBuild depot;
-	protected float waited;
+	protected float waited, nextSearch;
 	
 	@Override
 	public void updateMovement(){
@@ -53,7 +53,12 @@ public class CargoHaulAI extends HaulAI{
 			}
 		}else{
 			if(depot == null || !depot.isValid() || ignored(depot) || !wantsAny(depot)){
-				depot = timer.get(timerTarget4, 30f) ? closestDepotFor(Hold.items(unit)) : null;
+				//The depot is full or gone: look for another one at once, but not every tick when there is none.
+				depot = null;
+				if(Time.time >= nextSearch){
+					depot = closestDepotFor(Hold.items(unit), Hold.total(unit));
+					if(depot == null)nextSearch = Time.time + 30f;
+				}
 			}
 			
 			if(depot == null){
@@ -138,7 +143,7 @@ public class CargoHaulAI extends HaulAI{
 			}
 		}
 		
-		if(!Hold.empty(unit))depot = closestDepotFor(Hold.items(unit));
+		if(!Hold.empty(unit))depot = closestDepotFor(Hold.items(unit), Hold.total(unit));
 	}
 	
 	/** Puts what the depot wants into it. */
@@ -157,8 +162,13 @@ public class CargoHaulAI extends HaulAI{
 	}
 	
 	protected Depot.DepotBuild closestDepotFor(Seq<Item> items){
-		Depot.DepotBuild closest = null;
-		float dst = Float.MAX_VALUE;
+		return closestDepotFor(items, 0);
+	}
+	
+	/** The closest depot that wants one of the items and has room for all of them; if none has, the closest with any room. */
+	protected Depot.DepotBuild closestDepotFor(Seq<Item> items, int needed){
+		Depot.DepotBuild closest = null, fits = null;
+		float dst = Float.MAX_VALUE, fitDst = Float.MAX_VALUE;
 		for(Depot block : Depot.all){
 			for(Building build : unit.team.data().getBuildings(block)){
 				Depot.DepotBuild candidate = (Depot.DepotBuild)build;
@@ -176,8 +186,12 @@ public class CargoHaulAI extends HaulAI{
 					dst = d;
 					closest = candidate;
 				}
+				if(d < fitDst && candidate.room() >= needed){
+					fitDst = d;
+					fits = candidate;
+				}
 			}
 		}
-		return closest;
+		return fits != null ? fits : closest;
 	}
 }
