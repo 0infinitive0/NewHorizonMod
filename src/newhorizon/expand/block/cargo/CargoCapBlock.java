@@ -15,7 +15,8 @@ public class CargoCapBlock extends Block{
 	public CargoCapBlock(String name){
 		super(name);
 		
-		update = false;
+		//A block that does not update is not in the list of the buildings of its type of the team, and the cap is counted from that list.
+		update = true;
 		solid = true;
 		placeableLiquid = true;
 		
