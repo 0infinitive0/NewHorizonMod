@@ -51,6 +51,14 @@ public class Depot extends Block{
 			return matches(item) && items.total() < itemCapacity;
 		}
 		
+		/** @return whether a core is next to the depot, so that it hands everything on to the core. */
+		public boolean nextToCore(){
+			for(Building other : proximity){
+				if(other instanceof CoreBlock.CoreBuild)return true;
+			}
+			return false;
+		}
+		
 		/** @return how many more items fit: a core next to the depot takes everything. */
 		public int room(){
 			int room = itemCapacity - items.total();

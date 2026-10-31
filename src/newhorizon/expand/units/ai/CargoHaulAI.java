@@ -52,6 +52,12 @@ public class CargoHaulAI extends HaulAI{
 				load();
 			}
 		}else{
+			//On the way to a core depot: switch if a depot that feeds something else can take the load.
+			if(depot != null && depot.isValid() && depot.nextToCore() && !near(depot) && timer.get(timerTarget4, 30f)){
+				Depot.DepotBuild other = closestDepotFor(Hold.items(unit), Hold.total(unit));
+				if(other != null && !other.nextToCore())depot = other;
+			}
+			
 			if(depot == null || !depot.isValid() || ignored(depot) || !wantsAny(depot)){
 				//The depot is full or gone: look for another one at once, but not every tick when there is none.
 				depot = null;
@@ -165,10 +171,15 @@ public class CargoHaulAI extends HaulAI{
 		return closestDepotFor(items, 0);
 	}
 	
-	/** The closest depot that wants one of the items and has room for all of them; if none has, the closest with any room. */
+	/**
+	 * The depot to bring the items to. Depots that are not next to a core come first, as they feed something else, and
+	 * the core depots take what is left. Inside each group the closest one with room for all of the load wins, then the
+	 * closest with any room.
+	 */
 	protected Depot.DepotBuild closestDepotFor(Seq<Item> items, int needed){
-		Depot.DepotBuild closest = null, fits = null;
-		float dst = Float.MAX_VALUE, fitDst = Float.MAX_VALUE;
+		Depot.DepotBuild best = null;
+		int bestScore = Integer.MAX_VALUE;
+		float bestDst = Float.MAX_VALUE;
 		for(Depot block : Depot.all){
 			for(Building build : unit.team.data().getBuildings(block)){
 				Depot.DepotBuild candidate = (Depot.DepotBuild)build;
@@ -181,17 +192,16 @@ public class CargoHaulAI extends HaulAI{
 					}
 				}
 				if(!wants)continue;
+				
+				int score = (candidate.nextToCore() ? 2 : 0) + (candidate.room() >= needed ? 0 : 1);
 				float d = candidate.dst2(unit);
-				if(d < dst){
-					dst = d;
-					closest = candidate;
-				}
-				if(d < fitDst && candidate.room() >= needed){
-					fitDst = d;
-					fits = candidate;
+				if(score < bestScore || (score == bestScore && d < bestDst)){
+					bestScore = score;
+					bestDst = d;
+					best = candidate;
 				}
 			}
 		}
-		return fits != null ? fits : closest;
+		return best;
 	}
 }
