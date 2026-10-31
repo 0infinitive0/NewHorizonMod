@@ -7,6 +7,7 @@ import mindustry.Vars;
 import mindustry.gen.Building;
 import mindustry.gen.Teamc;
 import mindustry.type.Item;
+import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.world.Block;
 import mindustry.world.blocks.ItemSelection;
 
@@ -40,9 +41,14 @@ public class Depot extends Block{
 		/** Only this item is accepted, any if null. */
 		public Item item;
 		
+		/** @return whether the depot is set to take this item. */
+		public boolean matches(Item item){
+			return this.item == null || this.item == item;
+		}
+		
 		/** @return whether a unit may bring this item. */
 		public boolean wants(Item item){
-			return (this.item == null || this.item == item) && items.total() < itemCapacity;
+			return matches(item) && items.total() < itemCapacity;
 		}
 		
 		@Override
@@ -53,8 +59,28 @@ public class Depot extends Block{
 		
 		@Override
 		public int acceptStack(Item item, int amount, Teamc source){
-			if(!(source instanceof mindustry.gen.Unit) || !wants(item))return 0;
-			return Math.min(itemCapacity - items.total(), amount);
+			if(!(source instanceof mindustry.gen.Unit) || !matches(item))return 0;
+			int room = itemCapacity - items.total();
+			//a core next to the depot takes it all at once
+			for(Building other : proximity){
+				if(other instanceof CoreBlock.CoreBuild)room += other.acceptStack(item, amount, this);
+			}
+			return Math.min(room, amount);
+		}
+		
+		@Override
+		public void handleStack(Item item, int amount, Teamc source){
+			for(Building other : proximity){
+				if(amount <= 0)break;
+				if(other instanceof CoreBlock.CoreBuild){
+					int accepted = other.acceptStack(item, amount, this);
+					if(accepted > 0){
+						other.handleStack(item, accepted, this);
+						amount -= accepted;
+					}
+				}
+			}
+			if(amount > 0)super.handleStack(item, amount, source);
 		}
 		
 		@Override
@@ -64,8 +90,9 @@ public class Depot extends Block{
 		
 		@Override
 		public void updateTile(){
-			if(timer(timerDump, dumpTime)){
-				dump();
+			//Several items at a time, so a big load does not take long to move on.
+			for(int i = 0; i < 6 && items.total() > 0; i++){
+				if(!dump())break;
 			}
 		}
 		
