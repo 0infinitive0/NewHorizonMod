@@ -22,10 +22,14 @@ public class TankerHaulAI extends HaulAI{
 		if(!(unit instanceof TankerEntity))return;
 		TankerEntity tanker = (TankerEntity)unit;
 		
-		if(port == null || !port.isValid() || timer.get(timerTarget2, 45f) || (ignored(port) && tanker.liquidAmount < 1f)){
+		if(port == null || !port.isValid() || timer.get(timerTarget2, 45f)){
 			HubBlock.HubBuild hub = HubBlock.boundHub(unit);
-			if(hub instanceof LiquidPort.LiquidPortBuild){
+			if(hub instanceof LiquidPort.LiquidPortBuild && !(ignored(hub) && tanker.liquidAmount < 1f)){
 				port = (LiquidPort.LiquidPortBuild)hub;
+			}else if(hub instanceof LiquidPort.LiquidPortBuild){
+				//Its port can not be got to for now: use another one until the ban is over.
+				LiquidPort.LiquidPortBuild other = fullestPort();
+				port = other != null ? other : (LiquidPort.LiquidPortBuild)hub;
 			}else if(port == null || !port.isValid() || ignored(port) || tanker.liquidAmount < 1f){
 				//Not bound: use any liquid port that has a liquid some depot wants.
 				port = fullestPort();

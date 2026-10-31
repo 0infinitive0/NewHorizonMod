@@ -23,10 +23,14 @@ public class CargoHaulAI extends HaulAI{
 	
 	@Override
 	public void updateMovement(){
-		if(port == null || !port.isValid() || timer.get(timerTarget2, 45f) || (ignored(port) && Hold.empty(unit))){
+		if(port == null || !port.isValid() || timer.get(timerTarget2, 45f)){
 			HubBlock.HubBuild hub = HubBlock.boundHub(unit);
-			if(hub instanceof Port.PortBuild){
+			if(hub instanceof Port.PortBuild && !(ignored(hub) && Hold.empty(unit))){
 				port = (Port.PortBuild)hub;
+			}else if(hub instanceof Port.PortBuild){
+				//Its port can not be got to for now: use another one until the ban is over. With nothing else it keeps waiting.
+				Port.PortBuild other = fullestPort();
+				port = other != null ? other : (Port.PortBuild)hub;
 			}else if(port == null || !port.isValid() || ignored(port) || Hold.empty(unit)){
 				//Not bound: take items from any port that has something a depot wants. With cargo on board the unit
 				//keeps its port, so it can put the cargo back.

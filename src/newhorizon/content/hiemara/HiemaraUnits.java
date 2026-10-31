@@ -109,7 +109,18 @@ public class HiemaraUnits{
 		return cargo(type, health, hitSize, speed, 0, TankerHaulAI::new);
 	}
 	
+	private static int tierOf(UnitType type){
+		if(type instanceof CargoUnitType)return ((CargoUnitType)type).cargoTier;
+		if(type instanceof TankerUnitType)return ((TankerUnitType)type).cargoTier;
+		return 1;
+	}
+	
 	private static UnitType cargo(UnitType type, float health, float hitSize, float speed, int capacity, Prov<AIController> ai){
+		//the higher the tier, the further from the port the ship loads
+		float range = 14f + 12f * (Math.max(1, tierOf(type)) - 1);
+		if(type instanceof CargoUnitType)((CargoUnitType)type).pickupRange = range;
+		if(type instanceof TankerUnitType)((TankerUnitType)type).pickupRange = range;
+		
 		type.health = health;
 		type.hitSize = hitSize;
 		type.speed = speed;

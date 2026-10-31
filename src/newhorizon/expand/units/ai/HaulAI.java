@@ -13,8 +13,10 @@ import static mindustry.Vars.tilesize;
 
 /** Movement that the hauling units share: to a block, along a path if the unit is a boat. */
 public abstract class HaulAI extends AIController{
-	/** Extra reach on top of the size of the block, in world units. */
+	/** Extra reach on top of the size of the block, in world units, for a unit that is not a cargo unit type. */
 	public float reach = 14f;
+	/** Ticks a unit may take to get to a block before it is given up on and left alone for a while. */
+	public static float legLimit = 40f * 60f;
 	
 	/** How far from a block the closest tile with room for a ship may be, in tiles, before the block counts as out of reach. */
 	public static int farSearch = 14;
@@ -28,10 +30,19 @@ public abstract class HaulAI extends AIController{
 	protected Building dockFor;
 	protected float dockRadius;
 	protected float stuck;
+	protected Building legTarget;
+	protected float legTime;
+	
+	/** Extra reach on top of the size of the block, in world units. It grows with the tier of the ship. */
+	protected float reach(){
+		if(unit.type instanceof newhorizon.expand.units.hiemara.CargoUnitType)return ((newhorizon.expand.units.hiemara.CargoUnitType)unit.type).pickupRange;
+		if(unit.type instanceof newhorizon.expand.units.hiemara.TankerUnitType)return ((newhorizon.expand.units.hiemara.TankerUnitType)unit.type).pickupRange;
+		return reach;
+	}
 	
 	/** How close the unit has to be to a block to work with it. Bigger units stay further away. */
 	protected float nearRadius(Building build){
-		float radius = build.block.size * tilesize / 2f + reach + unit.hitSize * 0.75f;
+		float radius = build.block.size * tilesize / 2f + reach() + unit.hitSize * 0.75f;
 		return build == dockFor ? Math.max(radius, dockRadius) : radius;
 	}
 	
@@ -40,7 +51,12 @@ public abstract class HaulAI extends AIController{
 		ignored.put(build, Time.time + ticks);
 	}
 	
-	public static boolean ignored(Building build){
+	/** Leaves a block alone for the usual half minute. */
+	public static void ignore(Building build){
+		ignore(build, 1800f);
+	}
+	
+		public static boolean ignored(Building build){
 		float until = ignored.get(build, 0f);
 		if(until <= 0f)return false;
 		if(until <= Time.time){
@@ -58,12 +74,24 @@ public abstract class HaulAI extends AIController{
 	protected void travel(Building target){
 		//Close enough: stop, a big ship would otherwise coast right past.
 		if(near(target)){
+			legTime = 0f;
 			unit.vel.scl(Math.max(0f, 1f - 0.2f * Time.delta));
 			return;
 		}
 		
+		//Not there after a long time: it can not be got to, or the unit is going in circles. Leave the block alone for a while.
+		if(target != legTarget){
+			legTarget = target;
+			legTime = 0f;
+		}
+		legTime += Time.delta;
+		if(legTime > legLimit){
+			legTime = 0f;
+			ignore(target, 1800f);
+		}
+		
 		if(!unit.type.naval){
-			moveTo(target, target.block.size * tilesize / 2f + reach * 0.5f, 20f);
+			moveTo(target, target.block.size * tilesize / 2f + reach() * 0.5f, 20f);
 			return;
 		}
 		
