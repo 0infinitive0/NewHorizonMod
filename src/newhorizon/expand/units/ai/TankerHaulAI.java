@@ -22,11 +22,11 @@ public class TankerHaulAI extends HaulAI{
 		if(!(unit instanceof TankerEntity))return;
 		TankerEntity tanker = (TankerEntity)unit;
 		
-		if(port == null || !port.isValid() || timer.get(timerTarget2, 45f)){
+		if(port == null || !port.isValid() || timer.get(timerTarget2, 45f) || (ignored(port) && tanker.liquidAmount < 1f)){
 			HubBlock.HubBuild hub = HubBlock.boundHub(unit);
 			if(hub instanceof LiquidPort.LiquidPortBuild){
 				port = (LiquidPort.LiquidPortBuild)hub;
-			}else if(port == null || !port.isValid() || tanker.liquidAmount < 1f){
+			}else if(port == null || !port.isValid() || ignored(port) || tanker.liquidAmount < 1f){
 				//Not bound: use any liquid port that has a liquid some depot wants.
 				port = fullestPort();
 			}
@@ -50,7 +50,7 @@ public class TankerHaulAI extends HaulAI{
 				}
 			}
 		}else{
-			if(depot == null || !depot.isValid() || !depot.wants(tanker.liquid)){
+			if(depot == null || !depot.isValid() || ignored(depot) || !depot.wants(tanker.liquid)){
 				depot = timer.get(timerTarget4, 30f) ? closestDepot(tanker.liquid) : null;
 			}
 			
@@ -92,7 +92,7 @@ public class TankerHaulAI extends HaulAI{
 				LiquidPort.LiquidPortBuild candidate = (LiquidPort.LiquidPortBuild)build;
 				float stock = candidate.liquids.currentAmount();
 				float d = candidate.dst2(unit);
-				if(stock <= 1f || stock < most || (stock == most && d >= dst) || closestDepot(candidate.liquids.current()) == null)continue;
+				if(stock <= 1f || stock < most || (stock == most && d >= dst) || ignored(candidate) || closestDepot(candidate.liquids.current()) == null)continue;
 				most = stock;
 				dst = d;
 				best = candidate;
@@ -107,7 +107,7 @@ public class TankerHaulAI extends HaulAI{
 		for(LiquidDepot block : LiquidDepot.all){
 			for(Building build : unit.team.data().getBuildings(block)){
 				LiquidDepot.LiquidDepotBuild candidate = (LiquidDepot.LiquidDepotBuild)build;
-				if(!candidate.wants(liquid))continue;
+				if(ignored(candidate) || !candidate.wants(liquid))continue;
 				float d = candidate.dst2(unit);
 				if(d < dst){
 					dst = d;

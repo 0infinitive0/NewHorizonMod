@@ -23,11 +23,11 @@ public class CargoHaulAI extends HaulAI{
 	
 	@Override
 	public void updateMovement(){
-		if(port == null || !port.isValid() || timer.get(timerTarget2, 45f)){
+		if(port == null || !port.isValid() || timer.get(timerTarget2, 45f) || (ignored(port) && Hold.empty(unit))){
 			HubBlock.HubBuild hub = HubBlock.boundHub(unit);
 			if(hub instanceof Port.PortBuild){
 				port = (Port.PortBuild)hub;
-			}else if(port == null || !port.isValid() || Hold.empty(unit)){
+			}else if(port == null || !port.isValid() || ignored(port) || Hold.empty(unit)){
 				//Not bound: take items from any port that has something a depot wants. With cargo on board the unit
 				//keeps its port, so it can put the cargo back.
 				port = fullestPort();
@@ -48,7 +48,7 @@ public class CargoHaulAI extends HaulAI{
 				load();
 			}
 		}else{
-			if(depot == null || !depot.isValid() || !wantsAny(depot)){
+			if(depot == null || !depot.isValid() || ignored(depot) || !wantsAny(depot)){
 				depot = timer.get(timerTarget4, 30f) ? closestDepotFor(Hold.items(unit)) : null;
 			}
 			
@@ -82,7 +82,7 @@ public class CargoHaulAI extends HaulAI{
 				Port.PortBuild candidate = (Port.PortBuild)build;
 				int stock = wantedStock(candidate);
 				float d = candidate.dst2(unit);
-				if(stock <= 0 || stock < most || (stock == most && d >= dst))continue;
+				if(stock <= 0 || stock < most || (stock == most && d >= dst) || ignored(candidate))continue;
 				most = stock;
 				dst = d;
 				best = candidate;
@@ -158,6 +158,7 @@ public class CargoHaulAI extends HaulAI{
 		for(Depot block : Depot.all){
 			for(Building build : unit.team.data().getBuildings(block)){
 				Depot.DepotBuild candidate = (Depot.DepotBuild)build;
+				if(ignored(candidate))continue;
 				boolean wants = false;
 				for(Item item : items){
 					if(candidate.wants(item)){
