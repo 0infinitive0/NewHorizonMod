@@ -622,6 +622,23 @@ def battery_top(name, size):
     finish(img, size, os.path.join(BLOCK_DIR, name + "-top.png"))
 
 
+def manager(name, size):
+    """The cargo manager: a plate with a list of three rows."""
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    plate(d, size, color=(60, 86, 112))
+    rivets(d, size)
+    m = 9 * SS
+    d.rounded_rectangle([m, m, s - m, s - m], radius=2 * SS, fill=(24, 40, 62), outline=HULL_D, width=SS)
+    for i in range(3):
+        y = m + 4 * SS + i * ((s - 2 * m - 8 * SS) // 3)
+        d.ellipse([m + 4 * SS, y, m + 9 * SS, y + 5 * SS], fill=ICE_L, outline=HULL_D)
+        d.rectangle([m + 12 * SS, y + SS, s - m - 4 * SS, y + 4 * SS], fill=(90, 150, 190))
+        d.rectangle([s - m - 10 * SS, y + SS, s - m - 4 * SS, y + 4 * SS], fill=WARM)
+    finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+
+
 def defense_sprites():
     turret("arc-coil", 64, "arc")
     turret("pulse-lance", 96, "lance")

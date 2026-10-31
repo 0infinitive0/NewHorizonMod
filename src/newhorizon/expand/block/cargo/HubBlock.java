@@ -16,6 +16,7 @@ import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Icon;
 import mindustry.gen.Unit;
+import mindustry.game.Team;
 import mindustry.graphics.Pal;
 import mindustry.type.Item;
 import mindustry.type.ItemStack;
@@ -79,6 +80,50 @@ public abstract class HubBlock extends Block{
 		return new ItemStack[0];
 	}
 	
+	/** Removes a cargo unit of the team: it is unbound, part of its cost and what it carries goes to the core. */
+	public static void recycleUnit(Team team, int id){
+		Unit unit = Groups.unit.getByID(id);
+		if(unit == null || unit.team != team || !CargoCap.isCargo(unit.type) || unit.dead || !unit.isAdded())return;
+		
+		HubBuild hub = boundHub(unit);
+		if(hub != null)hub.unbind(id);
+		if(Vars.net.client())return;
+		
+		CoreBlock.CoreBuild core = team.core();
+		if(core != null){
+			for(ItemStack stack : refund(unit.type))giveToCore(core, stack.item, stack.amount);
+			if(Hold.multi(unit)){
+				for(Item item : Hold.items(unit))giveToCore(core, item, Hold.get(unit, item));
+			}else if(unit.stack.amount > 0){
+				giveToCore(core, unit.stack.item, unit.stack.amount);
+			}
+		}
+		Call.unitDespawn(unit);
+	}
+	
+	protected static void giveToCore(CoreBlock.CoreBuild core, Item item, int amount){
+		int room = core.storageCapacity - core.items.get(item);
+		if(amount > 0 && room > 0)core.items.add(item, Math.min(amount, room));
+	}
+	
+	/** Frees a unit of the team from the hub it is bound to. */
+	public static void unbindUnit(Team team, int id){
+		Unit unit = Groups.unit.getByID(id);
+		if(unit == null || unit.team != team)return;
+		HubBuild hub = boundHub(unit);
+		if(hub != null)hub.unbind(id);
+	}
+	
+	/** Asks whether to recycle a unit, and says what that gives back. */
+	public static void confirmRecycle(Unit unit, Runnable confirmed){
+		StringBuilder refund = new StringBuilder();
+		for(ItemStack stack : refund(unit.type)){
+			if(stack.amount > 0)refund.append(stack.amount).append(' ').append(stack.item.localizedName).append(", ");
+		}
+		String text = refund.length() > 0 ? refund.substring(0, refund.length() - 2) : Core.bundle.get("port.recycle.nothing");
+		Vars.ui.showConfirm("@port.recycle", Core.bundle.format("port.recycle.confirm", unit.type.localizedName + " #" + unit.id, text), confirmed);
+	}
+	
 	/** @return whether units of this type can be bound to this kind of hub. */
 	public abstract boolean accepts(UnitType type);
 	
@@ -130,29 +175,11 @@ public abstract class HubBlock extends Block{
 			bound.removeValue(id);
 		}
 		
-		/** Removes a cargo unit and gives part of what it cost, and what it carries, to the core. */
+		/** Removes a cargo unit that this hub takes and gives part of what it cost, and what it carries, to the core. */
 		public void recycle(int id){
 			Unit unit = Groups.unit.getByID(id);
-			if(unit == null || unit.team != team || !accepts(unit.type) || unit.dead || !unit.isAdded())return;
-			
-			unbind(id);
-			if(Vars.net.client())return;
-			
-			CoreBlock.CoreBuild core = team.core();
-			if(core != null){
-				for(ItemStack stack : refund(unit.type))give(core, stack.item, stack.amount);
-				if(Hold.multi(unit)){
-					for(Item item : Hold.items(unit))give(core, item, Hold.get(unit, item));
-				}else if(unit.stack.amount > 0){
-					give(core, unit.stack.item, unit.stack.amount);
-				}
-			}
-			Call.unitDespawn(unit);
-		}
-		
-		protected void give(CoreBlock.CoreBuild core, Item item, int amount){
-			int room = core.storageCapacity - core.items.get(item);
-			if(amount > 0 && room > 0)core.items.add(item, Math.min(amount, room));
+			if(unit == null || unit.team != team || !accepts(unit.type))return;
+			recycleUnit(team, id);
 		}
 		
 		/** Forgets units that are gone. */
@@ -233,12 +260,7 @@ public abstract class HubBlock extends Block{
 		}
 		
 		protected void askRecycle(Unit unit, Runnable rebuild){
-			StringBuilder refund = new StringBuilder();
-			for(ItemStack stack : refund(unit.type)){
-				if(stack.amount > 0)refund.append(stack.amount).append(' ').append(stack.item.localizedName).append(", ");
-			}
-			String text = refund.length() > 0 ? refund.substring(0, refund.length() - 2) : Core.bundle.get("port.recycle.nothing");
-			Vars.ui.showConfirm("@port.recycle", Core.bundle.format("port.recycle.confirm", unit.type.localizedName + " #" + unit.id, text), () -> {
+			confirmRecycle(unit, () -> {
 				configure(Long.valueOf(unit.id));
 				rebuild.run();
 			});

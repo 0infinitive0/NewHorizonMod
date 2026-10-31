@@ -55,6 +55,7 @@ public class HiemaraTechTree{
 				});
 				node(HiemaraBlocks.liquidPort);
 				node(HiemaraBlocks.depot, () -> {
+					node(HiemaraBlocks.cargoManager);
 					node(HiemaraBlocks.hangar);
 					node(HiemaraBlocks.dock);
 					node(HiemaraBlocks.liquidDepot);

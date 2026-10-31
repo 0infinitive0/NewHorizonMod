@@ -35,6 +35,7 @@ public class HiemaraBlocks{
 	public static Depot depot;
 	public static CargoUnitPad airPad, boatYard;
 	public static CargoCapBlock hangar, dock;
+	public static CargoManager cargoManager;
 	public static FloatingHeater heater;
 	public static FloatingGenerator generator;
 	public static FloatingNode node;
@@ -103,6 +104,12 @@ public class HiemaraBlocks{
 			size = 1;
 			health = 200;
 			alwaysUnlocked = true;
+		}};
+		
+		cargoManager = new CargoManager("cargo-manager"){{
+			requirements(Category.units, with(Items.copper, 80, Items.lead, 60, Items.sand, 40));
+			size = 2;
+			health = 300;
 		}};
 		
 		airPad = new CargoUnitPad("cargo-air-pad"){{
@@ -266,7 +273,7 @@ public class HiemaraBlocks{
 		}};
 		
 		all.addAll(
-			filterMk1, filterMk2, filterMk3, filterMk4, port, depot, airPad, boatYard, hangar, dock, heater, generator, node,
+			filterMk1, filterMk2, filterMk3, filterMk4, port, depot, cargoManager, airPad, boatYard, hangar, dock, heater, generator, node,
 			improvedPort1, improvedPort2, improvedPort3, distributor1, distributor2, distributor3, liquidPort, liquidDepot,
 			sandDredger, sporeCultivator, floatingSporePress, floatingCoalCentrifuge, floatingPyratiteMixer, floatingSiliconSmelter, floatingSiliconCrucible
 		);
