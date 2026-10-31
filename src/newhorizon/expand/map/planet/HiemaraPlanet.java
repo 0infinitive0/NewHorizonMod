@@ -122,6 +122,8 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 			r.waveSpacing = 80 * Time.toSeconds;
 			r.initialWaveSpacing = 8f * Time.toMinutes;
 			r.coreDestroyClear = true;
+			//what a full core can not store is burned, also outside the campaign
+			r.coreIncinerates = true;
 			r.dropZoneRadius = 64;
 		};
 	}
