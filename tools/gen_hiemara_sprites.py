@@ -622,6 +622,54 @@ def battery_top(name, size):
     finish(img, size, os.path.join(BLOCK_DIR, name + "-top.png"))
 
 
+def core_block(name, size, tier):
+    """Floating cores: a round hub in a plate, more rings the higher the tier."""
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    c = s // 2
+    plate(d, size, color=(74, 98, 120))
+    rivets(d, size, 6)
+    r = c - 9 * SS
+    d.ellipse([c - r, c - r, c + r, c + r], fill=(26, 40, 58), outline=HULL_D, width=2 * SS)
+    for k in range(tier):
+        rr = r - (4 + 5 * k) * SS
+        if rr > 3 * SS:
+            d.ellipse([c - rr, c - rr, c + rr, c + rr], outline=ICE if k % 2 == 0 else WARM, width=2 * SS)
+    d.ellipse([c - 4 * SS, c - 4 * SS, c + 4 * SS, c + 4 * SS], fill=ICE_L, outline=HULL_D)
+    finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+
+
+def storage_block(name, size, tier):
+    """Containers: a crate with as many bands as the tier."""
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    plate(d, size, color=(70, 90, 112))
+    rivets(d, size, 5)
+    m = 8 * SS
+    d.rounded_rectangle([m, m, s - m, s - m], radius=2 * SS, fill=(40, 58, 80), outline=HULL_D, width=SS)
+    for i in range(1, tier + 2):
+        y = m + (s - 2 * m) * i // (tier + 2)
+        d.line([m + SS, y, s - m - SS, y], fill=HULL_L, width=SS)
+    d.rectangle([s // 2 - 3 * SS, s // 2 - 3 * SS, s // 2 + 3 * SS, s // 2 + 3 * SS], fill=WARM, outline=HULL_D)
+    finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+
+
+def launch_pad(name, size):
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    c = s // 2
+    plate(d, size, color=(60, 84, 108))
+    rivets(d, size, 6)
+    m = 9 * SS
+    d.rounded_rectangle([m, m, s - m, s - m], radius=3 * SS, fill=(30, 46, 66), outline=HULL_D, width=2 * SS)
+    d.ellipse([c - 12 * SS, c - 12 * SS, c + 12 * SS, c + 12 * SS], outline=ICE, width=2 * SS)
+    d.polygon([(c, c - 9 * SS), (c + 6 * SS, c + 6 * SS), (c, c + 3 * SS), (c - 6 * SS, c + 6 * SS)], fill=WARM, outline=HULL_D)
+    finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+
+
 def manager(name, size):
     """The cargo manager: a plate with a list of three rows."""
     img = canvas(size)

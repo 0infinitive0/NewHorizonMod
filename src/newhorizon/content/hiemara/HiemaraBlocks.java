@@ -2,6 +2,10 @@ package newhorizon.content.hiemara;
 
 import arc.struct.Seq;
 import mindustry.content.Items;
+import mindustry.content.UnitTypes;
+import mindustry.world.blocks.campaign.LaunchPad;
+import mindustry.world.blocks.storage.CoreBlock;
+import mindustry.world.blocks.storage.StorageBlock;
 import mindustry.type.LiquidStack;
 import mindustry.world.Block;
 import mindustry.world.blocks.production.GenericCrafter;
@@ -36,6 +40,9 @@ public class HiemaraBlocks{
 	public static CargoUnitPad airPad, boatYard;
 	public static CargoCapBlock hangar, dock;
 	public static CargoManager cargoManager;
+	public static CoreBlock coreMk2, coreMk3;
+	public static StorageBlock container, vault, silo;
+	public static LaunchPad launchPad;
 	public static FloatingHeater heater;
 	public static FloatingGenerator generator;
 	public static FloatingNode node;
@@ -110,6 +117,62 @@ public class HiemaraBlocks{
 			requirements(Category.units, with(Items.copper, 80, Items.lead, 60, Items.sand, 40));
 			size = 2;
 			health = 300;
+		}};
+		
+		//The core can be upgraded in place, and containers next to it add to what it holds.
+		coreMk2 = new CoreBlock("floating-core-2"){{
+			requirements(Category.effect, with(Items.copper, 2500, Items.lead, 2500, Items.silicon, 1500, Items.titanium, 500));
+			unitType = UnitTypes.beta;
+			health = 3500;
+			itemCapacity = 9000;
+			size = 4;
+			thrusterLength = 34f / 4f;
+			unitCapModifier = 16;
+			placeableLiquid = true;
+		}};
+		coreMk3 = new CoreBlock("floating-core-3"){{
+			requirements(Category.effect, with(Items.copper, 6000, Items.lead, 6000, Items.silicon, 4000, Items.titanium, 1500, Items.thorium, 1500));
+			unitType = UnitTypes.gamma;
+			health = 6000;
+			itemCapacity = 13000;
+			size = 5;
+			thrusterLength = 40f / 4f;
+			unitCapModifier = 24;
+			placeableLiquid = true;
+		}};
+		container = new StorageBlock("floating-container"){{
+			requirements(Category.effect, with(Items.copper, 100, Items.lead, 120, Items.sand, 60));
+			size = 2;
+			itemCapacity = 300;
+			health = 400;
+			coreMerge = true;
+			placeableLiquid = true;
+		}};
+		vault = new StorageBlock("floating-vault"){{
+			requirements(Category.effect, with(Items.titanium, 250, Items.thorium, 125));
+			size = 3;
+			itemCapacity = 1000;
+			health = 900;
+			coreMerge = true;
+			placeableLiquid = true;
+		}};
+		silo = new StorageBlock("floating-silo"){{
+			requirements(Category.effect, with(Items.titanium, 500, Items.thorium, 300, Items.silicon, 200));
+			size = 4;
+			itemCapacity = 2500;
+			health = 1600;
+			coreMerge = true;
+			placeableLiquid = true;
+		}};
+		launchPad = new LaunchPad("floating-launch-pad"){{
+			requirements(Category.effect, with(Items.copper, 300, Items.lead, 250, Items.silicon, 200, Items.titanium, 150));
+			size = 3;
+			itemCapacity = 200;
+			health = 700;
+			launchTime = 60f * 20f;
+			hasPower = true;
+			placeableLiquid = true;
+			consumePower(4f);
 		}};
 		
 		airPad = new CargoUnitPad("cargo-air-pad"){{
@@ -273,7 +336,7 @@ public class HiemaraBlocks{
 		}};
 		
 		all.addAll(
-			filterMk1, filterMk2, filterMk3, filterMk4, port, depot, cargoManager, airPad, boatYard, hangar, dock, heater, generator, node,
+			filterMk1, filterMk2, filterMk3, filterMk4, port, depot, cargoManager, coreMk2, coreMk3, container, vault, silo, launchPad, airPad, boatYard, hangar, dock, heater, generator, node,
 			improvedPort1, improvedPort2, improvedPort3, distributor1, distributor2, distributor3, liquidPort, liquidDepot,
 			sandDredger, sporeCultivator, floatingSporePress, floatingCoalCentrifuge, floatingPyratiteMixer, floatingSiliconSmelter, floatingSiliconCrucible
 		);

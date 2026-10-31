@@ -56,6 +56,15 @@ public class HiemaraTechTree{
 				node(HiemaraBlocks.liquidPort);
 				node(HiemaraBlocks.depot, () -> {
 					node(HiemaraBlocks.cargoManager);
+					node(HiemaraBlocks.container, with(Items.copper, 200, Items.lead, 250, Items.sand, 120), null, () -> {
+						node(HiemaraBlocks.vault, with(Items.titanium, 400, Items.lead, 300, Items.thorium, 150), null, () -> {
+							node(HiemaraBlocks.silo, with(Items.titanium, 800, Items.thorium, 400, Items.silicon, 400), null, () -> {});
+						});
+						node(HiemaraBlocks.coreMk2, with(Items.copper, 1500, Items.lead, 1500, Items.silicon, 800, Items.titanium, 300), null, () -> {
+							node(HiemaraBlocks.coreMk3, with(Items.copper, 3000, Items.lead, 3000, Items.silicon, 2000, Items.titanium, 800, Items.thorium, 600), null, () -> {});
+						});
+						node(HiemaraBlocks.launchPad, with(Items.copper, 600, Items.lead, 500, Items.silicon, 300, Items.titanium, 250), null, () -> {});
+					});
 					node(HiemaraBlocks.hangar);
 					node(HiemaraBlocks.dock);
 					node(HiemaraBlocks.liquidDepot);
