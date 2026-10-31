@@ -12,7 +12,7 @@ import mindustry.world.meta.StatUnit;
 import static mindustry.Vars.tilesize;
 
 /**
- * Holds a lot of items and every second fills the inputs of the factories, turrets and generators around it.
+ * Holds a lot of items, up to its capacity of each kind, and every second fills the inputs of the factories, turrets and generators around it.
  * Cargo units do not unload here: fill it from a depot or any block next to it.
  */
 public class Distributor extends Block{
@@ -51,7 +51,8 @@ public class Distributor extends Block{
 	public class DistributorBuild extends Building{
 		@Override
 		public boolean acceptItem(Building source, Item item){
-			return items.total() < itemCapacity && !(source instanceof DistributorBuild) && !(source instanceof HubBlock.HubBuild);
+			//The capacity is for each item, so a lot of one item can not keep the others out.
+			return items.get(item) < itemCapacity && !(source instanceof DistributorBuild) && !(source instanceof HubBlock.HubBuild);
 		}
 		
 		@Override
