@@ -65,7 +65,7 @@ public class HiemaraBlocks{
 			requirements(Category.production, with(Items.copper, 8, Items.lead, 4));
 			size = 2;
 			tier = 1;
-			baseRate = 0.010f;
+			baseRate = 0.020f;
 			health = 120;
 			alwaysUnlocked = true;
 		}};
@@ -73,21 +73,21 @@ public class HiemaraBlocks{
 			requirements(Category.production, with(Items.copper, 90, Items.lead, 70, Items.sand, 40));
 			size = 3;
 			tier = 2;
-			baseRate = 0.012f;
+			baseRate = 0.024f;
 			health = 300;
 		}};
 		filterMk3 = new FilterBlock("water-filter-3"){{
 			requirements(Category.production, with(Items.copper, 140, Items.lead, 110, Items.sand, 80, Items.coal, 50));
 			size = 3;
 			tier = 3;
-			baseRate = 0.014f;
+			baseRate = 0.028f;
 			health = 420;
 		}};
 		filterMk4 = new FilterBlock("water-filter-4"){{
 			requirements(Category.production, with(Items.lead, 200, Items.titanium, 120, Items.coal, 100, Items.sand, 120));
 			size = 4;
 			tier = 5;
-			baseRate = 0.016f;
+			baseRate = 0.032f;
 			health = 640;
 		}};
 		

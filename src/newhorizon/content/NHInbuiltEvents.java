@@ -740,6 +740,12 @@ public class NHInbuiltEvents{
 			}
 			
 			Core.app.post(() -> {
+				//Hiemara has its own enemies, the base game's naval and air units, and none of the events of this mod.
+				if(Vars.state.rules.sector != null && Vars.state.rules.sector.planet == NHPlanets.hiemara){
+					NHGroups.events.clear();
+					NHGroups.autoEventTrigger.clear();
+					return;
+				}
 				if(Vars.state.isMenu() || Vars.net.client() || Vars.state.isEditor() || Vars.state.rules.pvp || (Vars.state.rules.infiniteResources && !NewHorizon.DEBUGGING) || NHGroups.autoEventTrigger.size() >= autoTriggers.size)return;
 				if(Vars.headless || (NewHorizon.DEBUGGING && !Vars.net.client())){
 					Core.app.post(() -> Core.app.post(() -> Core.app.post(() -> {

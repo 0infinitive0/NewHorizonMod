@@ -608,6 +608,20 @@ def interceptor(name, size):
     finish(img, size, os.path.join(UNIT_DIR, name + ".png"))
 
 
+def battery_top(name, size):
+    """The lid of a battery that the game draws over the body (DrawRegion("-top")): a light frame and a shine."""
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    c = s // 2
+    r = int(s * 0.5) - 4 * SS
+    d.rounded_rectangle([c - r, c - r, c + r, c + r], radius=2 * SS, outline=(190, 210, 228, 200), width=SS)
+    h = r // 2
+    d.rectangle([c - h, c - h, c + h, c + h], outline=(255, 240, 200, 230), width=SS)
+    d.line([c - h + SS, c - h + SS, c - SS, c - h + SS], fill=(255, 255, 255, 220), width=SS)
+    finish(img, size, os.path.join(BLOCK_DIR, name + "-top.png"))
+
+
 def defense_sprites():
     turret("arc-coil", 64, "arc")
     turret("pulse-lance", 96, "lance")

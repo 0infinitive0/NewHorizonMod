@@ -17,7 +17,8 @@ import newhorizon.expand.block.env.RichWater;
 
 /**
  * Takes ore out of the water. On plain water it slowly filters out every ore its tier can handle. As soon as a
- * rich-water tile is under it, it locks to that ore, produces nothing else, and every rich tile counts five times.
+ * rich-water tile is under it, it locks to that ore, produces nothing else, and every rich tile counts ten times.
+ * Power is optional and doubles the speed.
  */
 public class FilterBlock extends Block{
 	/** Highest item hardness this filter can handle. */
@@ -25,7 +26,9 @@ public class FilterBlock extends Block{
 	/** Items per second a single plain water tile yields, for each ore. */
 	public float baseRate = 0.01f;
 	/** How much more a rich-water tile gives of its own ore. */
-	public float richMultiplier = 5f;
+	public float richMultiplier = 10f;
+	/** Power per tick that doubles the speed. It is not needed: without it the filter runs at the normal speed. */
+	public float powerUse = -1f;
 	/** Every ore that can be filtered out of the water. */
 	public static final Seq<Item> ores = new Seq<>();
 	
@@ -40,6 +43,15 @@ public class FilterBlock extends Block{
 		itemCapacity = 20;
 		placeableLiquid = true;
 		group = mindustry.world.meta.BlockGroup.none;
+	}
+	
+	@Override
+	public void init(){
+		if(powerUse < 0f)powerUse = 0.08f * size * size;
+		hasPower = true;
+		consumePower(powerUse).optional(true, true);
+		
+		super.init();
 	}
 	
 	/** What a filter at a position would produce. */
@@ -124,6 +136,7 @@ public class FilterBlock extends Block{
 		super.setStats();
 		
 		stats.add(Stat.drillSpeed, baseRate, StatUnit.itemsSecond);
+		stats.add(Stat.boostEffect, 2f, StatUnit.timesSpeed);
 		stats.add(Stat.drillTier, table -> {
 			table.row();
 			for(Item ore : ores){
@@ -152,8 +165,13 @@ public class FilterBlock extends Block{
 		
 		public String statusText(){
 			if(result.tooLow)return arc.Core.bundle.format("filter.too-low", result.locked.localizedName);
-			if(locked != null)return locked.localizedName + " " + Strings.fixed(rate * 60f, 1) + "/min";
+			if(locked != null)return locked.localizedName + " " + Strings.fixed(rate * boost() * 60f, 1) + "/min";
 			return arc.Core.bundle.get(rate > 0f ? "filter.plain" : "filter.nothing");
+		}
+		
+		/** 1 without power, 2 with all the power it can use. */
+		public float boost(){
+			return 1f + optionalEfficiency;
 		}
 		
 		@Override
@@ -195,7 +213,7 @@ public class FilterBlock extends Block{
 			if(rate <= 0f || items.total() >= itemCapacity)return;
 			
 			for(var entry : result.rates){
-				float value = progress.get(entry.key, 0f) + entry.value / 60f * delta() * efficiency;
+				float value = progress.get(entry.key, 0f) + entry.value / 60f * delta() * efficiency * boost();
 				if(value >= 1f && items.total() < itemCapacity){
 					value -= 1f;
 					offload(entry.key);

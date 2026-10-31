@@ -23,6 +23,7 @@ import newhorizon.expand.block.env.RichWater;
 import mindustry.content.Loadouts;
 import mindustry.game.EventType;
 import mindustry.game.Rules;
+import mindustry.gen.Groups;
 import mindustry.game.Schematics;
 import mindustry.game.Team;
 import mindustry.game.Waves;
@@ -64,7 +65,15 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 	public static void registerGrace(){
 		Events.on(EventType.PlayEvent.class, e -> Core.app.post(() -> {
 			if(state.rules.sector == null || state.rules.sector.planet != NHPlanets.hiemara)return;
-			if(state.rules.sector.id == NHPlanets.hiemara.startSector && state.rules.spawns.isEmpty())state.rules.hideSpawns = true;
+			if(state.rules.sector.id == NHPlanets.hiemara.startSector){
+				//The first sector is peaceful, also in a game that was saved before it was: no waves, no cold waves.
+				state.rules.spawns.clear();
+				state.rules.hideSpawns = true;
+				state.rules.weather.removeAll(w -> w.weather instanceof ColdWave);
+				Groups.weather.each(w -> w.weather() instanceof ColdWave, w -> w.remove());
+				Groups.unit.each(u -> u.team == state.rules.waveTeam, u -> u.remove());
+				return;
+			}
 			for(Weather.WeatherEntry entry : state.rules.weather){
 				if(entry.weather instanceof ColdWave)entry.cooldown = coldWaveGrace + Mathf.random(entry.minFrequency, entry.maxFrequency);
 			}
@@ -365,6 +374,8 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 		public void addWeather(Sector sector, Rules rules){
 			//cold waves keep coming back: the water freezes during them and thaws in between
 			rules.weather.clear();
+			//the peaceful first sector has none
+			if(sector.id == sector.planet.startSector)return;
 			Weather.WeatherEntry cold = new Weather.WeatherEntry(NHWeathers.coldWave, 1.5f * Time.toMinutes, 3f * Time.toMinutes, 3f * Time.toMinutes, 6f * Time.toMinutes);
 			rules.weather.add(cold);
 		}

@@ -80,14 +80,17 @@ public abstract class HaulAI extends AIController{
 		}
 		
 		//Not there after a long time: it can not be got to, or the unit is going in circles. Leave the block alone for a while.
-		if(target != legTarget){
-			legTarget = target;
-			legTime = 0f;
-		}
-		legTime += Time.delta;
-		if(legTime > legLimit){
-			legTime = 0f;
-			ignore(target, 1800f);
+		//Only ships have that trouble, aircraft fly straight to it.
+		if(unit.type.naval){
+			if(target != legTarget){
+				legTarget = target;
+				legTime = 0f;
+			}
+			legTime += Time.delta;
+			if(legTime > legLimit){
+				legTime = 0f;
+				ignore(target, 1800f);
+			}
 		}
 		
 		if(!unit.type.naval){
