@@ -6,13 +6,13 @@ import mindustry.content.Fx;
 import mindustry.content.StatusEffects;
 import mindustry.entities.abilities.RepairFieldAbility;
 import mindustry.entities.abilities.StatusFieldAbility;
-import mindustry.entities.abilities.UnitSpawnAbility;
 import mindustry.entities.bullet.LaserBoltBulletType;
 import mindustry.ai.ControlPathfinder;
 import mindustry.ai.Pathfinder;
 import mindustry.ai.UnitCommand;
 import mindustry.entities.bullet.FlakBulletType;
 import mindustry.gen.PathTile;
+import newhorizon.expand.units.ability.CarrierBayAbility;
 import newhorizon.expand.units.ability.IceBreakAbility;
 import mindustry.graphics.Pal;
 import mindustry.type.weapons.RepairBeamWeapon;
@@ -43,8 +43,9 @@ public class HiemaraWarships{
 			flying = true;
 			health = 120f;
 			hitSize = 8f;
-			speed = 3.6f;
+			speed = 4.2f;
 			accel = 0.08f;
+			useUnitCap = false;
 			drag = 0.04f;
 			rotateSpeed = 12f;
 			lowAltitude = true;
@@ -249,7 +250,10 @@ public class HiemaraWarships{
 			faceTarget = false;
 			armor = 14f;
 			
-			abilities.add(new UnitSpawnAbility(interceptor, 60f * 7f, 0f, -14f));
+			//a hangar with a very long reach: the fighters go out when an enemy comes within 70 tiles, and come back to be repaired
+			abilities.add(new CarrierBayAbility(interceptor, 6, 60f * 7f, 70f * 8f));
+			abilities.add(new RepairFieldAbility(35f, 90f, 100f));
+			range = 62f * 8f;
 			
 			weapons.add(new Weapon(){{
 				mirror = true;
