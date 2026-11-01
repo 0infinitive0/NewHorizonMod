@@ -5,7 +5,9 @@ import arc.Events;
 import arc.graphics.Color;
 import arc.math.Mathf;
 import arc.math.Rand;
+import arc.math.Angles;
 import arc.math.geom.Geometry;
+import arc.math.geom.Intersector;
 import arc.math.geom.Vec2;
 import arc.math.geom.Vec3;
 import arc.util.Time;
@@ -133,6 +135,8 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 		public float shallowShare = 0.2f;
 		/** Smallest all-shallow square, in tiles, that the core is put on, and that the enemy spawn needs. */
 		public int coreSquare = 7, spawnSquare = 5;
+		/** Tiles the enemy spawn keeps inside the dark border of the sector, enough for the biggest enemy base. */
+		public int spawnMargin = 24;
 		/** The wave at which the peaceful first sector is captured. */
 		public int firstSectorWinWave = 15;
 
@@ -237,23 +241,32 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 				fill(shallow, coreX, coreY, coreSquare);
 			}
 			
-			//The enemy comes from the shallow water that is the furthest away from the core.
+			//The enemy comes from the shallow water that is the furthest away from the core, but inside the map: the
+			//outer tiles are dark and can not be used. The spawn is the middle of a small all-shallow square, not its corner.
 			int spawnX = -1, spawnY = -1;
 			float far = -1f;
+			int half = spawnSquare / 2;
 			for(int x = 0; x < width; x++){
 				for(int y = 0; y < height; y++){
 					if(square[x + y * width] < spawnSquare)continue;
-					float dst = Mathf.dst(x, y, coreX, coreY);
+					int mx = x - half, my = y - half;
+					if(inside(mx, my) < spawnMargin)continue;
+					float dst = Mathf.dst(mx, my, coreX, coreY);
 					if(dst > far){
 						far = dst;
-						spawnX = x;
-						spawnY = y;
+						spawnX = mx;
+						spawnY = my;
 					}
 				}
 			}
 			if(spawnX < 0){
-				spawnX = Mathf.clamp(width - coreX, 8, width - 8);
-				spawnY = Mathf.clamp(height - coreY, 8, height - 8);
+				//opposite the core, as far out as the margin allows
+				float length = sector.getSize() / 2f - spawnMargin - 6f;
+				Vec2 away = new Vec2(width / 2f - coreX, height / 2f - coreY);
+				if(away.isZero())away.set(1f, 0f);
+				away.setLength(length);
+				spawnX = Mathf.clamp((int)(width / 2f + away.x), 2, width - 3);
+				spawnY = Mathf.clamp((int)(height / 2f + away.y), 2, height - 3);
 				fill(shallow, spawnX, spawnY, spawnSquare);
 			}
 			
@@ -302,6 +315,22 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 			
 			//only the naval and flying units of the base game
 			state.rules.spawns = Waves.generate(difficulty, new Rand(sector.id), false, false, true);
+		}
+		
+		/**
+		 * How far inside the playable area of the sector a tile is, in tiles. The game darkens everything outside a polygon
+		 * (the shape of the sector on the planet) and the outer tiles of the map; this is the same measure that it uses.
+		 */
+		float inside(int x, int y){
+			float offset = sector.rect.rotation + 90f;
+			float angle = Angles.angle(x, y, width / 2, height / 2) + offset;
+			float step = 360f / sector.tile.corners.length;
+			float prev = Mathf.round(angle, step), next = prev + step;
+			float length = sector.getSize() / 2f;
+			float rawDst = Intersector.distanceLinePoint(Tmp.v1.trns(prev, length), Tmp.v2.trns(next, length), Tmp.v3.set(x - width / 2, y - height / 2).rotate(offset)) / Mathf.sqrt3 - 1f;
+			float polygon = (length - 5f) - rawDst;
+			int edge = Math.min(Math.min(x, y), Math.min(width - 1 - x, height - 1 - y));
+			return Math.min(polygon, edge);
 		}
 		
 		/** For every tile, the size of the biggest all-shallow square that has the tile as its corner. */
