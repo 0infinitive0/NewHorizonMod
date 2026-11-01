@@ -21,6 +21,7 @@ public class HiemaraContent{
 		HiemaraWarships.load();
 		HiemaraBlocks.load();
 		HiemaraDefense.load();
+		HiemaraSupport.load();
 		HiemaraFactories.load();
 		CargoCap.load();
 	}
@@ -29,6 +30,7 @@ public class HiemaraContent{
 	public static arc.struct.Seq<mindustry.world.Block> buildable(){
 		var list = HiemaraBlocks.all.copy();
 		list.addAll(HiemaraDefense.all);
+		list.addAll(HiemaraSupport.all);
 		list.addAll(HiemaraFactories.all);
 		list.addAll(mindustry.Vars.content.blocks().select(b -> b instanceof mindustry.world.blocks.storage.CoreBlock));
 		return list;
@@ -42,6 +44,7 @@ public class HiemaraContent{
 		for(var unit : HiemaraUnits.navalLine)unit.shownPlanets.add(planet);
 		for(var unit : HiemaraUnits.tankerLine)unit.shownPlanets.add(planet);
 		for(var block : HiemaraDefense.all)block.shownPlanets.add(planet);
+		for(var block : HiemaraSupport.all)block.shownPlanets.add(planet);
 		for(var block : HiemaraFactories.all)block.shownPlanets.add(planet);
 		for(var unit : HiemaraWarships.all)unit.shownPlanets.add(planet);
 		for(var item : HiemaraFloors.ores)item.shownPlanets.add(planet);

@@ -87,6 +87,14 @@ public class HiemaraTechTree{
 			node(HiemaraBlocks.boatYard, () -> {
 				node(HiemaraDefense.warshipYard, with(Items.copper, 200, Items.lead, 150, Items.sand, 80), null, () -> {
 					node(HiemaraWarships.patrolBoat, () -> {
+						node(HiemaraWarships.medicSkiff, with(Items.copper, 150, Items.lead, 200, Items.sand, 100), null, () -> {
+							node(HiemaraWarships.rescueFrigate, with(Items.lead, 500, Items.titanium, 300, Items.silicon, 300), null, () -> {
+								node(HiemaraWarships.overdriveTender, with(Items.titanium, 600, Items.silicon, 500, Items.lead, 600), Seq.with(new Objectives.Research(HiemaraFactories.phaseWeaver)), () -> {});
+							});
+						});
+						node(HiemaraWarships.builderSkiff, with(Items.copper, 150, Items.lead, 150, Items.sand, 100), null, () -> {
+							node(HiemaraWarships.builderBarge, with(Items.lead, 400, Items.titanium, 200, Items.silicon, 200), null, () -> {});
+						});
 						node(HiemaraWarships.corvette, with(Items.copper, 200, Items.lead, 200, Items.sand, 100), null, () -> {
 							node(HiemaraWarships.missileFrigate, with(Items.lead, 500, Items.titanium, 300, Items.silicon, 200, Items.coal, 120), null, () -> {
 								node(HiemaraWarships.longbow, with(Items.lead, 900, Items.titanium, 600, Items.silicon, 400, Items.thorium, 150), null, () -> {
@@ -130,6 +138,13 @@ public class HiemaraTechTree{
 					node(HiemaraDefense.pulseLance, with(Items.lead, 300, Items.titanium, 150, Items.silicon, 100), null, () -> {
 						node(HiemaraDefense.vortexGenerator, with(Items.lead, 500, Items.titanium, 250, Items.silicon, 200, Items.sand, 200), null, () -> {});
 					});
+				});
+				node(HiemaraSupport.mender, with(Items.copper, 150, Items.lead, 150), null, () -> {
+					node(HiemaraSupport.mendProjector, with(Items.lead, 300, Items.titanium, 100, Items.silicon, 150), null, () -> {
+						node(HiemaraSupport.forceProjector, with(Items.lead, 500, Items.titanium, 300, Items.silicon, 400), null, () -> {});
+					});
+					node(HiemaraSupport.overdriveProjector, with(Items.lead, 500, Items.titanium, 300, Items.silicon, 400), Seq.with(new Objectives.Research(HiemaraFactories.plastaniumCompressor)), () -> {});
+					node(HiemaraSupport.repairPoint, with(Items.lead, 150, Items.copper, 150, Items.silicon, 100), null, () -> {});
 				});
 				node(HiemaraBlocks.windTurbine);
 				node(HiemaraBlocks.hydroGenerator);

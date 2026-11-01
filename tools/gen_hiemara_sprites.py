@@ -570,7 +570,8 @@ def warship(name, size, kind):
         d.line([c - w + 5 * SS, s // 4 + 3 * SS, c - w + 5 * SS, s - 11 * SS], fill=WARM, width=SS)
         d.rectangle([c + w - 11 * SS, s // 3, c + w - 3 * SS, s // 3 + 14 * SS], fill=(54, 70, 92), outline=HULL_D)
     else:
-        w = int(s * {"patrol": 0.2, "corvette": 0.22, "torpedo": 0.15, "mortar": 0.22, "frigate": 0.21, "longbow": 0.2}.get(kind, 0.2))
+        w = int(s * {"patrol": 0.2, "corvette": 0.22, "torpedo": 0.15, "mortar": 0.22, "frigate": 0.21, "longbow": 0.2,
+                     "medic": 0.2, "rescue": 0.2, "builder": 0.22, "barge": 0.24, "tender": 0.2}.get(kind, 0.2))
         d.polygon([(c, 2 * SS), (c + w, s // 5), (c + w, s - 3 * SS), (c - w, s - 3 * SS), (c - w, s // 5)], fill=hull, outline=HULL_D)
         d.rectangle([c - w + 2 * SS, s // 4, c + w - 2 * SS, s - 6 * SS], fill=deck)
         d.rectangle([c - 3 * SS, s // 2, c + 3 * SS, s // 2 + 6 * SS], fill=ICE_L, outline=HULL_D)
@@ -590,6 +591,24 @@ def warship(name, size, kind):
                 for dx in (-1, 1):
                     d.rectangle([c + dx * 7 * SS - 4 * SS, s // 4 + 3 * SS + dy * 12 * SS, c + dx * 7 * SS + 4 * SS, s // 4 + 3 * SS + dy * 12 * SS + 9 * SS],
                                 fill=WARM, outline=HULL_D)
+        elif kind in ("medic", "rescue"):
+            hc = (230, 250, 240)
+            arm = SS * (3 if kind == "medic" else 4)
+            d.rectangle([c - arm, s // 3, c + arm, s // 3 + 2 * arm * 2 // 2 + arm], fill=hc, outline=HULL_D)
+            d.rectangle([c - arm * 2, s // 3 + arm - SS, c + arm * 2, s // 3 + arm + SS * 2], fill=hc, outline=HULL_D)
+            if kind == "rescue":
+                for dx in (-1, 1):
+                    d.ellipse([c + dx * 8 * SS - 2 * SS, s - 14 * SS, c + dx * 8 * SS + 2 * SS, s - 10 * SS], fill=(120, 255, 190), outline=HULL_D)
+        elif kind in ("builder", "barge"):
+            d.rectangle([c - w + 2 * SS, s - s // 3, c + w - 2 * SS, s - 8 * SS], fill=(150, 130, 70), outline=HULL_D)
+            d.line([c - w // 2, s // 3 + 4 * SS, c + w // 2, s // 4], fill=WARM, width=3 * SS)
+            d.line([c + w // 2, s // 4, c + w // 2, s // 4 + 8 * SS], fill=ICE_L, width=SS)
+            if kind == "barge":
+                d.rectangle([c - 3 * SS, s // 2 + 2 * SS, c + 3 * SS, s // 2 + 8 * SS], fill=WARM, outline=HULL_D)
+        elif kind == "tender":
+            for rr in (5, 9, 13):
+                d.ellipse([c - rr * SS, s // 2 - rr * SS, c + rr * SS, s // 2 + rr * SS], outline=(255, 200, 90) if rr != 9 else (120, 255, 190), width=SS)
+            d.ellipse([c - 3 * SS, s // 2 - 3 * SS, c + 3 * SS, s // 2 + 3 * SS], fill=ICE_L, outline=HULL_D)
         elif kind == "longbow":
             for dx in (-1, 1):
                 d.ellipse([c + dx * 7 * SS - 5 * SS, s // 5, c + dx * 7 * SS + 5 * SS, s // 5 + 10 * SS], fill=(52, 66, 84), outline=HULL_D)
@@ -731,6 +750,43 @@ def manager(name, size):
         d.rectangle([m + 12 * SS, y + SS, s - m - 4 * SS, y + 4 * SS], fill=(90, 150, 190))
         d.rectangle([s - m - 10 * SS, y + SS, s - m - 4 * SS, y + 4 * SS], fill=WARM)
     finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+
+
+def support_block(name, size, kind):
+    """Menders and projectors: a plate with a window; the -top is the glowing ring the game pulses over it."""
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    cc = s // 2
+    col = {"mend": (120, 255, 190), "overdrive": (255, 190, 90), "force": (120, 200, 255)}.get(kind, (220, 220, 220))
+    if kind == "repair":
+        r = cc - 3 * SS
+        d.ellipse([cc - r, cc - r, cc + r, cc + r], fill=HULL, outline=HULL_D, width=2 * SS)
+        d.rectangle([cc - 2 * SS, 1 * SS, cc + 2 * SS, cc], fill=HULL_L, outline=HULL_D)
+        d.ellipse([cc - 3 * SS, cc - 3 * SS, cc + 3 * SS, cc + 3 * SS], fill=col, outline=HULL_D)
+        finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+        return
+    plate(d, size, color=(60, 86, 112))
+    rivets(d, size, max(4, size // 6))
+    m = max(5 * SS, s // 5)
+    d.rounded_rectangle([m, m, s - m, s - m], radius=2 * SS, fill=(24, 40, 62), outline=HULL_D, width=SS)
+    r = (s - 2 * m) // 2 - SS
+    if kind == "mend":
+        d.rectangle([cc - r // 4, cc - r, cc + r // 4, cc + r], fill=col)
+        d.rectangle([cc - r, cc - r // 4, cc + r, cc + r // 4], fill=col)
+    elif kind == "overdrive":
+        d.polygon([(cc + r // 3, cc - r), (cc - r // 2, cc + r // 8), (cc, cc + r // 8), (cc - r // 3, cc + r), (cc + r // 2, cc - r // 8), (cc, cc - r // 8)], fill=col, outline=HULL_D)
+    else:
+        import math
+        pts = [(cc + math.cos(math.pi / 3 * i) * r, cc + math.sin(math.pi / 3 * i) * r) for i in range(6)]
+        d.polygon(pts, outline=col, width=2 * SS)
+        d.ellipse([cc - r // 3, cc - r // 3, cc + r // 3, cc + r // 3], fill=col)
+    finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+    # the ring that is drawn over it
+    top = canvas(size)
+    t = ImageDraw.Draw(top)
+    t.rounded_rectangle([m - SS, m - SS, s - m + SS, s - m + SS], radius=2 * SS, outline=col + (200,), width=SS)
+    finish(top, size, os.path.join(BLOCK_DIR, name + "-top.png"))
 
 
 def defense_sprites():

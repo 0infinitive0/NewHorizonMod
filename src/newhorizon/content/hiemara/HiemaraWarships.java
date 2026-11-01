@@ -4,7 +4,13 @@ import arc.graphics.Color;
 import arc.struct.Seq;
 import mindustry.content.Fx;
 import mindustry.content.StatusEffects;
+import mindustry.entities.abilities.RepairFieldAbility;
+import mindustry.entities.abilities.StatusFieldAbility;
 import mindustry.entities.abilities.UnitSpawnAbility;
+import mindustry.entities.bullet.LaserBoltBulletType;
+import mindustry.ai.UnitCommand;
+import mindustry.graphics.Pal;
+import mindustry.type.weapons.RepairBeamWeapon;
 import mindustry.entities.bullet.ArtilleryBulletType;
 import mindustry.entities.bullet.BasicBulletType;
 import mindustry.entities.bullet.MissileBulletType;
@@ -20,6 +26,7 @@ import newhorizon.expand.units.hiemara.SubmarineUnitType;
  * ships and an aircraft carrier. All of them are ordinary units, with the ordinary unit cap and commands.
  */
 public class HiemaraWarships{
+	public static UnitType medicSkiff, rescueFrigate, builderSkiff, builderBarge, overdriveTender;
 	public static UnitType patrolBoat, corvette, torpedoBoat, mortarSkiff, missileFrigate, abyss, longbow, aircraftCarrier, interceptor;
 	
 	public static final Seq<UnitType> all = new Seq<>();
@@ -253,6 +260,121 @@ public class HiemaraWarships{
 			}});
 		}};
 		
+		medicSkiff = new UnitType("medic-skiff"){{
+			constructor = UnitWaterMove::create;
+			health = 340f;
+			hitSize = 11f;
+			speed = 1.1f;
+			accel = 0.4f;
+			drag = 0.13f;
+			rotateSpeed = 3.2f;
+			faceTarget = false;
+			armor = 1f;
+			
+			weapons.add(new Weapon(){{
+				mirror = true;
+				alternate = true;
+				x = 3.5f;
+				y = 3f;
+				reload = 22f;
+				shootSound = Sounds.shoot;
+				bullet = new LaserBoltBulletType(4.6f, 9f){{
+					lifetime = 34f;
+					healPercent = 5f;
+					collidesTeam = true;
+					backColor = Pal.heal;
+					frontColor = Color.white;
+				}};
+			}});
+		}};
+		
+		rescueFrigate = new UnitType("rescue-frigate"){{
+			constructor = UnitWaterMove::create;
+			health = 1500f;
+			hitSize = 22f;
+			speed = 0.85f;
+			accel = 0.2f;
+			drag = 0.17f;
+			rotateSpeed = 1.9f;
+			faceTarget = false;
+			armor = 6f;
+			
+			weapons.add(new RepairBeamWeapon("repair-beam-weapon-center"){{
+				x = 9f;
+				y = -4f;
+				shootY = 6f;
+				beamWidth = 0.8f;
+				repairSpeed = 0.7f;
+				targetBuildings = true;
+				bullet = new mindustry.entities.bullet.BulletType(){{
+					maxRange = 130f;
+				}};
+			}});
+		}};
+		
+		builderSkiff = new UnitType("builder-skiff"){{
+			constructor = UnitWaterMove::create;
+			health = 360f;
+			hitSize = 12f;
+			speed = 1.0f;
+			accel = 0.35f;
+			drag = 0.14f;
+			rotateSpeed = 3f;
+			faceTarget = false;
+			armor = 1f;
+			buildSpeed = 0.6f;
+			itemCapacity = 30;
+			defaultCommand = UnitCommand.rebuildCommand;
+		}};
+		
+		builderBarge = new UnitType("builder-barge"){{
+			constructor = UnitWaterMove::create;
+			health = 900f;
+			hitSize = 18f;
+			speed = 0.9f;
+			accel = 0.25f;
+			drag = 0.16f;
+			rotateSpeed = 2.4f;
+			faceTarget = false;
+			armor = 4f;
+			buildSpeed = 1.2f;
+			itemCapacity = 60;
+			defaultCommand = UnitCommand.rebuildCommand;
+		}};
+		
+		overdriveTender = new UnitType("overdrive-tender"){{
+			constructor = UnitWaterMove::create;
+			health = 1300f;
+			hitSize = 20f;
+			speed = 0.8f;
+			accel = 0.2f;
+			drag = 0.17f;
+			rotateSpeed = 1.8f;
+			faceTarget = false;
+			armor = 5f;
+			
+			abilities.add(new StatusFieldAbility(mindustry.content.StatusEffects.overdrive, 60f * 6f, 60f * 5f, 90f));
+			abilities.add(new RepairFieldAbility(40f, 60f * 4f, 80f));
+			
+			weapons.add(new Weapon(){{
+				mirror = true;
+				alternate = true;
+				x = 6f;
+				y = 5f;
+				reload = 20f;
+				rotate = true;
+				shootSound = Sounds.shoot;
+				bullet = new BasicBulletType(3.4f, 12f){{
+					width = 5f;
+					height = 8f;
+					lifetime = 42f;
+					frontColor = Color.valueOf("ffe0a3");
+					backColor = Color.valueOf("f29c4a");
+				}};
+			}});
+		}};
+		
+		all.addAll(medicSkiff, rescueFrigate, builderSkiff, builderBarge, overdriveTender);
 		all.addAll(patrolBoat, corvette, torpedoBoat, mortarSkiff, missileFrigate, abyss, longbow, aircraftCarrier, interceptor);
 		
 		//The first boat comes with the yard.

@@ -191,6 +191,11 @@ public class HiemaraDefense{
 				new UnitPlan(HiemaraWarships.missileFrigate, 70f * 60f, with(Items.lead, 220, Items.titanium, 140, Items.silicon, 100, Items.coal, 60)),
 				new UnitPlan(HiemaraWarships.abyss, 55f * 60f, with(Items.lead, 160, Items.titanium, 110, Items.silicon, 80, Items.sand, 60)),
 				new UnitPlan(HiemaraWarships.longbow, 110f * 60f, with(Items.lead, 400, Items.titanium, 300, Items.silicon, 220, Items.thorium, 80)),
+				new UnitPlan(HiemaraWarships.medicSkiff, 18f * 60f, with(Items.copper, 40, Items.lead, 60, Items.sand, 40)),
+				new UnitPlan(HiemaraWarships.builderSkiff, 16f * 60f, with(Items.copper, 60, Items.lead, 40, Items.sand, 20)),
+				new UnitPlan(HiemaraWarships.builderBarge, 30f * 60f, with(Items.copper, 80, Items.lead, 150, Items.titanium, 40, Items.silicon, 40)),
+				new UnitPlan(HiemaraWarships.rescueFrigate, 60f * 60f, with(Items.lead, 250, Items.titanium, 150, Items.silicon, 150, Items.coal, 40)),
+				new UnitPlan(HiemaraWarships.overdriveTender, 70f * 60f, with(Items.lead, 300, Items.titanium, 200, Items.silicon, 200, Items.phaseFabric, 40)),
 				new UnitPlan(HiemaraWarships.aircraftCarrier, 200f * 60f, with(Items.lead, 900, Items.titanium, 700, Items.silicon, 600, Items.thorium, 300, Items.tungsten, 120))
 			);
 		}};
