@@ -23,6 +23,7 @@ public class HiemaraTechTree{
 					});
 				});
 				node(HiemaraBlocks.sandDredger);
+				node(HiemaraBlocks.sonar, with(Items.copper, 150, Items.lead, 200, Items.silicon, 80), null, () -> {});
 				node(HiemaraBlocks.iceHarvester);
 				node(HiemaraBlocks.sporeCultivator, () -> {
 					node(HiemaraBlocks.floatingSporePress, () -> {
@@ -132,8 +133,15 @@ public class HiemaraTechTree{
 						node(HiemaraBlocks.surgeTower);
 					});
 				});
-				node(HiemaraBlocks.heater, Seq.with(new Objectives.Research(HiemaraBlocks.generator)), () -> {});
+				node(HiemaraBlocks.heater, Seq.with(new Objectives.Research(HiemaraBlocks.generator)), () -> {
+					node(HiemaraBlocks.heater2, with(Items.copper, 300, Items.lead, 400, Items.silicon, 150, Items.sand, 200), null, () -> {
+						node(HiemaraBlocks.heater3, with(Items.lead, 800, Items.titanium, 400, Items.silicon, 500, Items.thorium, 150), null, () -> {});
+					});
+				});
 				node(HiemaraDefense.arcCoil, () -> {
+					node(HiemaraDefense.flakCannon, with(Items.copper, 250, Items.lead, 150, Items.sand, 100), null, () -> {
+						node(HiemaraDefense.skyneedle, with(Items.lead, 400, Items.titanium, 200, Items.silicon, 250), null, () -> {});
+					});
 					node(HiemaraDefense.navalMine);
 					node(HiemaraDefense.pulseLance, with(Items.lead, 300, Items.titanium, 150, Items.silicon, 100), null, () -> {
 						node(HiemaraDefense.vortexGenerator, with(Items.lead, 500, Items.titanium, 250, Items.silicon, 200, Items.sand, 200), null, () -> {});

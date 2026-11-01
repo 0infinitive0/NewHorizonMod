@@ -19,6 +19,7 @@ import newhorizon.content.NHUnitTypes;
 import newhorizon.expand.block.hiemara.ElectricSeparator;
 import newhorizon.expand.block.hiemara.FusionReactor;
 import newhorizon.expand.block.hiemara.HydroGenerator;
+import newhorizon.expand.block.hiemara.Sonar;
 import newhorizon.expand.block.hiemara.WindTurbine;
 import newhorizon.expand.block.production.SandDredger;
 import newhorizon.expand.block.production.ice.IceMiningStation;
@@ -44,7 +45,8 @@ public class HiemaraBlocks{
 	public static CoreBlock coreMk2, coreMk3;
 	public static StorageBlock container, vault, silo;
 	public static LaunchPad launchPad;
-	public static FloatingHeater heater;
+	public static FloatingHeater heater, heater2, heater3;
+	public static Sonar sonar;
 	public static FloatingGenerator generator;
 	public static FloatingNode node;
 	
@@ -231,12 +233,15 @@ public class HiemaraBlocks{
 			laserRange = 8f;
 			alwaysUnlocked = true;
 		}};
-		heater = new FloatingHeater("floating-heater"){{
-			requirements(Category.effect, with(Items.copper, 50, Items.lead, 70, Items.sand, 30));
+		heater = heaterBlock("floating-heater", 1, 8f, 3f, 1.2f, with(Items.copper, 50, Items.lead, 70, Items.sand, 30));
+		heater2 = heaterBlock("floating-heater-2", 2, 18f, 15f, 5f, with(Items.copper, 150, Items.lead, 200, Items.sand, 100, Items.silicon, 60));
+		heater3 = heaterBlock("floating-heater-3", 3, 25f, 30f, 10f, with(Items.lead, 400, Items.titanium, 150, Items.silicon, 200, Items.thorium, 50));
+		
+		sonar = new Sonar("floating-sonar"){{
+			requirements(Category.effect, with(Items.copper, 80, Items.lead, 100, Items.silicon, 40));
 			size = 2;
-			health = 200;
-			radius = 8f;
-			consumePower(1.2f);
+			health = 300;
+			consumePower(0.6f);
 		}};
 		
 		improvedPort1 = improvedPort("improved-port-1", 3, 2000, 8f, 40, with(Items.lead, 150, Items.copper, 120, Items.sand, 100, Items.silicon, 40));
@@ -337,7 +342,7 @@ public class HiemaraBlocks{
 		}};
 		
 		all.addAll(
-			filterMk1, filterMk2, filterMk3, filterMk4, port, depot, cargoManager, coreMk2, coreMk3, container, vault, silo, launchPad, airPad, boatYard, hangar, dock, heater, generator, node,
+			filterMk1, filterMk2, filterMk3, filterMk4, port, depot, cargoManager, coreMk2, coreMk3, container, vault, silo, launchPad, airPad, boatYard, hangar, dock, heater, heater2, heater3, sonar, generator, node,
 			improvedPort1, improvedPort2, improvedPort3, distributor1, distributor2, distributor3, liquidPort, liquidDepot,
 			sandDredger, sporeCultivator, floatingSporePress, floatingCoalCentrifuge, floatingPyratiteMixer, floatingSiliconSmelter, floatingSiliconCrucible
 		);
@@ -453,6 +458,17 @@ public class HiemaraBlocks{
 			iceHarvester, windTurbine, hydroGenerator, floatingSolar, battery1, battery2, battery3, nodeLarge, surgeTower,
 			floatingPump, floatingRotaryPump, liquidContainer, liquidTank, electricSeparator, fusionReactor
 		);
+	}
+	
+	private static FloatingHeater heaterBlock(String name, int blockSize, float reach, float thaw, float power, ItemStack[] cost){
+		return new FloatingHeater(name){{
+			requirements(Category.effect, cost);
+			size = blockSize;
+			health = 150 * blockSize * blockSize;
+			radius = reach;
+			thawPerSecond = thaw;
+			consumePower(power);
+		}};
 	}
 	
 	private static Battery battery(String name, int blockSize, float stored, ItemStack[] cost){

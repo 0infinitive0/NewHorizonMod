@@ -246,7 +246,9 @@ def heater(name, size):
     plate(d, size, color=(86, 70, 66))
     rivets(d, size)
     c = s // 2
+    k = size / 64.0
     for r, col in ((20, (120, 50, 30)), (14, (230, 110, 50)), (8, WARM)):
+        r = max(2, int(r * k * 1.0)) if size >= 32 else r
         d.ellipse([c - r * SS, c - r * SS, c + r * SS, c + r * SS], fill=col, outline=HULL_D, width=SS)
     finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
 
@@ -495,6 +497,16 @@ def turret(name, size, kind):
             d.line([c + dx * 4 * SS, c, c + dx * 4 * SS, 3 * SS], fill=(150, 215, 255), width=2 * SS)
             d.ellipse([c + dx * 4 * SS - 2 * SS, 2 * SS, c + dx * 4 * SS + 2 * SS, 6 * SS], fill=ICE_L, outline=HULL_D)
         d.ellipse([c - 3 * SS, c - 3 * SS, c + 3 * SS, c + 3 * SS], fill=(120, 200, 255), outline=HULL_D)
+    elif kind == "flak":
+        for dx in (-1, 1):
+            d.rectangle([c + dx * 4 * SS - 2 * SS, 1 * SS, c + dx * 4 * SS + 2 * SS, c], fill=HULL_L, outline=HULL_D)
+            d.ellipse([c + dx * 4 * SS - 3 * SS, 0, c + dx * 4 * SS + 3 * SS, 4 * SS], fill=(40, 52, 68), outline=HULL_D)
+        d.ellipse([c - 5 * SS, c - 5 * SS, c + 5 * SS, c + 5 * SS], fill=(150, 130, 70), outline=HULL_D, width=SS)
+    elif kind == "needle":
+        for dx in (-1, 0, 1):
+            d.polygon([(c + dx * 7 * SS, 0), (c + dx * 7 * SS + 2 * SS, 6 * SS), (c + dx * 7 * SS - 2 * SS, 6 * SS)], fill=(200, 230, 255), outline=HULL_D)
+            d.rectangle([c + dx * 7 * SS - 2 * SS, 6 * SS, c + dx * 7 * SS + 2 * SS, c - SS], fill=HULL_L, outline=HULL_D)
+        d.ellipse([c - 6 * SS, c - 6 * SS, c + 6 * SS, c + 6 * SS], fill=(120, 190, 255), outline=HULL_D, width=SS)
     elif kind == "lance":
         d.rounded_rectangle([c - 3 * SS, 2 * SS, c + 3 * SS, c], radius=SS, fill=HULL_L, outline=HULL_D, width=SS)
         d.polygon([(c - 3 * SS, 2 * SS), (c, 0), (c + 3 * SS, 2 * SS)], fill=(150, 215, 255), outline=HULL_D)
@@ -776,6 +788,11 @@ def support_block(name, size, kind):
         d.rectangle([cc - r, cc - r // 4, cc + r, cc + r // 4], fill=col)
     elif kind == "overdrive":
         d.polygon([(cc + r // 3, cc - r), (cc - r // 2, cc + r // 8), (cc, cc + r // 8), (cc - r // 3, cc + r), (cc + r // 2, cc - r // 8), (cc, cc - r // 8)], fill=col, outline=HULL_D)
+    elif kind == "sonar":
+        for k in (1, 2, 3):
+            rr = r * k // 3
+            d.ellipse([cc - rr, cc - rr, cc + rr, cc + rr], outline=(120, 220, 255), width=SS)
+        d.line([cc, cc, cc + r * 3 // 4, cc - r * 3 // 4], fill=(120, 255, 190), width=2 * SS)
     else:
         import math
         pts = [(cc + math.cos(math.pi / 3 * i) * r, cc + math.sin(math.pi / 3 * i) * r) for i in range(6)]
@@ -787,6 +804,32 @@ def support_block(name, size, kind):
     t = ImageDraw.Draw(top)
     t.rounded_rectangle([m - SS, m - SS, s - m + SS, s - m + SS], radius=2 * SS, outline=col + (200,), width=SS)
     finish(top, size, os.path.join(BLOCK_DIR, name + "-top.png"))
+
+
+def rich_water_ice(ice):
+    """The ice that lies over rich water: vanilla ice, tinted, with the specks of the ore in it."""
+    base = Image.open(ice).convert("RGBA")
+    for name, (tint, light) in RICH.items():
+        rng = random.Random(name + "ice")
+        img = base.copy()
+        px = img.load()
+        for x in range(32):
+            for y in range(32):
+                r, g, b, a = px[x, y]
+                px[x, y] = tuple(int(c * 0.65 + t * 0.35) for c, t in zip((r, g, b), tint)) + (a,)
+        big = img.resize((32 * SS, 32 * SS), Image.NEAREST)
+        d = ImageDraw.Draw(big)
+        dark = tuple(int(c * 0.35) for c in tint)
+        placed = []
+        for _ in range(60):
+            if len(placed) >= 9:
+                break
+            x, y = rng.randrange(4, 28), rng.randrange(4, 28)
+            if any((x - px_) ** 2 + (y - py_) ** 2 < 36 for px_, py_ in placed):
+                continue
+            placed.append((x, y))
+            rich_shape(name, d, x, y, light, dark, rng)
+        big.resize((32, 32), Image.LANCZOS).save(os.path.join(ENV_DIR, "rich-water-%s-ice.png" % name))
 
 
 def defense_sprites():

@@ -72,6 +72,7 @@ public class HiemaraWarships{
 			
 			weapons.add(new Weapon(){{
 				mirror = true;
+				rotate = true;
 				alternate = true;
 				x = 3.5f;
 				y = 3f;
@@ -100,6 +101,7 @@ public class HiemaraWarships{
 			
 			weapons.add(new Weapon(){{
 				mirror = true;
+				rotate = true;
 				alternate = true;
 				x = 4.5f;
 				y = 1f;
@@ -126,7 +128,7 @@ public class HiemaraWarships{
 				x = 0f;
 				y = 5f;
 				reload = 100f;
-				rotate = false;
+				rotate = true;
 				shootSound = Sounds.shootMissile;
 				bullet = torpedo(2.4f, 100f, 44f, 62);
 			}});
@@ -169,6 +171,7 @@ public class HiemaraWarships{
 			for(float py : new float[]{7f, -7f}){
 				weapons.add(new Weapon(){{
 					mirror = true;
+				rotate = true;
 					alternate = true;
 					x = 8f;
 					y = py;
@@ -199,7 +202,7 @@ public class HiemaraWarships{
 				x = 4.5f;
 				y = 8f;
 				reload = 110f;
-				rotate = false;
+				rotate = true;
 				shootSound = Sounds.shootMissile;
 				bullet = torpedo(2.6f, 130f, 50f, 70);
 			}});
@@ -273,6 +276,7 @@ public class HiemaraWarships{
 			
 			weapons.add(new Weapon(){{
 				mirror = true;
+				rotate = true;
 				alternate = true;
 				x = 3.5f;
 				y = 3f;

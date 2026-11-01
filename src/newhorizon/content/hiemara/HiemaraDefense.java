@@ -14,7 +14,10 @@ import mindustry.gen.Sounds;
 import mindustry.graphics.Layer;
 import mindustry.type.Category;
 import mindustry.world.Block;
+import mindustry.world.blocks.defense.turrets.ItemTurret;
 import mindustry.world.blocks.defense.turrets.LiquidTurret;
+import mindustry.entities.bullet.FlakBulletType;
+import mindustry.entities.bullet.MissileBulletType;
 import mindustry.world.blocks.defense.turrets.PowerTurret;
 import mindustry.world.blocks.units.UnitFactory;
 import mindustry.world.blocks.units.UnitFactory.UnitPlan;
@@ -28,7 +31,8 @@ import static mindustry.type.ItemStack.with;
  * the naval mine and the warship yard that makes the warships. All of them can be built on deep water.
  */
 public class HiemaraDefense{
-	public static PowerTurret arcCoil, pulseLance;
+	public static PowerTurret arcCoil, pulseLance, skyneedle;
+	public static ItemTurret flakCannon;
 	public static LiquidTurret tideCannon, whirlMortar;
 	public static VortexGenerator vortexGenerator;
 	public static NavalMine navalMine;
@@ -83,6 +87,92 @@ public class HiemaraDefense{
 				length = 26f * 8f;
 				ammoMultiplier = 1f;
 				pierceCap = 4;
+			}};
+		}};
+		
+		flakCannon = new ItemTurret("flak-cannon"){{
+			requirements(Category.turret, with(Items.copper, 85, Items.lead, 45, Items.sand, 30));
+			size = 2;
+			health = 520;
+			range = 27f * 8f;
+			reload = 18f;
+			rotateSpeed = 15f;
+			inaccuracy = 17f;
+			shootCone = 35f;
+			targetGround = false;
+			placeableLiquid = true;
+			shoot.shotDelay = 5f;
+			shoot.shots = 2;
+			shootSound = Sounds.shootScatter;
+			ammo(
+				Items.scrap, new FlakBulletType(4f, 3){{
+					lifetime = 60f;
+					ammoMultiplier = 5f;
+					reloadMultiplier = 0.5f;
+					width = 6f;
+					height = 8f;
+					hitEffect = Fx.flakExplosion;
+					splashDamage = 33f;
+					splashDamageRadius = 24f;
+				}},
+				Items.lead, new FlakBulletType(4.2f, 3){{
+					lifetime = 60f;
+					ammoMultiplier = 4f;
+					width = 6f;
+					height = 8f;
+					hitEffect = Fx.flakExplosion;
+					splashDamage = 40f;
+					splashDamageRadius = 15f;
+				}},
+				Items.metaglass, new FlakBulletType(4f, 3){{
+					lifetime = 60f;
+					ammoMultiplier = 5f;
+					width = 6f;
+					height = 8f;
+					hitEffect = Fx.flakExplosion;
+					splashDamage = 45f;
+					splashDamageRadius = 20f;
+					fragBullets = 6;
+					fragBullet = new mindustry.entities.bullet.BasicBulletType(3f, 5){{
+						width = 5f;
+						height = 12f;
+						shrinkY = 1f;
+						lifetime = 20f;
+						backColor = Color.valueOf("ffe0a3");
+						despawnEffect = Fx.none;
+						collidesGround = false;
+					}};
+				}}
+			);
+		}};
+		
+		skyneedle = new PowerTurret("skyneedle"){{
+			requirements(Category.turret, with(Items.lead, 150, Items.titanium, 80, Items.silicon, 100));
+			size = 3;
+			health = 1100;
+			range = 36f * 8f;
+			reload = 70f;
+			rotateSpeed = 9f;
+			targetGround = false;
+			targetAir = true;
+			placeableLiquid = true;
+			shoot.shots = 3;
+			shoot.shotDelay = 6f;
+			shootSound = Sounds.shootMissile;
+			consumePower(5f);
+			shootType = new MissileBulletType(4.2f, 16f){{
+				lifetime = 85f;
+				homingPower = 0.18f;
+				homingRange = 160f;
+				splashDamage = 40f;
+				splashDamageRadius = 28f;
+				collidesGround = false;
+				width = 7f;
+				height = 10f;
+				trailColor = Color.valueOf("bfe6ff");
+				trailLength = 9;
+				trailWidth = 1.6f;
+				hitEffect = despawnEffect = Fx.blastExplosion;
 			}};
 		}};
 		
@@ -200,6 +290,6 @@ public class HiemaraDefense{
 			);
 		}};
 		
-		all.addAll(arcCoil, pulseLance, tideCannon, whirlMortar, vortexGenerator, navalMine, warshipYard);
+		all.addAll(flakCannon, skyneedle, arcCoil, pulseLance, tideCannon, whirlMortar, vortexGenerator, navalMine, warshipYard);
 	}
 }

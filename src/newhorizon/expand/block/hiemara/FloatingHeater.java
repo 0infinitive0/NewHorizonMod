@@ -1,6 +1,7 @@
 package newhorizon.expand.block.hiemara;
 
 import arc.math.Mathf;
+import arc.struct.Seq;
 import arc.util.Time;
 import mindustry.Vars;
 import mindustry.gen.Building;
@@ -21,6 +22,9 @@ public class FloatingHeater extends Block{
 	public float radius = 8f;
 	/** Ice tiles thawed per second, while powered. */
 	public float thawPerSecond = 3f;
+	
+	protected static final Seq<Tile> ownTiles = new Seq<>();
+	protected final int timerOwn = timers++;
 	
 	public FloatingHeater(String name){
 		super(name);
@@ -64,6 +68,13 @@ public class FloatingHeater extends Block{
 			
 			if(Vars.net.client() || efficiency <= 0f)return;
 			
+			//The ice under the heater itself goes first, although it has a building on it.
+			if(timer(timerOwn, 30f)){
+				for(Tile own : tile.getLinkedTilesAs(block, ownTiles)){
+					if(own.floor() instanceof IceFloor)((IceFloor)own.floor()).melt(own);
+				}
+			}
+			
 			thawBudget += thawPerSecond / 60f * efficiency * Time.delta;
 			while(thawBudget >= 1f){
 				thawBudget -= 1f;
@@ -73,7 +84,7 @@ public class FloatingHeater extends Block{
 		
 		protected void thawRandom(){
 			int r = (int)radius;
-			for(int tries = 0; tries < 12; tries++){
+			for(int tries = 0, max = 12 + (int)(radius * 2f); tries < max; tries++){
 				Tile other = Vars.world.tile(tile.x + Mathf.random(-r, r), tile.y + Mathf.random(-r, r));
 				if(other == null || !within(other.worldx(), other.worldy(), radius * tilesize))continue;
 				if(other.floor() instanceof IceFloor && other.build == null){

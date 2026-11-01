@@ -33,6 +33,8 @@ public class IceFloor extends Floor{
 		//ore that lay under the water stays visible and mineable under the ice
 		supportsOverlay = melted.supportsOverlay;
 		albedo = 0.65f;
+		//ice over rich water shows the ore in its colour on the map
+		if(melted instanceof RichWater)mapColor = Blocks.ice.mapColor.cpy().lerp(((RichWater)melted).richItem.color, 0.55f);
 	}
 
 	/** Creates an ice floor for every water floor that is registered at this point. */
@@ -87,6 +89,16 @@ public class IceFloor extends Floor{
 	public void load(){
 		super.load();
 
+		//Ice over rich water has a picture of its own, with the ore in it.
+		if(melted instanceof RichWater){
+			TextureRegion rich = Core.atlas.find(melted.name + "-ice");
+			if(rich.found()){
+				variantRegions = new TextureRegion[]{rich};
+				fullIcon = uiIcon = region = rich;
+				return;
+			}
+		}
+		
 		//Share the vanilla ice sprites.
 		variantRegions = new TextureRegion[3];
 		for(int i = 0; i < variantRegions.length; i++){
