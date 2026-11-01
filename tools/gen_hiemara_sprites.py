@@ -583,7 +583,7 @@ def warship(name, size, kind):
         d.rectangle([c + w - 11 * SS, s // 3, c + w - 3 * SS, s // 3 + 14 * SS], fill=(54, 70, 92), outline=HULL_D)
     else:
         w = int(s * {"patrol": 0.2, "corvette": 0.22, "torpedo": 0.15, "mortar": 0.22, "frigate": 0.21, "longbow": 0.2,
-                     "medic": 0.2, "rescue": 0.2, "builder": 0.22, "barge": 0.24, "tender": 0.2}.get(kind, 0.2))
+                     "medic": 0.2, "rescue": 0.2, "builder": 0.22, "barge": 0.24, "tender": 0.2, "aa": 0.21, "breaker": 0.24}.get(kind, 0.2))
         d.polygon([(c, 2 * SS), (c + w, s // 5), (c + w, s - 3 * SS), (c - w, s - 3 * SS), (c - w, s // 5)], fill=hull, outline=HULL_D)
         d.rectangle([c - w + 2 * SS, s // 4, c + w - 2 * SS, s - 6 * SS], fill=deck)
         d.rectangle([c - 3 * SS, s // 2, c + 3 * SS, s // 2 + 6 * SS], fill=ICE_L, outline=HULL_D)
@@ -617,6 +617,16 @@ def warship(name, size, kind):
             d.line([c + w // 2, s // 4, c + w // 2, s // 4 + 8 * SS], fill=ICE_L, width=SS)
             if kind == "barge":
                 d.rectangle([c - 3 * SS, s // 2 + 2 * SS, c + 3 * SS, s // 2 + 8 * SS], fill=WARM, outline=HULL_D)
+        elif kind == "aa":
+            for dx in (-1, 1):
+                d.ellipse([c + dx * 7 * SS - 4 * SS, s // 4, c + dx * 7 * SS + 4 * SS, s // 4 + 8 * SS], fill=(40, 52, 68), outline=HULL_D)
+                d.rectangle([c + dx * 7 * SS - SS, s // 4 - 5 * SS, c + dx * 7 * SS + SS, s // 4 + 3 * SS], fill=ICE_L, outline=HULL_D)
+            d.polygon([(c, s - 18 * SS), (c + 4 * SS, s - 10 * SS), (c - 4 * SS, s - 10 * SS)], fill=WARM, outline=HULL_D)
+        elif kind == "breaker":
+            d.polygon([(c, 0), (c + w, s // 4), (c - w, s // 4)], fill=(200, 230, 255), outline=HULL_D)
+            for i in range(3):
+                x = c - w + 3 * SS + i * ((2 * w - 6 * SS) // 3)
+                d.polygon([(x, s // 4 + 3 * SS), (x + 3 * SS, s // 4 + 3 * SS), (x + 3 * SS // 2, s // 4 + 9 * SS)], fill=(120, 180, 230), outline=HULL_D)
         elif kind == "tender":
             for rr in (5, 9, 13):
                 d.ellipse([c - rr * SS, s // 2 - rr * SS, c + rr * SS, s // 2 + rr * SS], outline=(255, 200, 90) if rr != 9 else (120, 255, 190), width=SS)

@@ -8,7 +8,12 @@ import mindustry.entities.abilities.RepairFieldAbility;
 import mindustry.entities.abilities.StatusFieldAbility;
 import mindustry.entities.abilities.UnitSpawnAbility;
 import mindustry.entities.bullet.LaserBoltBulletType;
+import mindustry.ai.ControlPathfinder;
+import mindustry.ai.Pathfinder;
 import mindustry.ai.UnitCommand;
+import mindustry.entities.bullet.FlakBulletType;
+import mindustry.gen.PathTile;
+import newhorizon.expand.units.ability.IceBreakAbility;
 import mindustry.graphics.Pal;
 import mindustry.type.weapons.RepairBeamWeapon;
 import mindustry.entities.bullet.ArtilleryBulletType;
@@ -26,6 +31,7 @@ import newhorizon.expand.units.hiemara.SubmarineUnitType;
  * ships and an aircraft carrier. All of them are ordinary units, with the ordinary unit cap and commands.
  */
 public class HiemaraWarships{
+	public static UnitType skywatch, icebreaker;
 	public static UnitType medicSkiff, rescueFrigate, builderSkiff, builderBarge, overdriveTender;
 	public static UnitType patrolBoat, corvette, torpedoBoat, mortarSkiff, missileFrigate, abyss, longbow, aircraftCarrier, interceptor;
 	
@@ -378,6 +384,113 @@ public class HiemaraWarships{
 			}});
 		}};
 		
+		skywatch = new UnitType("skywatch"){{
+			constructor = UnitWaterMove::create;
+			health = 1100f;
+			hitSize = 20f;
+			speed = 0.85f;
+			accel = 0.2f;
+			drag = 0.17f;
+			rotateSpeed = 1.9f;
+			faceTarget = false;
+			armor = 5f;
+			targetGround = false;
+			targetAir = true;
+			
+			weapons.add(new Weapon(){{
+				mirror = true;
+				alternate = true;
+				rotate = true;
+				x = 7f;
+				y = 5f;
+				reload = 16f;
+				inaccuracy = 8f;
+				shootSound = Sounds.shootScatter;
+				bullet = new FlakBulletType(4.4f, 3){{
+					lifetime = 55f;
+					width = 6f;
+					height = 8f;
+					collidesGround = false;
+					splashDamage = 45f;
+					splashDamageRadius = 24f;
+					hitEffect = Fx.flakExplosion;
+					backColor = Color.valueOf("ffe0a3");
+				}};
+			}});
+			
+			weapons.add(new Weapon(){{
+				mirror = false;
+				rotate = true;
+				x = 0f;
+				y = -6f;
+				reload = 60f;
+				shoot.shots = 2;
+				shoot.shotDelay = 8f;
+				shootSound = Sounds.shootMissile;
+				bullet = new MissileBulletType(4f, 12f){{
+					lifetime = 80f;
+					homingPower = 0.2f;
+					homingRange = 150f;
+					splashDamage = 30f;
+					splashDamageRadius = 26f;
+					collidesGround = false;
+					width = 7f;
+					height = 9f;
+					trailColor = Color.valueOf("bfe6ff");
+					trailLength = 8;
+					trailWidth = 1.6f;
+					hitEffect = despawnEffect = Fx.blastExplosion;
+				}};
+			}});
+		}};
+		
+		//The ice is thawed ahead of it, so for its path every tile that is not a wall is open; the base game's ships treat ice as a wall.
+		Pathfinder.PathCost flowCost = (team, tile) ->
+			((PathTile.solid(tile) && (PathTile.team(tile) == team || PathTile.team(tile) == 0)) ? 7000 : 1 + PathTile.health(tile) * 5) +
+			(PathTile.nearSolid(tile) ? 14 : 0) + (PathTile.liquid(tile) ? 0 : 2);
+		Pathfinder.PathCost controlCost = (team, tile) ->
+			(PathTile.solid(tile) && ((PathTile.team(tile) == team && !PathTile.teamPassable(tile)) || PathTile.team(tile) == 0)) ? -1 :
+			(PathTile.liquid(tile) ? 1 : 3) +
+			((PathTile.team(tile) != team && PathTile.team(tile) != 0) && PathTile.solid(tile) ? 70 : 0) +
+			(PathTile.nearSolid(tile) ? 6 : 0);
+		int flowType = Pathfinder.costTypes.size;
+		Pathfinder.costTypes.add(flowCost);
+		ControlPathfinder.costTypes.add(controlCost);
+		
+		icebreaker = new UnitType("icebreaker"){{
+			constructor = UnitWaterMove::create;
+			health = 1500f;
+			hitSize = 18f;
+			speed = 0.7f;
+			accel = 0.2f;
+			drag = 0.2f;
+			rotateSpeed = 1.6f;
+			faceTarget = false;
+			armor = 8f;
+			flowfieldPathType = flowType;
+			pathCost = controlCost;
+			
+			abilities.add(new IceBreakAbility(4f * 8f));
+			
+			weapons.add(new Weapon(){{
+				mirror = true;
+				alternate = true;
+				rotate = true;
+				x = 6f;
+				y = 5f;
+				reload = 22f;
+				shootSound = Sounds.shoot;
+				bullet = new BasicBulletType(3.2f, 14f){{
+					width = 5f;
+					height = 8f;
+					lifetime = 38f;
+					frontColor = Color.valueOf("d9f2ff");
+					backColor = Color.valueOf("6cc0ff");
+				}};
+			}});
+		}};
+		
+		all.addAll(skywatch, icebreaker);
 		all.addAll(medicSkiff, rescueFrigate, builderSkiff, builderBarge, overdriveTender);
 		all.addAll(patrolBoat, corvette, torpedoBoat, mortarSkiff, missileFrigate, abyss, longbow, aircraftCarrier, interceptor);
 		

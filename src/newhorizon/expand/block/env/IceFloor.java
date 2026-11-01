@@ -70,6 +70,8 @@ public class IceFloor extends Floor{
 		if(Vars.net.client())return;
 		tile.setFloorNet(floor, tile.overlay());
 		if(Vars.pathfinder != null)Vars.pathfinder.updateTile(tile);
+		//the ships that are given a place to go find their way over the new water, or around the new ice
+		if(Vars.controlPath != null)Vars.controlPath.updateTile(tile);
 	}
 
 	public void melt(Tile tile){

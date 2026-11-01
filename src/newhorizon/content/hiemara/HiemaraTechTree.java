@@ -88,6 +88,7 @@ public class HiemaraTechTree{
 			node(HiemaraBlocks.boatYard, () -> {
 				node(HiemaraDefense.warshipYard, with(Items.copper, 200, Items.lead, 150, Items.sand, 80), null, () -> {
 					node(HiemaraWarships.patrolBoat, () -> {
+						node(HiemaraWarships.icebreaker, with(Items.lead, 300, Items.titanium, 200, Items.silicon, 120), null, () -> {});
 						node(HiemaraWarships.medicSkiff, with(Items.copper, 150, Items.lead, 200, Items.sand, 100), null, () -> {
 							node(HiemaraWarships.rescueFrigate, with(Items.lead, 500, Items.titanium, 300, Items.silicon, 300), null, () -> {
 								node(HiemaraWarships.overdriveTender, with(Items.titanium, 600, Items.silicon, 500, Items.lead, 600), Seq.with(new Objectives.Research(HiemaraFactories.phaseWeaver)), () -> {});
@@ -97,6 +98,7 @@ public class HiemaraTechTree{
 							node(HiemaraWarships.builderBarge, with(Items.lead, 400, Items.titanium, 200, Items.silicon, 200), null, () -> {});
 						});
 						node(HiemaraWarships.corvette, with(Items.copper, 200, Items.lead, 200, Items.sand, 100), null, () -> {
+							node(HiemaraWarships.skywatch, with(Items.lead, 350, Items.titanium, 200, Items.silicon, 200), null, () -> {});
 							node(HiemaraWarships.missileFrigate, with(Items.lead, 500, Items.titanium, 300, Items.silicon, 200, Items.coal, 120), null, () -> {
 								node(HiemaraWarships.longbow, with(Items.lead, 900, Items.titanium, 600, Items.silicon, 400, Items.thorium, 150), null, () -> {
 									node(HiemaraWarships.aircraftCarrier, with(Items.titanium, 2000, Items.silicon, 1200, Items.thorium, 500, Items.tungsten, 250), null, () -> {});

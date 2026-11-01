@@ -281,6 +281,8 @@ public class HiemaraDefense{
 				new UnitPlan(HiemaraWarships.missileFrigate, 70f * 60f, with(Items.lead, 220, Items.titanium, 140, Items.silicon, 100, Items.coal, 60)),
 				new UnitPlan(HiemaraWarships.abyss, 55f * 60f, with(Items.lead, 160, Items.titanium, 110, Items.silicon, 80, Items.sand, 60)),
 				new UnitPlan(HiemaraWarships.longbow, 110f * 60f, with(Items.lead, 400, Items.titanium, 300, Items.silicon, 220, Items.thorium, 80)),
+				new UnitPlan(HiemaraWarships.skywatch, 50f * 60f, with(Items.lead, 200, Items.titanium, 100, Items.silicon, 100, Items.coal, 40)),
+				new UnitPlan(HiemaraWarships.icebreaker, 40f * 60f, with(Items.lead, 150, Items.titanium, 120, Items.silicon, 60, Items.coal, 30)),
 				new UnitPlan(HiemaraWarships.medicSkiff, 18f * 60f, with(Items.copper, 40, Items.lead, 60, Items.sand, 40)),
 				new UnitPlan(HiemaraWarships.builderSkiff, 16f * 60f, with(Items.copper, 60, Items.lead, 40, Items.sand, 20)),
 				new UnitPlan(HiemaraWarships.builderBarge, 30f * 60f, with(Items.copper, 80, Items.lead, 150, Items.titanium, 40, Items.silicon, 40)),
