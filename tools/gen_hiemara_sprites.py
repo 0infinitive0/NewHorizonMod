@@ -670,6 +670,52 @@ def launch_pad(name, size):
     finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
 
 
+def liquid_sprites(name, size, kind):
+    """
+    The layers a pump or a tank draws: -bottom (the body), -liquid (a white shape that is tinted with the liquid and
+    shows through the window of the lid), and for pumps -top (the lid). Tanks get a lid with a window as their main sprite.
+    """
+    s = size * SS
+    c = s // 2
+    inset = 2 * SS
+    win = 6 * SS
+    
+    def body():
+        img = canvas(size)
+        d = ImageDraw.Draw(img)
+        d.rounded_rectangle([inset, inset, s - inset - 1, s - inset - 1], radius=4 * SS, fill=(48, 68, 90), outline=HULL_D, width=2 * SS)
+        d.rounded_rectangle([win, win, s - win - 1, s - win - 1], radius=3 * SS, fill=(18, 34, 54), outline=HULL_D, width=SS)
+        return img
+    
+    def liquid():
+        img = canvas(size)
+        d = ImageDraw.Draw(img)
+        m = win + 2 * SS
+        d.rounded_rectangle([m, m, s - m - 1, s - m - 1], radius=2 * SS, fill=(255, 255, 255, 255))
+        return img
+    
+    def lid(rotor):
+        img = canvas(size)
+        d = ImageDraw.Draw(img)
+        d.rounded_rectangle([inset, inset, s - inset - 1, s - inset - 1], radius=4 * SS, outline=HULL_L, width=3 * SS)
+        d.rounded_rectangle([win - SS, win - SS, s - win, s - win], radius=3 * SS, outline=HULL_D, width=SS)
+        for x, y in ((inset + 3 * SS, inset + 3 * SS), (s - inset - 3 * SS, inset + 3 * SS), (inset + 3 * SS, s - inset - 3 * SS), (s - inset - 3 * SS, s - inset - 3 * SS)):
+            d.ellipse([x - 2 * SS, y - 2 * SS, x + 2 * SS, y + 2 * SS], fill=HULL_L, outline=HULL_D)
+        if rotor:
+            r = (s - 2 * win) // 2 - 3 * SS
+            d.line([c - r, c, c + r, c], fill=ICE, width=2 * SS)
+            d.line([c, c - r, c, c + r], fill=ICE, width=2 * SS)
+            d.ellipse([c - 3 * SS, c - 3 * SS, c + 3 * SS, c + 3 * SS], fill=ICE_L, outline=HULL_D)
+        return img
+    
+    finish(body(), size, os.path.join(BLOCK_DIR, name + "-bottom.png"))
+    finish(liquid(), size, os.path.join(BLOCK_DIR, name + "-liquid.png"))
+    if kind == "pump":
+        finish(lid(True), size, os.path.join(BLOCK_DIR, name + "-top.png"))
+    else:
+        finish(lid(False), size, os.path.join(BLOCK_DIR, name + ".png"))
+
+
 def manager(name, size):
     """The cargo manager: a plate with a list of three rows."""
     img = canvas(size)
