@@ -16,6 +16,7 @@ import mindustry.world.blocks.power.SolarGenerator;
 import mindustry.world.blocks.production.Pump;
 import newhorizon.content.NHItems;
 import newhorizon.content.NHUnitTypes;
+import newhorizon.expand.block.hiemara.ElectricSeparator;
 import newhorizon.expand.block.hiemara.FusionReactor;
 import newhorizon.expand.block.hiemara.HydroGenerator;
 import newhorizon.expand.block.hiemara.WindTurbine;
@@ -422,7 +423,7 @@ public class HiemaraBlocks{
 			placeableLiquid = true;
 		}};
 		
-		electricSeparator = new GenericCrafter("electric-separator"){{
+		electricSeparator = new ElectricSeparator("electric-separator"){{
 			requirements(Category.crafting, with(Items.copper, 100, Items.lead, 150, Items.silicon, 60, Items.titanium, 60));
 			size = 3;
 			health = 400;
@@ -445,7 +446,7 @@ public class HiemaraBlocks{
 			size = 5;
 			health = 3000;
 			fuelItem = NHItems.ice;
-			powerProduction = 80f;
+			powerProduction = 160f;
 		}};
 		
 		all.addAll(
