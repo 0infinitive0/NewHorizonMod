@@ -1,5 +1,6 @@
 package newhorizon.content.hiemara;
 
+import newhorizon.expand.block.hiemara.OzoneCrafter;
 import arc.struct.Seq;
 import mindustry.content.Items;
 import mindustry.content.Liquids;
@@ -25,7 +26,7 @@ public class HiemaraFactories{
 	public static final Seq<Block> all = new Seq<>();
 	
 	public static void load(){
-		graphitePress = new GenericCrafter("floating-graphite-press"){{
+		graphitePress = new OzoneCrafter("floating-graphite-press"){{
 			requirements(Category.crafting, with(Items.copper, 75, Items.lead, 30));
 			size = 2;
 			health = 260;
@@ -36,7 +37,7 @@ public class HiemaraFactories{
 			consumeItem(Items.coal, 2);
 		}};
 		
-		kiln = new GenericCrafter("floating-kiln"){{
+		kiln = new OzoneCrafter("floating-kiln"){{
 			requirements(Category.crafting, with(Items.copper, 60, Items.lead, 40, Items.sand, 30));
 			size = 2;
 			health = 260;
@@ -48,7 +49,7 @@ public class HiemaraFactories{
 			consumePower(0.6f);
 		}};
 		
-		plastaniumCompressor = new GenericCrafter("floating-plastanium-compressor"){{
+		plastaniumCompressor = new OzoneCrafter("floating-plastanium-compressor"){{
 			requirements(Category.crafting, with(Items.silicon, 80, Items.lead, 115, Items.titanium, 80, Items.copper, 60));
 			size = 2;
 			health = 320;
@@ -62,7 +63,7 @@ public class HiemaraFactories{
 			consumePower(3f);
 		}};
 		
-		phaseWeaver = new GenericCrafter("floating-phase-weaver"){{
+		phaseWeaver = new OzoneCrafter("floating-phase-weaver"){{
 			requirements(Category.crafting, with(Items.silicon, 130, Items.lead, 120, Items.thorium, 75));
 			size = 2;
 			health = 320;
@@ -75,7 +76,7 @@ public class HiemaraFactories{
 			consumePower(5f);
 		}};
 		
-		surgeSmelter = new GenericCrafter("floating-surge-smelter"){{
+		surgeSmelter = new OzoneCrafter("floating-surge-smelter"){{
 			requirements(Category.crafting, with(Items.silicon, 80, Items.lead, 80, Items.thorium, 70, Items.titanium, 60));
 			size = 3;
 			health = 600;
@@ -88,7 +89,7 @@ public class HiemaraFactories{
 			consumePower(4f);
 		}};
 		
-		blastMixer = new GenericCrafter("floating-blast-mixer"){{
+		blastMixer = new OzoneCrafter("floating-blast-mixer"){{
 			requirements(Category.crafting, with(Items.lead, 30, Items.titanium, 20, Items.silicon, 15, Items.copper, 30));
 			size = 2;
 			health = 240;
@@ -114,7 +115,7 @@ public class HiemaraFactories{
 			consumePower(0.5f);
 		}};
 		
-		carbideCrucible = new GenericCrafter("floating-carbide-crucible"){{
+		carbideCrucible = new OzoneCrafter("floating-carbide-crucible"){{
 			requirements(Category.crafting, with(Items.tungsten, 110, Items.thorium, 150, Items.silicon, 100, Items.beryllium, 60));
 			size = 3;
 			health = 700;
@@ -127,7 +128,7 @@ public class HiemaraFactories{
 			consumePower(6f);
 		}};
 		
-		melter = new GenericCrafter("floating-melter"){{
+		melter = new OzoneCrafter("floating-melter"){{
 			requirements(Category.crafting, with(Items.copper, 30, Items.lead, 35, Items.coal, 30));
 			size = 2;
 			health = 260;
@@ -140,7 +141,7 @@ public class HiemaraFactories{
 			consumePower(1f);
 		}};
 		
-		cryofluidMixer = new GenericCrafter("floating-cryofluid-mixer"){{
+		cryofluidMixer = new OzoneCrafter("floating-cryofluid-mixer"){{
 			requirements(Category.crafting, with(Items.lead, 65, Items.silicon, 40, Items.titanium, 60));
 			size = 2;
 			health = 300;
@@ -154,7 +155,7 @@ public class HiemaraFactories{
 			consumePower(1f);
 		}};
 		
-		airCondenser = new GenericCrafter("floating-air-condenser"){{
+		airCondenser = new OzoneCrafter("floating-air-condenser"){{
 			requirements(Category.crafting, with(Items.beryllium, 180, Items.silicon, 150, Items.tungsten, 40, Items.lead, 100));
 			size = 3;
 			health = 600;
@@ -165,7 +166,7 @@ public class HiemaraFactories{
 			consumePower(4f);
 		}};
 		
-		arkyciteFermenter = new GenericCrafter("floating-arkycite-fermenter"){{
+		arkyciteFermenter = new OzoneCrafter("floating-arkycite-fermenter"){{
 			requirements(Category.crafting, with(Items.lead, 100, Items.silicon, 60, Items.beryllium, 80));
 			size = 2;
 			health = 320;
@@ -179,7 +180,7 @@ public class HiemaraFactories{
 			consumePower(1.5f);
 		}};
 		
-		cyanogenSynthesizer = new GenericCrafter("floating-cyanogen-synthesizer"){{
+		cyanogenSynthesizer = new OzoneCrafter("floating-cyanogen-synthesizer"){{
 			requirements(Category.crafting, with(Items.tungsten, 80, Items.silicon, 120, Items.beryllium, 140, Items.thorium, 40));
 			size = 3;
 			health = 600;
@@ -193,7 +194,7 @@ public class HiemaraFactories{
 			consumePower(4f);
 		}};
 		
-		neoplasmCulture = new GenericCrafter("floating-neoplasm-culture"){{
+		neoplasmCulture = new OzoneCrafter("floating-neoplasm-culture"){{
 			requirements(Category.crafting, with(Items.tungsten, 150, Items.silicon, 180, Items.beryllium, 150, Items.thorium, 100));
 			size = 3;
 			health = 700;

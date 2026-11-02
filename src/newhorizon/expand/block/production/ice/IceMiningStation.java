@@ -45,6 +45,7 @@ public class IceMiningStation extends Block{
 		hasItems = true;
 		hasPower = true;
 		itemCapacity = 60;
+		newhorizon.expand.block.hiemara.OzoneBoost.setup(this);
 		ambientSound = mindustry.gen.Sounds.none;
 		
 		all.add(this);
@@ -57,6 +58,7 @@ public class IceMiningStation extends Block{
 		stats.add(Stat.range, radius / tilesize, StatUnit.blocks);
 		stats.add(Stat.maxUnits, maxUnits);
 		if(unitType != null)stats.add(Stat.output, table -> table.add(unitType.localizedName));
+		newhorizon.expand.block.hiemara.OzoneBoost.stats(this);
 	}
 	
 	@Override
@@ -72,6 +74,11 @@ public class IceMiningStation extends Block{
 		public float spawnProgress;
 		public float warmup;
 		public int unitCount;
+		
+		@Override
+		public boolean acceptLiquid(Building source, mindustry.type.Liquid liquid){
+			return newhorizon.expand.block.hiemara.OzoneBoost.accepts(this, liquid);
+		}
 		
 		@Override
 		public boolean acceptItem(Building source, Item item){
@@ -99,7 +106,7 @@ public class IceMiningStation extends Block{
 			if(unitType == null || Vars.net.client())return;
 			
 			if(unitCount < maxUnits && efficiency > 0){
-				spawnProgress += edelta();
+				spawnProgress += edelta() * newhorizon.expand.block.hiemara.OzoneBoost.take(this, delta());
 				
 				if(spawnProgress >= spawnTime){
 					spawnProgress %= spawnTime;

@@ -50,6 +50,7 @@ public class FilterBlock extends Block{
 		if(powerUse < 0f)powerUse = 0.08f * size * size;
 		hasPower = true;
 		consumePower(powerUse).optional(true, true);
+		newhorizon.expand.block.hiemara.OzoneBoost.setup(this);
 		
 		super.init();
 	}
@@ -137,6 +138,7 @@ public class FilterBlock extends Block{
 		
 		stats.add(Stat.drillSpeed, baseRate, StatUnit.itemsSecond);
 		stats.add(Stat.boostEffect, 2f, StatUnit.timesSpeed);
+		newhorizon.expand.block.hiemara.OzoneBoost.stats(this);
 		stats.add(Stat.drillTier, table -> {
 			table.row();
 			for(Item ore : ores){
@@ -162,10 +164,17 @@ public class FilterBlock extends Block{
 		public Item locked;
 		public float rate;
 		public float warmup;
+		/** Speed multiplier from the ozone of this tick. */
+		public float ozone = 1f;
+		
+		@Override
+		public boolean acceptLiquid(Building source, mindustry.type.Liquid liquid){
+			return newhorizon.expand.block.hiemara.OzoneBoost.accepts(this, liquid);
+		}
 		
 		public String statusText(){
 			if(result.tooLow)return arc.Core.bundle.format("filter.too-low", result.locked.localizedName);
-			if(locked != null)return locked.localizedName + " " + Strings.fixed(rate * boost() * 60f, 1) + "/min";
+			if(locked != null)return locked.localizedName + " " + Strings.fixed(rate * boost() * ozone * 60f, 1) + "/min";
 			return arc.Core.bundle.get(rate > 0f ? "filter.plain" : "filter.nothing");
 		}
 		
@@ -211,9 +220,10 @@ public class FilterBlock extends Block{
 			
 			warmup = Mathf.lerpDelta(warmup, rate > 0f && items.total() < itemCapacity ? 1f : 0f, 0.02f);
 			if(rate <= 0f || items.total() >= itemCapacity)return;
+			ozone = efficiency > 0f ? newhorizon.expand.block.hiemara.OzoneBoost.take(this, delta()) : 1f;
 			
 			for(var entry : result.rates){
-				float value = progress.get(entry.key, 0f) + entry.value / 60f * delta() * efficiency * boost();
+				float value = progress.get(entry.key, 0f) + entry.value / 60f * delta() * efficiency * boost() * ozone;
 				if(value >= 1f && items.total() < itemCapacity){
 					value -= 1f;
 					offload(entry.key);

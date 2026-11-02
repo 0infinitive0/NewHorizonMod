@@ -71,7 +71,7 @@ public class HiemaraTechTree{
 							node(HiemaraBlocks.coreMk3, with(Items.copper, 3000, Items.lead, 3000, Items.silicon, 2000, Items.titanium, 800, Items.thorium, 600), null, () -> {});
 						});
 						node(HiemaraBlocks.launchPad, with(Items.copper, 600, Items.lead, 500, Items.silicon, 300, Items.titanium, 250), null, () -> {
-								node(HiemaraBlocks.interplanetaryPad, with(Items.lead, 2000, Items.titanium, 1500, Items.silicon, 1500, Items.thorium, 800, Items.plastanium, 400), Seq.with(new Objectives.Research(HiemaraFactories.plastaniumCompressor)), () -> {});
+								node(HiemaraBlocks.interplanetaryPad, with(Items.lead, 2000, Items.titanium, 1500, Items.silicon, 1500, Items.thorium, 800, Items.plastanium, 400), Seq.with(new Objectives.Research(HiemaraFactories.plastaniumCompressor), new Objectives.Research(HiemaraBlocks.fuelMixer)), () -> {});
 							});
 					});
 					node(HiemaraBlocks.hangar);
@@ -200,7 +200,10 @@ public class HiemaraTechTree{
 							node(HiemaraFactories.carbideCrucible, with(Items.tungsten, 400, Items.thorium, 300, Items.silicon, 300), null, () -> {});
 							node(HiemaraFactories.airCondenser, with(Items.beryllium, 400, Items.silicon, 350, Items.tungsten, 150), null, () -> {});
 						});
-						node(HiemaraBlocks.fusionReactor, Seq.with(new Objectives.Research(HiemaraBlocks.battery3), new Objectives.Research(HiemaraBlocks.surgeTower)), () -> {});
+						node(HiemaraBlocks.fuelMixer, with(Items.lead, 300, Items.titanium, 200, Items.silicon, 200, Items.metaglass, 100), null, () -> {
+								node(HiemaraBlocks.rocketEngine, with(Items.lead, 400, Items.titanium, 300, Items.silicon, 300), null, () -> {});
+							});
+							node(HiemaraBlocks.fusionReactor, Seq.with(new Objectives.Research(HiemaraBlocks.battery3), new Objectives.Research(HiemaraBlocks.surgeTower)), () -> {});
 					});
 				});
 				node(HiemaraBlocks.liquidContainer, () -> {

@@ -391,10 +391,34 @@ def crafter(name, size, tint, motif):
         d.ellipse([c - r + 3 * SS, c - r + 3 * SS, c + r - 3 * SS, c + r - 3 * SS], fill=tuple(int(v * 0.35) for v in col), outline=HULL_D, width=SS)
         d.polygon([(c, c - 8 * SS), (c + 6 * SS, c + 2 * SS), (c + 3 * SS, c + 8 * SS), (c - 3 * SS, c + 8 * SS), (c - 6 * SS, c + 2 * SS)], fill=col, outline=HULL_D)
         d.ellipse([c - 2 * SS, c - 2 * SS, c + 2 * SS, c + 2 * SS], fill=ICE_L)
+    elif motif == "fuelmix":
+        d.ellipse([c - r + 3 * SS, c - r + 3 * SS, c + r - 3 * SS, c + r - 3 * SS], fill=(40, 26, 20), outline=HULL_D, width=SS)
+        d.pieslice([c - 8 * SS, c - 8 * SS, c + 8 * SS, c + 8 * SS], 90, 270, fill=(120, 200, 255))
+        d.pieslice([c - 8 * SS, c - 8 * SS, c + 8 * SS, c + 8 * SS], 270, 450, fill=(255, 150, 80))
+        d.ellipse([c - 3 * SS, c - 3 * SS, c + 3 * SS, c + 3 * SS], fill=(255, 235, 190), outline=HULL_D)
+    elif motif == "engine":
+        d.ellipse([c - r + 3 * SS, c - r + 3 * SS, c + r - 3 * SS, c + r - 3 * SS], fill=(36, 30, 30), outline=HULL_D, width=SS)
+        d.polygon([(c - 5 * SS, c - 8 * SS), (c + 5 * SS, c - 8 * SS), (c + 9 * SS, c + 4 * SS), (c - 9 * SS, c + 4 * SS)], fill=(150, 150, 160), outline=HULL_D)
+        d.polygon([(c - 6 * SS, c + 4 * SS), (c + 6 * SS, c + 4 * SS), (c, c + 12 * SS)], fill=(255, 170, 70), outline=HULL_D)
+        d.polygon([(c - 3 * SS, c + 4 * SS), (c + 3 * SS, c + 4 * SS), (c, c + 9 * SS)], fill=(255, 235, 190))
     elif motif == "sand":
         d.rectangle([c - r + 3 * SS, c, c + r - 3 * SS, c + r - 3 * SS], fill=(230, 195, 150))
         d.rectangle([c - r + 3 * SS, c - 4 * SS, c + r - 3 * SS, c], fill=(40, 120, 190))
     finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+
+
+def liquid_icon(name, color):
+    """The icon of a liquid: a drop."""
+    size = 32
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    c = s // 2
+    dark = tuple(int(v * 0.55) for v in color)
+    d.polygon([(c, 3 * SS), (c + 9 * SS, c + 4 * SS), (c - 9 * SS, c + 4 * SS)], fill=color, outline=dark)
+    d.ellipse([c - 10 * SS, c - 2 * SS, c + 10 * SS, c + 18 * SS], fill=color, outline=dark, width=SS)
+    d.ellipse([c - 6 * SS, c + 2 * SS, c - 2 * SS, c + 8 * SS], fill=tuple(min(255, v + 70) for v in color))
+    finish(img, size, os.path.join(ROOT, "item", name + ".png"))
 
 
 def ship(name, size, tier, tank=False, big=False):
@@ -929,6 +953,9 @@ def defense_sprites():
     turret("tide-cannon", 64, "cannon")
     turret("whirl-mortar", 96, "mortar")
     vortex_gen("vortex-generator", 96)
+    crafter("fuel-mixer", 96, (100, 84, 70), "fuelmix")
+    crafter("rocket-engine", 96, (84, 72, 72), "engine")
+    liquid_icon("rocket-fuel", (255, 176, 102))
     ice_wall("ice-wall", 32)
     ice_wall("ice-wall-large", 64)
     ice_wall("ice-wall-huge", 96)

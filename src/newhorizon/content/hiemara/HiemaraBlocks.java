@@ -1,5 +1,6 @@
 package newhorizon.content.hiemara;
 
+import newhorizon.expand.block.hiemara.OzoneCrafter;
 import arc.struct.Seq;
 import mindustry.content.Items;
 import mindustry.content.UnitTypes;
@@ -16,6 +17,7 @@ import mindustry.world.blocks.power.Battery;
 import mindustry.world.blocks.power.SolarGenerator;
 import mindustry.world.blocks.production.Pump;
 import newhorizon.content.NHItems;
+import newhorizon.content.NHLiquids;
 import newhorizon.content.NHUnitTypes;
 import newhorizon.expand.block.hiemara.ElectricSeparator;
 import newhorizon.expand.block.hiemara.FusionReactor;
@@ -46,6 +48,8 @@ public class HiemaraBlocks{
 	public static CoreBlock coreMk2, coreMk3;
 	public static StorageBlock container, vault, silo;
 	public static LaunchPad launchPad, interplanetaryPad;
+	public static GenericCrafter fuelMixer;
+	public static mindustry.world.blocks.power.ConsumeGenerator rocketEngine;
 	public static FloatingHeater heater, heater2, heater3;
 	public static Sonar sonar;
 	public static FloatingGenerator generator;
@@ -185,8 +189,12 @@ public class HiemaraBlocks{
 			health = 2200;
 			launchTime = 60f * 60f;
 			hasPower = true;
+			hasLiquids = true;
+			liquidCapacity = 300f;
 			placeableLiquid = true;
 			consumePower(30f);
+			//a full charge burns 360 units of fuel
+			consumeLiquid(NHLiquids.rocketFuel, 0.1f);
 		}};
 		
 		airPad = new CargoUnitPad("cargo-air-pad"){{
@@ -285,7 +293,7 @@ public class HiemaraBlocks{
 			placeableLiquid = true;
 		}};
 		
-		sporeCultivator = new GenericCrafter("floating-cultivator"){{
+		sporeCultivator = new OzoneCrafter("floating-cultivator"){{
 			requirements(Category.production, with(Items.copper, 50, Items.lead, 50, Items.sand, 30));
 			size = 2;
 			health = 200;
@@ -294,7 +302,7 @@ public class HiemaraBlocks{
 			hasItems = true;
 			placeableLiquid = true;
 		}};
-		floatingSporePress = new GenericCrafter("floating-spore-press"){{
+		floatingSporePress = new OzoneCrafter("floating-spore-press"){{
 			requirements(Category.crafting, with(Items.lead, 70, Items.silicon, 30, Items.copper, 40));
 			size = 2;
 			health = 320;
@@ -307,7 +315,7 @@ public class HiemaraBlocks{
 			consumeItem(Items.sporePod, 1);
 			consumePower(0.7f);
 		}};
-		floatingCoalCentrifuge = new GenericCrafter("floating-coal-centrifuge"){{
+		floatingCoalCentrifuge = new OzoneCrafter("floating-coal-centrifuge"){{
 			requirements(Category.crafting, with(Items.titanium, 20, Items.lead, 60, Items.silicon, 30));
 			size = 2;
 			health = 320;
@@ -318,7 +326,7 @@ public class HiemaraBlocks{
 			consumeLiquid(Liquids.oil, 0.1f);
 			consumePower(0.7f);
 		}};
-		floatingPyratiteMixer = new GenericCrafter("floating-pyratite-mixer"){{
+		floatingPyratiteMixer = new OzoneCrafter("floating-pyratite-mixer"){{
 			requirements(Category.crafting, with(Items.copper, 80, Items.lead, 60));
 			size = 2;
 			health = 240;
@@ -328,7 +336,7 @@ public class HiemaraBlocks{
 			consumePower(0.2f);
 			consumeItems(with(Items.coal, 1, Items.lead, 2, Items.sand, 2));
 		}};
-		floatingSiliconSmelter = new GenericCrafter("floating-silicon-smelter"){{
+		floatingSiliconSmelter = new OzoneCrafter("floating-silicon-smelter"){{
 			requirements(Category.crafting, with(Items.copper, 60, Items.lead, 50, Items.sand, 30));
 			size = 2;
 			health = 240;
@@ -339,7 +347,7 @@ public class HiemaraBlocks{
 			consumeItems(with(Items.coal, 1, Items.sand, 2));
 			consumePower(0.5f);
 		}};
-		floatingSiliconCrucible = new GenericCrafter("floating-silicon-crucible"){{
+		floatingSiliconCrucible = new OzoneCrafter("floating-silicon-crucible"){{
 			requirements(Category.crafting, with(Items.titanium, 120, Items.lead, 100, Items.silicon, 60, Items.copper, 100));
 			size = 3;
 			health = 700;
@@ -451,10 +459,36 @@ public class HiemaraBlocks{
 			placeableLiquid = true;
 			consumeLiquid(Liquids.water, 0.5f);
 			consumePower(1.5f);
-			outputLiquids = LiquidStack.with(Liquids.ozone, 0.2f, Liquids.hydrogen, 0.3f);
+			//water is two parts hydrogen to one part oxygen
+			outputLiquids = LiquidStack.with(Liquids.ozone, 0.15f, Liquids.hydrogen, 0.30f);
 			//Ozone nobody needs is let out into the air, so the hydrogen never waits for it.
 			ignoreLiquidFullness = true;
 			dumpExtraLiquid = true;
+		}};
+		
+		//Ozone and hydrogen in, rocket fuel out: the ratio of the separator, so one separator feeds two mixers.
+		fuelMixer = new GenericCrafter("fuel-mixer"){{
+			requirements(Category.crafting, with(Items.lead, 150, Items.titanium, 100, Items.silicon, 120, Items.metaglass, 60));
+			size = 3;
+			health = 500;
+			craftTime = 60f;
+			hasLiquids = hasPower = true;
+			liquidCapacity = 80f;
+			placeableLiquid = true;
+			consumeLiquids(LiquidStack.with(Liquids.ozone, 0.075f, Liquids.hydrogen, 0.15f));
+			consumePower(1.5f);
+			outputLiquid = new LiquidStack(NHLiquids.rocketFuel, 0.15f);
+		}};
+		
+		//Burns rocket fuel for a lot of power and, unlike the fusion reactor, needs no start.
+		rocketEngine = new mindustry.world.blocks.power.ConsumeGenerator("rocket-engine"){{
+			requirements(Category.power, with(Items.lead, 200, Items.titanium, 150, Items.silicon, 150, Items.copper, 150));
+			size = 3;
+			health = 700;
+			liquidCapacity = 80f;
+			powerProduction = 40f;
+			placeableLiquid = true;
+			consumeLiquid(NHLiquids.rocketFuel, 0.1f);
 		}};
 		
 		fusionReactor = new FusionReactor("fusion-reactor"){{
@@ -467,7 +501,7 @@ public class HiemaraBlocks{
 		
 		all.addAll(
 			iceHarvester, windTurbine, hydroGenerator, floatingSolar, battery1, battery2, battery3, nodeLarge, surgeTower,
-			floatingPump, floatingRotaryPump, liquidContainer, liquidTank, electricSeparator, fusionReactor
+			floatingPump, floatingRotaryPump, liquidContainer, liquidTank, electricSeparator, fusionReactor, fuelMixer, rocketEngine
 		);
 	}
 	

@@ -12,7 +12,7 @@ public class NHLiquids{
 	xenBeta,
 	xenGamma,
 	zetaFluid, quantumEntity,
-	irdryonFluid;
+	irdryonFluid, rocketFuel;
 	
 	public static void load(){
 		quantumEntity = new Liquid("quantum-liquid", NHColor.darkEnrColor){{
@@ -61,6 +61,16 @@ public class NHLiquids{
 			explosiveness = 0.75f;
 			viscosity = 0.1f;
 			lightColor = Color.valueOf("#f0ffba");
+		}};
+
+		//Ozone and hydrogen burnt together: very flammable and very explosive, the fuel of the rocket engine and of the interplanetary pad.
+		rocketFuel = new Liquid("rocket-fuel", Color.valueOf("#ffb066")){{
+			flammability = 1.6f;
+			explosiveness = 1.4f;
+			viscosity = 0.5f;
+			heatCapacity = 0.4f;
+			temperature = 0.6f;
+			lightColor = Color.valueOf("#ffb066");
 		}};
 
 		irdryonFluid = new Liquid("irdryon-fluid", Color.valueOf("#F7C6B5")){{

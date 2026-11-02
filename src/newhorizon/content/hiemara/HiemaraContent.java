@@ -60,6 +60,7 @@ public class HiemaraContent{
 		Liquids.water.shownPlanets.add(planet);
 		Liquids.hydrogen.shownPlanets.add(planet);
 		Liquids.ozone.shownPlanets.add(planet);
+		newhorizon.content.NHLiquids.rocketFuel.shownPlanets.add(planet);
 		newhorizon.content.NHItems.ice.shownPlanets.add(planet);
 	}
 }

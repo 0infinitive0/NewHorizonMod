@@ -222,6 +222,18 @@ public class HiemaraDefense{
 					collidesAir = true;
 					status = StatusEffects.tarred;
 					statusDuration = 60f * 4f;
+				}},
+				Liquids.ozone, new LiquidBulletType(Liquids.ozone){{
+					damage = 12f;
+					knockback = 1.4f;
+					drag = 0.01f;
+					layer = Layer.bullet - 2f;
+					lifetime = 52f;
+					speed = 4f;
+					collidesAir = true;
+					status = StatusEffects.burning;
+					statusDuration = 60f * 3f;
+					makeFire = true;
 				}}
 			);
 		}};
@@ -264,6 +276,21 @@ public class HiemaraDefense{
 					backColor = trailColor = Color.valueOf("3a3a40");
 					status = StatusEffects.tarred;
 					statusDuration = 60f * 6f;
+					ammoMultiplier = 1f;
+				}},
+				//Ozone burns and explodes: the heaviest shell of the mortar, it sets fires.
+				Liquids.ozone, new ArtilleryBulletType(2.8f, 20f){{
+					lifetime = 86f;
+					splashDamage = 230f;
+					splashDamageRadius = 58f;
+					collidesAir = false;
+					makeFire = true;
+					status = StatusEffects.blasted;
+					statusDuration = 60f * 3f;
+					hitEffect = Fx.massiveExplosion;
+					knockback = 1.8f;
+					width = height = 13f;
+					backColor = trailColor = Color.valueOf("c8a6ff");
 					ammoMultiplier = 1f;
 				}}
 			);
@@ -494,6 +521,23 @@ public class HiemaraDefense{
 					collidesAir = true;
 					status = StatusEffects.tarred;
 					statusDuration = 60f * 5f;
+				}},
+				Liquids.ozone, new LiquidBulletType(Liquids.ozone){{
+					damage = 34f;
+					knockback = 2.8f;
+					drag = 0.005f;
+					layer = Layer.bullet - 2f;
+					lifetime = 56f;
+					speed = 4.6f;
+					puddleSize = 8f;
+					orbSize = 4f;
+					collidesAir = true;
+					status = StatusEffects.burning;
+					statusDuration = 60f * 4f;
+					splashDamage = 40f;
+					splashDamageRadius = 34f;
+					makeFire = true;
+					hitEffect = Fx.blastExplosion;
 				}}
 			);
 		}};
