@@ -137,7 +137,7 @@ public class IceManager{
 		if(HotSpotManager.warm(tile))return true;
 		for(int i = 0; i < heaters.size; i++){
 			Building heater = heaters.get(i);
-			if(heater.isValid() && heater.efficiency > 0f && heater.within(tile.worldx(), tile.worldy(), heaterRadius.get(heater.block, 0f))){
+			if(heater.isValid() && heater.efficiency > 0f && heater.within(tile.worldx(), tile.worldy(), heater instanceof newhorizon.expand.block.hiemara.FloatingHeater.FloatingHeaterBuild ? ((newhorizon.expand.block.hiemara.FloatingHeater.FloatingHeaterBuild)heater).currentRadius() : heaterRadius.get(heater.block, 0f))){
 				return true;
 			}
 		}

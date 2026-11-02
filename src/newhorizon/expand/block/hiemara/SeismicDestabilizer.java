@@ -39,10 +39,22 @@ public class SeismicDestabilizer extends Block{
 	
 	@Override
 	public boolean canPlaceOn(Tile tile, Team team, int rotation){
+		//only within the reach of a hot spot
+		if(HotSpotManager.spotAt(tile.worldx() + offset, tile.worldy() + offset) == null)return false;
 		for(Tile other : tile.getLinkedTilesAs(this, tempTiles)){
 			if(!SandDredger.shallow(other))return false;
 		}
 		return true;
+	}
+	
+	@Override
+	public void drawPlace(int x, int y, int rotation, boolean valid){
+		super.drawPlace(x, y, rotation, valid);
+		
+		for(HotSpotManager.Spot spot : HotSpotManager.spots){
+			mindustry.graphics.Drawf.dashCircle(spot.wx(), spot.wy(), HotSpotManager.influence * mindustry.Vars.tilesize, Pal.remove);
+		}
+		if(!valid)drawPlaceText(Core.bundle.get("destabilizer.outside"), x, y, false);
 	}
 	
 	@Override
@@ -75,6 +87,9 @@ public class SeismicDestabilizer extends Block{
 		public void detonate(){
 			if(Vars.net.client() || !ready() || !isValid())return;
 			int cx = tile.x, cy = tile.y;
+			//the hot spot comes up where the destabilizer stands, and the volcano erupts there
+			HotSpotManager.Spot spot = HotSpotManager.spotAt(x, y);
+			if(spot != null)HotSpotManager.moveSpot(spot, cx, cy);
 			HotSpotManager.erupt(cx, cy, radius);
 			kill();
 		}

@@ -4,6 +4,7 @@ import arc.math.Mathf;
 import arc.struct.Seq;
 import arc.util.Time;
 import mindustry.Vars;
+import mindustry.content.Liquids;
 import mindustry.gen.Building;
 import mindustry.graphics.Drawf;
 import mindustry.graphics.Pal;
@@ -39,6 +40,10 @@ public class FloatingHeater extends Block{
 	@Override
 	public void init(){
 		IceManager.heaterRadius.put(this, radius * tilesize);
+		//Slag is an optional fuel: with it the heater reaches twice as far.
+		hasLiquids = true;
+		liquidCapacity = Math.max(liquidCapacity, 30f);
+		consumeLiquid(Liquids.slag, 0.05f * size * size).boost();
 		super.init();
 	}
 	
@@ -47,6 +52,7 @@ public class FloatingHeater extends Block{
 		super.setStats();
 		
 		stats.add(Stat.range, radius, StatUnit.blocks);
+		stats.add(Stat.boostEffect, 2f, StatUnit.timesSpeed);
 	}
 	
 	@Override
@@ -59,6 +65,11 @@ public class FloatingHeater extends Block{
 	public class FloatingHeaterBuild extends Building{
 		public float thawBudget;
 		public float warmup;
+		
+		/** Radius in world units: doubled while the heater is given slag. */
+		public float currentRadius(){
+			return radius * tilesize * (1f + optionalEfficiency);
+		}
 		
 		@Override
 		public void updateTile(){
@@ -83,10 +94,11 @@ public class FloatingHeater extends Block{
 		}
 		
 		protected void thawRandom(){
-			int r = (int)radius;
-			for(int tries = 0, max = 12 + (int)(radius * 2f); tries < max; tries++){
+			float reach = currentRadius() / tilesize;
+			int r = (int)reach;
+			for(int tries = 0, max = 12 + (int)(reach * 2f); tries < max; tries++){
 				Tile other = Vars.world.tile(tile.x + Mathf.random(-r, r), tile.y + Mathf.random(-r, r));
-				if(other == null || !within(other.worldx(), other.worldy(), radius * tilesize))continue;
+				if(other == null || !within(other.worldx(), other.worldy(), currentRadius()))continue;
 				if(other.floor() instanceof IceFloor && other.build == null){
 					((IceFloor)other.floor()).melt(other);
 					return;
@@ -102,7 +114,7 @@ public class FloatingHeater extends Block{
 		
 		@Override
 		public void drawSelect(){
-			Drawf.dashCircle(x, y, radius * tilesize, team.color);
+			Drawf.dashCircle(x, y, currentRadius(), team.color);
 		}
 		
 		@Override

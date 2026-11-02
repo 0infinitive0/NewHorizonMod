@@ -327,7 +327,7 @@ public class HiemaraBlocks{
 			requirements(Category.production, with(Items.copper, 100, Items.lead, 80));
 			size = 3;
 			health = 360;
-			outputItem = new ItemStack(Items.sand, 4);
+			outputItems = with(Items.sand, 4, Items.scrap, 1);
 			craftTime = 60f;
 			hasItems = true;
 			itemCapacity = 60;
@@ -413,7 +413,7 @@ public class HiemaraBlocks{
 			health = 360;
 			unitType = NHUnitTypes.iceMiner;
 			maxUnits = 3;
-			radius = 12 * 8f;
+			radius = 24 * 8f;
 			consumePower(1f);
 			placeableLiquid = true;
 		}};

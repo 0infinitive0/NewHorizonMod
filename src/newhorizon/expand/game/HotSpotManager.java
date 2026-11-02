@@ -206,6 +206,22 @@ public class HotSpotManager{
 		}
 	}
 	
+	/** Moves a hot spot: its vent is closed (deep water again) and a new one opens at another tile. */
+	public static void moveSpot(Spot spot, int x, int y){
+		arc.math.geom.Geometry.circle(spot.x, spot.y, 2, (px, py) -> {
+			Tile tile = Vars.world.tile(px, py);
+			if(tile != null && tile.floor() instanceof HotSpotFloor)IceFloor.setFloor(tile, Blocks.deepwater.asFloor());
+		});
+		spot.x = x;
+		spot.y = y;
+		arc.math.geom.Geometry.circle(x, y, 2, (px, py) -> {
+			Tile tile = Vars.world.tile(px, py);
+			if(tile != null)IceFloor.setFloor(tile, newhorizon.content.hiemara.HiemaraFloors.hotSpot);
+		});
+		spot.countdown = interval();
+		spot.warned = false;
+	}
+	
 	/** Starts an eruption at a tile, from a hot spot or made by a destabilizer. The hot spot in reach of it starts to wait again. */
 	public static void erupt(int x, int y, float radius){
 		Front front = new Front();
