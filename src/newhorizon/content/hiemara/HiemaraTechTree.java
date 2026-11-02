@@ -22,7 +22,9 @@ public class HiemaraTechTree{
 						node(HiemaraBlocks.filterMk4);
 					});
 				});
-				node(HiemaraBlocks.sandDredger);
+				node(HiemaraBlocks.sandDredger, () -> {
+						node(HiemaraBlocks.pulverizer);
+					});
 				node(HiemaraBlocks.sonar, with(Items.copper, 150, Items.lead, 200, Items.silicon, 80), null, () -> {
 						node(HiemaraBlocks.seismicStabilizer, with(Items.lead, 500, Items.titanium, 250, Items.silicon, 350), null, () -> {
 							node(HiemaraBlocks.seismicDestabilizer, with(Items.lead, 600, Items.titanium, 400, Items.silicon, 400, Items.thorium, 150), Seq.with(new Objectives.Research(HiemaraFactories.blastMixer)), () -> {});

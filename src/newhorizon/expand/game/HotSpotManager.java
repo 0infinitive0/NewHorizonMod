@@ -206,11 +206,11 @@ public class HotSpotManager{
 		}
 	}
 	
-	/** Moves a hot spot: its vent is closed (deep water again) and a new one opens at another tile. */
+	/** Moves a hot spot: its vent is closed (it becomes shallow water) and a new one opens at another tile. */
 	public static void moveSpot(Spot spot, int x, int y){
 		arc.math.geom.Geometry.circle(spot.x, spot.y, 2, (px, py) -> {
 			Tile tile = Vars.world.tile(px, py);
-			if(tile != null && tile.floor() instanceof HotSpotFloor)IceFloor.setFloor(tile, Blocks.deepwater.asFloor());
+			if(tile != null && tile.floor() instanceof HotSpotFloor)IceFloor.setFloor(tile, Blocks.water.asFloor());
 		});
 		spot.x = x;
 		spot.y = y;

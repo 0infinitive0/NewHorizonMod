@@ -64,6 +64,7 @@ public class HiemaraBlocks{
 	public static LiquidPort liquidPort;
 	public static LiquidDepot liquidDepot;
 	public static SandDredger sandDredger;
+	public static GenericCrafter pulverizer;
 	public static IceMiningStation iceHarvester;
 	
 	public static WindTurbine windTurbine;
@@ -327,11 +328,25 @@ public class HiemaraBlocks{
 			requirements(Category.production, with(Items.copper, 100, Items.lead, 80));
 			size = 3;
 			health = 360;
-			outputItems = with(Items.sand, 4, Items.scrap, 1);
+			outputItem = new ItemStack(Items.sand, 4);
 			craftTime = 60f;
 			hasItems = true;
 			itemCapacity = 60;
 			placeableLiquid = true;
+		}};
+		
+		//Scrap in, sand out.
+		pulverizer = new OzoneCrafter("floating-pulverizer"){{
+			requirements(Category.crafting, with(Items.copper, 40, Items.lead, 30));
+			size = 2;
+			health = 200;
+			craftTime = 40f;
+			outputItem = new ItemStack(Items.sand, 2);
+			hasItems = hasPower = true;
+			itemCapacity = 20;
+			placeableLiquid = true;
+			consumeItem(Items.scrap, 1);
+			consumePower(0.5f);
 		}};
 		
 		sporeCultivator = new OzoneCrafter("floating-cultivator"){{
@@ -404,7 +419,7 @@ public class HiemaraBlocks{
 		all.addAll(
 			filterMk1, filterMk2, filterMk3, filterMk4, port, depot, cargoManager, coreMk2, coreMk3, container, vault, silo, launchPad, interplanetaryPad, floatingUnloader, improvedUnloader, supplyHub, seismicStabilizer, seismicDestabilizer, airPad, boatYard, hangar, dock, heater, heater2, heater3, sonar, generator, node,
 			improvedPort1, improvedPort2, improvedPort3, distributor1, distributor2, distributor3, liquidPort, liquidDepot,
-			sandDredger, sporeCultivator, floatingSporePress, floatingCoalCentrifuge, floatingPyratiteMixer, floatingSiliconSmelter, floatingSiliconCrucible
+			sandDredger, pulverizer, sporeCultivator, floatingSporePress, floatingCoalCentrifuge, floatingPyratiteMixer, floatingSiliconSmelter, floatingSiliconCrucible
 		);
 		
 		iceHarvester = new IceMiningStation("floating-ice-harvester"){{

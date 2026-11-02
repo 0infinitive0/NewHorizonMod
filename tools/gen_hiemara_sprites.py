@@ -413,6 +413,10 @@ def crafter(name, size, tint, motif):
         d.polygon([(c - 5 * SS, c - 8 * SS), (c + 5 * SS, c - 8 * SS), (c + 9 * SS, c + 4 * SS), (c - 9 * SS, c + 4 * SS)], fill=(150, 150, 160), outline=HULL_D)
         d.polygon([(c - 6 * SS, c + 4 * SS), (c + 6 * SS, c + 4 * SS), (c, c + 12 * SS)], fill=(255, 170, 70), outline=HULL_D)
         d.polygon([(c - 3 * SS, c + 4 * SS), (c + 3 * SS, c + 4 * SS), (c, c + 9 * SS)], fill=(255, 235, 190))
+    elif motif == "scrap":
+        for dx, dy in ((-5, -3), (3, -5), (-1, 4), (6, 3)):
+            d.polygon([(c + (dx - 3) * SS, c + dy * SS), (c + dx * SS, c + (dy - 4) * SS), (c + (dx + 3) * SS, c + (dy + 1) * SS)], fill=(150, 150, 150), outline=HULL_D)
+        d.rectangle([c - 6 * SS, c + 6 * SS, c + 6 * SS, c + 8 * SS], fill=(230, 195, 150))
     elif motif == "sand":
         d.rectangle([c - r + 3 * SS, c, c + r - 3 * SS, c + r - 3 * SS], fill=(230, 195, 150))
         d.rectangle([c - r + 3 * SS, c - 4 * SS, c + r - 3 * SS, c], fill=(40, 120, 190))
@@ -1132,6 +1136,7 @@ def main():
     hub("liquid-depot", 64, 2, "liquid")
     shrink("liquid-depot")
     crafter("sand-dredger", 96, (110, 100, 80), "sand")
+    crafter("floating-pulverizer", 64, (100, 96, 92), "scrap")
     crafter("floating-cultivator", 64, (70, 96, 84), "spore")
     crafter("floating-spore-press", 64, (84, 80, 100), "oil")
     crafter("floating-coal-centrifuge", 64, (74, 80, 90), "coal")
