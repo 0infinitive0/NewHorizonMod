@@ -23,7 +23,7 @@ import static mindustry.type.ItemStack.with;
  * of items every planet has, but the shield and the wall also need omni-matter to build.
  */
 public class OmniBlocks{
-	public static Block omniFactory, omniExtractor, omniShield, omniWall, omniStabilizer;
+	public static Block omniFactory, omniExtractor, omniShield, omniWall, omniStabilizer, antiMatterCannon;
 	/** Makes the head of the Serpent and its body sections. */
 	public static Block serpentNest;
 
@@ -67,6 +67,17 @@ public class OmniBlocks{
 			health = 300;
 			consumePower(1f);
 			range = 12f * tilesize;
+		}};
+
+		//Charged by holding fire (it does not keep the charge), fired by hand only: it destroys what it hits, and the destruction spreads.
+		antiMatterCannon = new newhorizon.expand.block.turrets.AntiMatterCannon("anti-matter-cannon"){{
+			requirements(Category.turret, with(Items.silicon, 1500, Items.thorium, 1200, Items.surgeAlloy, 800, Items.plastanium, 600, Items.phaseFabric, 500, NukeItems.omniMatter, 600));
+			size = 5;
+			health = 12000;
+			consumePower(80f);
+			range = 760f;
+			rotateSpeed = 1.6f;
+			shootType = new mindustry.entities.bullet.BasicBulletType(0f, 0f);
 		}};
 
 		omniWall = new OmniWall("omni-wall"){{
