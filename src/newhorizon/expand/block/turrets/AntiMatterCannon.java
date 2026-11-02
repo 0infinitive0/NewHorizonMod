@@ -33,8 +33,8 @@ import newhorizon.expand.units.nuke.AntiMatter;
 import static mindustry.Vars.tilesize;
 
 /**
- * A turret that cannot aim by itself: it does nothing for an AI, a logic processor or an idle pilot. Someone who has taken control of it
- * <b>holds fire to charge it</b>; it does not keep the charge, which drains away when fire is let go (or the power fails). With the charge
+ * A turret that cannot aim by itself: it does nothing for an AI or with nobody at its controls. Someone who has taken control of it (a
+ * player, or a logic processor that gives it a shoot order for a point) <b>holds fire to charge it</b>; it does not keep the charge, which drains away when fire is let go (or the power fails). With the charge
  * full, the barrel on the cursor and a target of another team under it, it fires one beam. What the beam hits is destroyed outright, and the
  * destruction spreads (see {@link AntiMatter}); a shield in the way is destroyed instead, and nothing spreads. After a shot the cannon cools
  * for a while and cannot be charged. The state is drawn: coils that pulse towards the muzzle as it charges, a core that swells, a flare and
@@ -137,8 +137,9 @@ public class AntiMatterCannon extends PowerTurret{
 			clock += Time.delta;
 			kick = Math.max(0f, kick - Time.delta / 40f);
 			flare = Math.max(0f, flare - Time.delta / 24f);
-			boolean pilot = isControlled();
-			holding = pilot && unit != null && unit.isShooting();
+			//Someone is at the controls (a player, or a processor with a shoot order) or nobody is: it never picks a target by itself.
+			boolean pilot = isControlled() || logicControlled();
+			holding = (isControlled() && unit != null && unit.isShooting()) || (!isControlled() && logicControlled() && logicShooting);
 
 			if(cool > 0f){
 				cool = Math.max(0f, cool - Time.delta);
@@ -265,6 +266,17 @@ public class AntiMatterCannon extends PowerTurret{
 			Draw.blend();
 			Draw.color();
 			Draw.reset();
+		}
+
+		/** What a processor can read besides the usual: how full the charge is, and how much of the cooldown after a shot is left. */
+		@Override
+		public double sense(mindustry.logic.LAccess sensor){
+			switch(sensor){
+				case progress: return energy;
+				case heat: return cool / coolTicks;
+				case shooting: return holding ? 1 : 0;
+				default: return super.sense(sensor);
+			}
 		}
 
 		@Override
