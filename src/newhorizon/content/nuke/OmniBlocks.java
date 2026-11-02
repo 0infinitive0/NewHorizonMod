@@ -23,7 +23,7 @@ import static mindustry.type.ItemStack.with;
  * of items every planet has, but the shield and the wall also need omni-matter to build.
  */
 public class OmniBlocks{
-	public static Block omniFactory, omniExtractor, omniShield, omniWall, omniStabilizer, antiMatterCannon;
+	public static Block omniFactory, omniExtractor, omniShield, omniWall, omniStabilizer, antiMatterCannon, crabDock;
 	/** Makes the head of the Serpent and its body sections. */
 	public static Block serpentNest;
 
@@ -78,6 +78,15 @@ public class OmniBlocks{
 			range = 760f;
 			rotateSpeed = 1.6f;
 			shootType = new mindustry.entities.bullet.BasicBulletType(0f, 0f);
+		}};
+
+		//Builds the King Crab, one to a team: slow and very expensive.
+		crabDock = new newhorizon.expand.block.nuke.CrabDock("crab-dock"){{
+			requirements(Category.units, with(Items.silicon, 1500, Items.thorium, 1500, Items.surgeAlloy, 800, Items.plastanium, 600, Items.phaseFabric, 500, NukeItems.omniMatter, 300));
+			size = 7;
+			health = 9000;
+			consumePower(30f);
+			plans.add(new UnitFactory.UnitPlan(CrabUnits.kingCrab, 60f * 300f, with(Items.silicon, 3000, Items.thorium, 2500, Items.surgeAlloy, 1500, Items.plastanium, 1200, Items.phaseFabric, 800, NukeItems.omniMatter, 800)));
 		}};
 
 		omniWall = new OmniWall("omni-wall"){{

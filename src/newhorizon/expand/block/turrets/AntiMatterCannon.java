@@ -82,6 +82,18 @@ public class AntiMatterCannon extends PowerTurret{
 		AntiMatter.hook();
 	}
 
+	/** A team can have only one: not while one stands, and not while one is being built. */
+	@Override
+	public boolean canPlaceOn(mindustry.world.Tile tile, mindustry.game.Team team, int rotation){
+		if(!super.canPlaceOn(tile, team, rotation)) return false;
+		mindustry.game.Teams.TeamData data = team.data();
+		if(!data.getBuildings(this).isEmpty()) return false;
+		for(Building b : data.buildings){
+			if(b instanceof mindustry.world.blocks.ConstructBlock.ConstructBuild && ((mindustry.world.blocks.ConstructBlock.ConstructBuild)b).current == this) return false;
+		}
+		return true;
+	}
+
 	@Override
 	public void setBars(){
 		super.setBars();

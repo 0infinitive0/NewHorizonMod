@@ -60,6 +60,8 @@ public class NukeTechTree{
 			child(factory, OmniBlocks.omniWall);
 			child(factory, OmniBlocks.omniStabilizer);
 			child(factory, OmniBlocks.antiMatterCannon);
+			TechNode dock = child(factory, OmniBlocks.crabDock);
+			child(dock, CrabUnits.kingCrab);
 			TechNode nest = child(factory, OmniBlocks.serpentNest);
 			TechNode head = child(nest, SerpentUnits.head);
 			child(head, SerpentUnits.body);
