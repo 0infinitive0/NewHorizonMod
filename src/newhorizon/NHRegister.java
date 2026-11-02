@@ -56,6 +56,7 @@ public class NHRegister{
 	
 	public static void load(){
 		IceManager.load();
+		newhorizon.expand.game.HotSpotManager.load();
 		
 		Events.on(EventType.ResetEvent.class, e -> {
 

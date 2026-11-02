@@ -12,12 +12,16 @@ public class HiemaraFloors{
 	public static Seq<Item> ores;
 	/** The ores that have rich water. Sand does not: the dredger and the filters give plenty of it. */
 	public static Seq<Item> richOres;
+	/** The vent of a hot spot. */
+	public static newhorizon.expand.block.env.HotSpotFloor hotSpot;
 	
 	public static void load(){
 		ores = Seq.with(Items.sand, Items.scrap, Items.copper, Items.lead, Items.coal, Items.titanium, Items.beryllium, Items.thorium, Items.tungsten);
 		
 		FilterBlock.ores.clear();
 		FilterBlock.ores.addAll(ores);
+		
+		hotSpot = new newhorizon.expand.block.env.HotSpotFloor("hot-spot");
 		
 		richOres = ores.copy().removeAll(ore -> ore == Items.sand);
 		

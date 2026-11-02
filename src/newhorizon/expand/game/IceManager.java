@@ -134,6 +134,7 @@ public class IceManager{
 
 	/** @return whether a powered heater covers the tile. */
 	public static boolean heated(Tile tile){
+		if(HotSpotManager.warm(tile))return true;
 		for(int i = 0; i < heaters.size; i++){
 			Building heater = heaters.get(i);
 			if(heater.isValid() && heater.efficiency > 0f && heater.within(tile.worldx(), tile.worldy(), heaterRadius.get(heater.block, 0f))){

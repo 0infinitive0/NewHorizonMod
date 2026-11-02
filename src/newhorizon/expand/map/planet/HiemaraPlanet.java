@@ -42,6 +42,7 @@ import mindustry.world.blocks.environment.Floor;
 import mindustry.world.meta.Env;
 import newhorizon.content.NHPlanets;
 import newhorizon.content.NHWeathers;
+import newhorizon.expand.game.HotSpotManager;
 import newhorizon.expand.weather.ColdWave;
 
 import static mindustry.Vars.state;
@@ -276,6 +277,7 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 			}
 			
 			richWater(coreX, coreY);
+			hotSpots(coreX, coreY, spawnX, spawnY, sector.id == sector.planet.startSector);
 			
 			boolean first = sector.id == sector.planet.startSector;
 			int baseTier = HiemaraBase.tier(sector);
@@ -388,6 +390,28 @@ public class HiemaraPlanet extends mindustry.type.Planet{
 						break;
 					}
 				}
+			}
+		}
+		
+		/** Places up to three hot spots on deep water, far from the core, the spawn and each other, well inside the map. */
+		void hotSpots(int coreX, int coreY, int spawnX, int spawnY, boolean first){
+			int wanted = first ? 1 : rand.random(1, HotSpotManager.maxSpots);
+			Seq<int[]> placed = new Seq<>();
+			for(int tries = 0; tries < 600 && placed.size < wanted; tries++){
+				int x = rand.random(8, width - 9), y = rand.random(8, height - 9);
+				if(inside(x, y) < 22f || !deepAround(x, y, 7))continue;
+				if(Mathf.dst(x, y, coreX, coreY) < 40f || Mathf.dst(x, y, spawnX, spawnY) < 36f)continue;
+				boolean near = false;
+				for(int[] other : placed){
+					if(Mathf.dst(x, y, other[0], other[1]) < 45f)near = true;
+				}
+				if(near)continue;
+				
+				placed.add(new int[]{x, y});
+				Geometry.circle(x, y, 2, (px, py) -> {
+					Tile tile = tiles.get(px, py);
+					if(tile != null)tile.setFloor(HiemaraFloors.hotSpot);
+				});
 			}
 		}
 		

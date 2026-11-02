@@ -50,6 +50,8 @@ public class HiemaraBlocks{
 	public static LaunchPad launchPad, interplanetaryPad;
 	public static mindustry.world.blocks.storage.Unloader floatingUnloader, improvedUnloader;
 	public static newhorizon.expand.block.cargo.SupplyHub supplyHub;
+	public static newhorizon.expand.block.hiemara.SeismicStabilizer seismicStabilizer;
+	public static newhorizon.expand.block.hiemara.SeismicDestabilizer seismicDestabilizer;
 	public static GenericCrafter fuelMixer;
 	public static mindustry.world.blocks.power.ConsumeGenerator rocketEngine;
 	public static FloatingHeater heater, heater2, heater3;
@@ -197,6 +199,20 @@ public class HiemaraBlocks{
 			health = 120;
 			speed = 60f / 30f;
 			placeableLiquid = true;
+		}};
+		
+		seismicStabilizer = new newhorizon.expand.block.hiemara.SeismicStabilizer("seismic-stabilizer"){{
+			requirements(Category.effect, with(Items.lead, 300, Items.titanium, 150, Items.silicon, 250, Items.copper, 200));
+			size = 3;
+			health = 900;
+			consumePower(3f);
+		}};
+		seismicDestabilizer = new newhorizon.expand.block.hiemara.SeismicDestabilizer("seismic-destabilizer"){{
+			requirements(Category.effect, with(Items.lead, 300, Items.titanium, 200, Items.silicon, 200, Items.thorium, 100));
+			size = 3;
+			health = 700;
+			//a lot of blast compound, all at once
+			itemCapacity = 200;
 		}};
 		
 		supplyHub = new newhorizon.expand.block.cargo.SupplyHub("supply-hub"){{
@@ -386,7 +402,7 @@ public class HiemaraBlocks{
 		}};
 		
 		all.addAll(
-			filterMk1, filterMk2, filterMk3, filterMk4, port, depot, cargoManager, coreMk2, coreMk3, container, vault, silo, launchPad, interplanetaryPad, floatingUnloader, improvedUnloader, supplyHub, airPad, boatYard, hangar, dock, heater, heater2, heater3, sonar, generator, node,
+			filterMk1, filterMk2, filterMk3, filterMk4, port, depot, cargoManager, coreMk2, coreMk3, container, vault, silo, launchPad, interplanetaryPad, floatingUnloader, improvedUnloader, supplyHub, seismicStabilizer, seismicDestabilizer, airPad, boatYard, hangar, dock, heater, heater2, heater3, sonar, generator, node,
 			improvedPort1, improvedPort2, improvedPort3, distributor1, distributor2, distributor3, liquidPort, liquidDepot,
 			sandDredger, sporeCultivator, floatingSporePress, floatingCoalCentrifuge, floatingPyratiteMixer, floatingSiliconSmelter, floatingSiliconCrucible
 		);

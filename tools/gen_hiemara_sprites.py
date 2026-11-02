@@ -454,6 +454,47 @@ def unloader(name, tier):
     finish(center, size, os.path.join(BLOCK_DIR, name + "-center.png"))
 
 
+def hot_spot(name):
+    """The floor of a hot spot vent: molten rock."""
+    import random
+    rng = random.Random(7)
+    size = 32
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    d.rectangle([0, 0, s, s], fill=(120, 36, 14, 255))
+    for _ in range(26):
+        x, y = rng.randint(0, size) * SS, rng.randint(0, size) * SS
+        r = rng.randint(3, 8) * SS
+        col = rng.choice([(210, 80, 24), (240, 130, 40), (255, 190, 80), (170, 50, 16)])
+        d.ellipse([x - r, y - r, x + r, y + r], fill=col + (255,))
+    finish(img, size, os.path.join(ENV_DIR, name + ".png"))
+
+
+def seismic(name, kind):
+    """The seismic stabilizer (a calm ring) and destabilizer (a crack with a charge)."""
+    import math
+    size = 96
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    c = s // 2
+    plate(d, size, color=(70, 78, 96))
+    rivets(d, size)
+    r = c - 12 * SS
+    d.ellipse([c - r, c - r, c + r, c + r], fill=(22, 30, 46), outline=HULL_D, width=2 * SS)
+    if kind == "stabilizer":
+        for k, rr in enumerate((r - 4 * SS, r - 12 * SS, r - 20 * SS)):
+            d.ellipse([c - rr, c - rr, c + rr, c + rr], outline=ICE if k % 2 == 0 else (120, 255, 190), width=2 * SS)
+        d.ellipse([c - 4 * SS, c - 4 * SS, c + 4 * SS, c + 4 * SS], fill=(120, 255, 190), outline=HULL_D)
+    else:
+        pts = [(c - r + 6 * SS, c - 6 * SS), (c - 8 * SS, c - 2 * SS), (c - 2 * SS, c + 6 * SS), (c + 8 * SS, c - 4 * SS), (c + r - 6 * SS, c + 8 * SS)]
+        d.line(pts, fill=(255, 150, 60), width=4 * SS)
+        d.line(pts, fill=(255, 235, 170), width=SS)
+        d.polygon([(c, c - r + 6 * SS), (c + 5 * SS, c - r + 16 * SS), (c - 5 * SS, c - r + 16 * SS)], fill=(255, 90, 60), outline=HULL_D)
+    finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+
+
 def ship(name, size, tier, tank=False, big=False):
     img = canvas(size)
     d = ImageDraw.Draw(img)
@@ -986,6 +1027,9 @@ def defense_sprites():
     turret("tide-cannon", 64, "cannon")
     turret("whirl-mortar", 96, "mortar")
     vortex_gen("vortex-generator", 96)
+    hot_spot("hot-spot")
+    seismic("seismic-stabilizer", "stabilizer")
+    seismic("seismic-destabilizer", "destabilizer")
     unloader("floating-unloader", 1)
     unloader("improved-floating-unloader", 2)
     hub("supply-hub", 96, 3, "supply")
