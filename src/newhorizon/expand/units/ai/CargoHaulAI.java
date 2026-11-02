@@ -7,6 +7,8 @@ import mindustry.gen.Building;
 import mindustry.gen.Call;
 import mindustry.type.Item;
 import newhorizon.expand.block.cargo.Depot;
+import newhorizon.expand.block.cargo.Dropoff;
+import newhorizon.expand.block.cargo.SupplyHub;
 import newhorizon.expand.block.cargo.HubBlock;
 import newhorizon.expand.block.cargo.Port;
 import newhorizon.expand.hiemara.Hold;
@@ -18,7 +20,8 @@ import newhorizon.expand.hiemara.Hold;
  */
 public class CargoHaulAI extends HaulAI{
 	public Port.PortBuild port;
-	public Depot.DepotBuild depot;
+	/** Where the load is going: a depot, or a supply hub that is short of it. */
+	public Building depot;
 	protected float waited, nextSearch;
 	
 	@Override
@@ -53,9 +56,9 @@ public class CargoHaulAI extends HaulAI{
 			}
 		}else{
 			//On the way to a core depot: switch if a depot that feeds something else can take the load.
-			if(depot != null && depot.isValid() && depot.nextToCore() && !near(depot) && timer.get(timerTarget4, 30f)){
-				Depot.DepotBuild other = closestDepotFor(Hold.items(unit), Hold.total(unit));
-				if(other != null && !other.nextToCore())depot = other;
+			if(depot != null && depot.isValid() && ((Dropoff)depot).nextToCore() && !near(depot) && timer.get(timerTarget4, 30f)){
+				Building other = closestDepotFor(Hold.items(unit), Hold.total(unit));
+				if(other != null && !((Dropoff)other).nextToCore())depot = other;
 			}
 			
 			if(depot == null || !depot.isValid() || ignored(depot) || !wantsAny(depot)){
@@ -110,15 +113,15 @@ public class CargoHaulAI extends HaulAI{
 	protected int wantedStock(Port.PortBuild candidate){
 		int stock = 0;
 		for(Item item : Vars.content.items()){
-			int amount = candidate.items.get(item);
+			int amount = candidate.available(item);
 			if(amount > 0 && closestDepotFor(Seq.with(item)) != null)stock += amount;
 		}
 		return stock;
 	}
 	
-	protected boolean wantsAny(Depot.DepotBuild depot){
+	protected boolean wantsAny(Building depot){
 		for(Item item : Hold.items(unit)){
-			if(depot.wants(item))return true;
+			if(((Dropoff)depot).wants(item))return true;
 		}
 		return false;
 	}
@@ -130,13 +133,13 @@ public class CargoHaulAI extends HaulAI{
 		//Most stocked first.
 		Seq<Item> candidates = new Seq<>();
 		for(Item item : Vars.content.items()){
-			if(port.items.get(item) > 0 && closestDepotFor(Seq.with(item)) != null)candidates.add(item);
+			if(port.available(item) > 0 && closestDepotFor(Seq.with(item)) != null)candidates.add(item);
 		}
-		candidates.sort(item -> -port.items.get(item));
+		candidates.sort(item -> -port.available(item));
 		
 		for(Item item : candidates){
 			int room = Hold.room(unit, item);
-			int amount = Math.min(room, port.items.get(item));
+			int amount = Math.min(room, port.available(item));
 			if(amount <= 0)continue;
 			
 			if(Hold.multi(unit)){
@@ -167,7 +170,7 @@ public class CargoHaulAI extends HaulAI{
 		}
 	}
 	
-	protected Depot.DepotBuild closestDepotFor(Seq<Item> items){
+	protected Building closestDepotFor(Seq<Item> items){
 		return closestDepotFor(items, 0);
 	}
 	
@@ -176,14 +179,14 @@ public class CargoHaulAI extends HaulAI{
 	 * the core depots take what is left. Inside each group the closest one with room for all of the load wins, then the
 	 * closest with any room.
 	 */
-	protected Depot.DepotBuild closestDepotFor(Seq<Item> items, int needed){
-		Depot.DepotBuild best = null;
+	protected Building closestDepotFor(Seq<Item> items, int needed){
+		Building best = null;
 		int bestScore = Integer.MAX_VALUE;
 		float bestDst = Float.MAX_VALUE;
 		for(Depot block : Depot.all){
 			for(Building build : unit.team.data().getBuildings(block)){
-				Depot.DepotBuild candidate = (Depot.DepotBuild)build;
-				if(ignored(candidate))continue;
+				if(ignored(build))continue;
+				Dropoff candidate = (Dropoff)build;
 				boolean wants = false;
 				for(Item item : items){
 					if(candidate.wants(item)){
@@ -194,11 +197,35 @@ public class CargoHaulAI extends HaulAI{
 				if(!wants)continue;
 				
 				int score = (candidate.nextToCore() ? 2 : 0) + (candidate.room() >= needed ? 0 : 1);
-				float d = candidate.dst2(unit);
+				float d = build.dst2(unit);
 				if(score < bestScore || (score == bestScore && d < bestDst)){
 					bestScore = score;
 					bestDst = d;
-					best = candidate;
+					best = build;
+				}
+			}
+		}
+		//A supply hub that is short of an item counts like a depot that feeds something: it is served before the core.
+		for(HubBlock hub : HubBlock.all){
+			if(!(hub instanceof SupplyHub))continue;
+			for(Building build : unit.team.data().getBuildings(hub)){
+				if(ignored(build))continue;
+				Dropoff candidate = (Dropoff)build;
+				boolean wants = false;
+				for(Item item : items){
+					if(candidate.wants(item)){
+						wants = true;
+						break;
+					}
+				}
+				if(!wants)continue;
+				
+				int score = (candidate.room() >= needed ? 0 : 1);
+				float d = build.dst2(unit);
+				if(score < bestScore || (score == bestScore && d < bestDst)){
+					bestScore = score;
+					bestDst = d;
+					best = build;
 				}
 			}
 		}

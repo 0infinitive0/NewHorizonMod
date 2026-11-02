@@ -37,7 +37,7 @@ public class Depot extends Block{
 		all.add(this);
 	}
 	
-	public class DepotBuild extends Building{
+	public class DepotBuild extends Building implements Dropoff{
 		/** Only this item is accepted, any if null. */
 		public Item item;
 		
@@ -47,11 +47,13 @@ public class Depot extends Block{
 		}
 		
 		/** @return whether a unit may bring this item. */
+		@Override
 		public boolean wants(Item item){
 			return matches(item) && items.total() < itemCapacity;
 		}
 		
 		/** @return whether a core is next to the depot, so that it hands everything on to the core. */
+		@Override
 		public boolean nextToCore(){
 			for(Building other : proximity){
 				if(other instanceof CoreBlock.CoreBuild)return true;
@@ -60,6 +62,7 @@ public class Depot extends Block{
 		}
 		
 		/** @return how many more items fit: a core next to the depot takes everything. */
+		@Override
 		public int room(){
 			int room = itemCapacity - items.total();
 			for(Building other : proximity){

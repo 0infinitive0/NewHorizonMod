@@ -48,6 +48,8 @@ public class HiemaraBlocks{
 	public static CoreBlock coreMk2, coreMk3;
 	public static StorageBlock container, vault, silo;
 	public static LaunchPad launchPad, interplanetaryPad;
+	public static mindustry.world.blocks.storage.Unloader floatingUnloader, improvedUnloader;
+	public static newhorizon.expand.block.cargo.SupplyHub supplyHub;
 	public static GenericCrafter fuelMixer;
 	public static mindustry.world.blocks.power.ConsumeGenerator rocketEngine;
 	public static FloatingHeater heater, heater2, heater3;
@@ -182,6 +184,29 @@ public class HiemaraBlocks{
 			placeableLiquid = true;
 			consumePower(4f);
 		}};
+		floatingUnloader = new mindustry.world.blocks.storage.Unloader("floating-unloader"){{
+			requirements(Category.effect, with(Items.copper, 30, Items.lead, 30, Items.silicon, 30));
+			size = 1;
+			health = 70;
+			speed = 60f / 11f;
+			placeableLiquid = true;
+		}};
+		improvedUnloader = new mindustry.world.blocks.storage.Unloader("improved-floating-unloader"){{
+			requirements(Category.effect, with(Items.lead, 80, Items.titanium, 60, Items.silicon, 80));
+			size = 1;
+			health = 120;
+			speed = 60f / 30f;
+			placeableLiquid = true;
+		}};
+		
+		supplyHub = new newhorizon.expand.block.cargo.SupplyHub("supply-hub"){{
+			requirements(Category.distribution, with(Items.lead, 400, Items.titanium, 250, Items.silicon, 250, Items.copper, 200));
+			size = 3;
+			health = 900;
+			itemCapacity = 3000;
+			maxBound = 6;
+		}};
+		
 		interplanetaryPad = new InterplanetaryLaunchPad("interplanetary-launch-pad"){{
 			requirements(Category.effect, with(Items.lead, 1500, Items.titanium, 1000, Items.silicon, 1000, Items.thorium, 600, Items.plastanium, 300));
 			size = 5;
@@ -361,7 +386,7 @@ public class HiemaraBlocks{
 		}};
 		
 		all.addAll(
-			filterMk1, filterMk2, filterMk3, filterMk4, port, depot, cargoManager, coreMk2, coreMk3, container, vault, silo, launchPad, interplanetaryPad, airPad, boatYard, hangar, dock, heater, heater2, heater3, sonar, generator, node,
+			filterMk1, filterMk2, filterMk3, filterMk4, port, depot, cargoManager, coreMk2, coreMk3, container, vault, silo, launchPad, interplanetaryPad, floatingUnloader, improvedUnloader, supplyHub, airPad, boatYard, hangar, dock, heater, heater2, heater3, sonar, generator, node,
 			improvedPort1, improvedPort2, improvedPort3, distributor1, distributor2, distributor3, liquidPort, liquidDepot,
 			sandDredger, sporeCultivator, floatingSporePress, floatingCoalCentrifuge, floatingPyratiteMixer, floatingSiliconSmelter, floatingSiliconCrucible
 		);

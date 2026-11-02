@@ -48,6 +48,27 @@ public class Distributor extends Block{
 		mindustry.graphics.Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range * tilesize, mindustry.graphics.Pal.accent);
 	}
 	
+	/** @return whether the inputs of a block are filled by a distributor or a supply hub. */
+	public static boolean fillable(Building build){
+		return build.items != null && !(build.block instanceof StorageBlock) && !(build instanceof HubBlock.HubBuild)
+			&& !(build instanceof Depot.DepotBuild) && !(build instanceof DistributorBuild);
+	}
+	
+	/** Fills the inputs of the blocks around a building, from what it holds. */
+	public static void fillAround(Building hub, float range, int perSecond){
+		Vars.indexer.eachBlock(hub.team, hub.x, hub.y, range * tilesize, b -> b != hub && fillable(b), to -> feed(hub, to, perSecond));
+	}
+	
+	/** Gives a block what it takes of the items the hub holds. */
+	public static void feed(Building hub, Building to, int perSecond){
+		for(Item item : Vars.content.items()){
+			for(int i = 0; i < perSecond && hub.items.get(item) > 0 && to.acceptItem(hub, item); i++){
+				to.handleItem(hub, item);
+				hub.items.remove(item, 1);
+			}
+		}
+	}
+	
 	public class DistributorBuild extends Building{
 		@Override
 		public boolean acceptItem(Building source, Item item){
@@ -71,22 +92,7 @@ public class Distributor extends Block{
 		}
 		
 		protected void fill(){
-			Vars.indexer.eachBlock(team, x, y, range * tilesize, b -> b != this && b.items != null && fillable(b), this::feed);
-		}
-		
-		protected boolean fillable(Building build){
-			return !(build.block instanceof StorageBlock) && !(build instanceof HubBlock.HubBuild)
-				&& !(build instanceof Depot.DepotBuild) && !(build instanceof DistributorBuild);
-		}
-		
-		/** Gives a block what it takes of the items held. */
-		protected void feed(Building to){
-			for(Item item : Vars.content.items()){
-				for(int i = 0; i < perSecond && items.get(item) > 0 && to.acceptItem(this, item); i++){
-					to.handleItem(this, item);
-					items.remove(item, 1);
-				}
-			}
+			fillAround(this, range, perSecond);
 		}
 		
 		@Override

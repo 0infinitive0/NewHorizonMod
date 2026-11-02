@@ -25,6 +25,11 @@ public class Port extends HubBlock{
 	}
 	
 	public class PortBuild extends HubBuild{
+		/** @return how many of an item a cargo unit may take from here. Everything, unless the port keeps a stock. */
+		public int available(Item item){
+			return items.get(item);
+		}
+		
 		@Override
 		public boolean acceptItem(Building source, Item item){
 			return items.total() < itemCapacity && !(source instanceof Depot.DepotBuild) && !(source instanceof HubBuild);

@@ -46,6 +46,25 @@ public class ImprovedPort extends Port{
 			&& !(build instanceof HubBlock.HubBuild) && !(build instanceof Depot.DepotBuild) && !(build instanceof Distributor.DistributorBuild);
 	}
 	
+	/** Takes the outputs of the blocks around a building into it, as far as it has room. */
+	public static void collectAround(Building hub, float range, int perItem){
+		Vars.indexer.eachBlock(hub.team, hub.x, hub.y, range * tilesize, b -> b != hub && collectable(b), from -> pull(hub, from, perItem));
+	}
+	
+	/** Takes the output of a block, which is what it holds and does not use itself. */
+	public static void pull(Building hub, Building from, int perItem){
+		for(Item item : Vars.content.items()){
+			int amount = from.items.get(item);
+			if(amount <= 0 || from.block.consumesItem(item))continue;
+			
+			int space = hub.block.itemCapacity - hub.items.total();
+			if(space <= 0)return;
+			
+			int taken = from.removeStack(item, Math.min(Math.min(amount, space), perItem));
+			if(taken > 0)hub.items.add(item, taken);
+		}
+	}
+	
 	public class ImprovedPortBuild extends PortBuild{
 		@Override
 		public void updateTile(){
@@ -55,21 +74,7 @@ public class ImprovedPort extends Port{
 		}
 		
 		protected void collect(){
-			Vars.indexer.eachBlock(team, x, y, range * tilesize, b -> b != this && collectable(b), this::pull);
-		}
-		
-		/** Takes the output of a block, which is what it holds and does not use itself. */
-		protected void pull(Building from){
-			for(Item item : Vars.content.items()){
-				int amount = from.items.get(item);
-				if(amount <= 0 || from.block.consumesItem(item))continue;
-				
-				int space = itemCapacity - items.total();
-				if(space <= 0)return;
-				
-				int taken = from.removeStack(item, Math.min(Math.min(amount, space), collectPerItem));
-				if(taken > 0)items.add(item, taken);
-			}
+			collectAround(this, range, collectPerItem);
 		}
 		
 		@Override

@@ -326,6 +326,18 @@ def hub(name, size, tier, kind):
                        (c + dx * (r - 9 * SS) - dy * 4 * SS, c + dy * (r - 9 * SS) + dx * 4 * SS),
                        (c + dx * (r - 9 * SS) + dy * 4 * SS, c + dy * (r - 9 * SS) - dx * 4 * SS)], fill=ICE)
         d.ellipse([c - 5 * SS, c - 5 * SS, c + 5 * SS, c + 5 * SS], fill=ICE_L, outline=HULL_D, width=SS)
+    elif kind == "supply":
+        import math
+        for k in range(4):
+            dx, dy = ((1, 0), (0, 1), (-1, 0), (0, -1))[k]
+            d.polygon([(c + dx * (r - 2 * SS), c + dy * (r - 2 * SS)),
+                       (c + dx * (r - 9 * SS) - dy * 4 * SS, c + dy * (r - 9 * SS) + dx * 4 * SS),
+                       (c + dx * (r - 9 * SS) + dy * 4 * SS, c + dy * (r - 9 * SS) - dx * 4 * SS)], fill=ICE)
+        for k in range(4):
+            ang = k * 3.14159 / 2 + 3.14159 / 4
+            d.line([c, c, c + math.cos(ang) * (r - 6 * SS), c + math.sin(ang) * (r - 6 * SS)], fill=WARM, width=2 * SS)
+        d.ellipse([c - 6 * SS, c - 6 * SS, c + 6 * SS, c + 6 * SS], fill=WARM, outline=HULL_D, width=SS)
+        d.ellipse([c - 2 * SS, c - 2 * SS, c + 2 * SS, c + 2 * SS], fill=ICE_L)
     elif kind == "distributor":
         for k in range(8):
             ang = k * 3.14159 / 4
@@ -419,6 +431,27 @@ def liquid_icon(name, color):
     d.ellipse([c - 10 * SS, c - 2 * SS, c + 10 * SS, c + 18 * SS], fill=color, outline=dark, width=SS)
     d.ellipse([c - 6 * SS, c + 2 * SS, c - 2 * SS, c + 8 * SS], fill=tuple(min(255, v + 70) for v in color))
     finish(img, size, os.path.join(ROOT, "item", name + ".png"))
+
+
+def unloader(name, tier):
+    """A floating unloader: a small hull plate with arrows, and a white centre that the game tints with the chosen item."""
+    size = 32
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    c = s // 2
+    plate(d, size, inset=1, color=(74, 98, 120) if tier == 1 else (90, 100, 124))
+    for k in range(4):
+        dx, dy = ((1, 0), (0, 1), (-1, 0), (0, -1))[k]
+        d.polygon([(c + dx * 12 * SS, c + dy * 12 * SS), (c + dx * 7 * SS - dy * 3 * SS, c + dy * 7 * SS + dx * 3 * SS),
+                   (c + dx * 7 * SS + dy * 3 * SS, c + dy * 7 * SS - dx * 3 * SS)], fill=ICE if tier == 1 else WARM)
+    if tier == 2:
+        d.rectangle([2 * SS, 2 * SS, 30 * SS, 3 * SS], fill=WARM)
+    finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+    center = canvas(size)
+    cd = ImageDraw.Draw(center)
+    cd.ellipse([c - 5 * SS, c - 5 * SS, c + 5 * SS, c + 5 * SS], fill=(255, 255, 255, 255))
+    finish(center, size, os.path.join(BLOCK_DIR, name + "-center.png"))
 
 
 def ship(name, size, tier, tank=False, big=False):
@@ -953,6 +986,9 @@ def defense_sprites():
     turret("tide-cannon", 64, "cannon")
     turret("whirl-mortar", 96, "mortar")
     vortex_gen("vortex-generator", 96)
+    unloader("floating-unloader", 1)
+    unloader("improved-floating-unloader", 2)
+    hub("supply-hub", 96, 3, "supply")
     crafter("fuel-mixer", 96, (100, 84, 70), "fuelmix")
     crafter("rocket-engine", 96, (84, 72, 72), "engine")
     liquid_icon("rocket-fuel", (255, 176, 102))
