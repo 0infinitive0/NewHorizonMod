@@ -24,6 +24,7 @@ public class HiemaraContent{
 		HiemaraSupport.load();
 		HiemaraFactories.load();
 		CargoCap.load();
+		newhorizon.expand.block.hiemara.InterplanetaryLaunchPad.registerDelivery();
 	}
 	
 	/** @return every block that can be built on Hiemara: its own blocks and the cores. */

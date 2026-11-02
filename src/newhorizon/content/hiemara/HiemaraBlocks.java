@@ -4,6 +4,7 @@ import arc.struct.Seq;
 import mindustry.content.Items;
 import mindustry.content.UnitTypes;
 import mindustry.world.blocks.campaign.LaunchPad;
+import newhorizon.expand.block.hiemara.InterplanetaryLaunchPad;
 import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.world.blocks.storage.StorageBlock;
 import mindustry.type.LiquidStack;
@@ -44,7 +45,7 @@ public class HiemaraBlocks{
 	public static CargoManager cargoManager;
 	public static CoreBlock coreMk2, coreMk3;
 	public static StorageBlock container, vault, silo;
-	public static LaunchPad launchPad;
+	public static LaunchPad launchPad, interplanetaryPad;
 	public static FloatingHeater heater, heater2, heater3;
 	public static Sonar sonar;
 	public static FloatingGenerator generator;
@@ -176,6 +177,16 @@ public class HiemaraBlocks{
 			hasPower = true;
 			placeableLiquid = true;
 			consumePower(4f);
+		}};
+		interplanetaryPad = new InterplanetaryLaunchPad("interplanetary-launch-pad"){{
+			requirements(Category.effect, with(Items.lead, 1500, Items.titanium, 1000, Items.silicon, 1000, Items.thorium, 600, Items.plastanium, 300));
+			size = 5;
+			itemCapacity = 1000;
+			health = 2200;
+			launchTime = 60f * 60f;
+			hasPower = true;
+			placeableLiquid = true;
+			consumePower(30f);
 		}};
 		
 		airPad = new CargoUnitPad("cargo-air-pad"){{
@@ -342,7 +353,7 @@ public class HiemaraBlocks{
 		}};
 		
 		all.addAll(
-			filterMk1, filterMk2, filterMk3, filterMk4, port, depot, cargoManager, coreMk2, coreMk3, container, vault, silo, launchPad, airPad, boatYard, hangar, dock, heater, heater2, heater3, sonar, generator, node,
+			filterMk1, filterMk2, filterMk3, filterMk4, port, depot, cargoManager, coreMk2, coreMk3, container, vault, silo, launchPad, interplanetaryPad, airPad, boatYard, hangar, dock, heater, heater2, heater3, sonar, generator, node,
 			improvedPort1, improvedPort2, improvedPort3, distributor1, distributor2, distributor3, liquidPort, liquidDepot,
 			sandDredger, sporeCultivator, floatingSporePress, floatingCoalCentrifuge, floatingPyratiteMixer, floatingSiliconSmelter, floatingSiliconCrucible
 		);

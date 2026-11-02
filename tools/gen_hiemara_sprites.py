@@ -515,10 +515,91 @@ def turret(name, size, kind):
         d.polygon([(c - 4 * SS, c), (c - 6 * SS, 3 * SS), (c + 6 * SS, 3 * SS), (c + 4 * SS, c)], fill=(60, 130, 190), outline=HULL_D)
         d.rectangle([c - 3 * SS, 3 * SS, c + 3 * SS, 7 * SS], fill=(24, 40, 62))
         d.ellipse([c - 4 * SS, c - 4 * SS, c + 4 * SS, c + 4 * SS], fill=(90, 190, 240), outline=HULL_D, width=SS)
+    elif kind == "rail":
+        for dx in (-1, 1):
+            d.rounded_rectangle([c + dx * 5 * SS - 2 * SS, 0, c + dx * 5 * SS + 2 * SS, c + 2 * SS], radius=SS, fill=HULL_L, outline=HULL_D, width=SS)
+        d.rectangle([c - 3 * SS, 2 * SS, c + 3 * SS, c], fill=(24, 40, 62))
+        for k in range(4):
+            yy = (3 + k * 3) * SS
+            d.line([c - 5 * SS, yy, c + 5 * SS, yy], fill=(150, 215, 255), width=SS)
+        d.ellipse([c - 6 * SS, c - 6 * SS, c + 6 * SS, c + 6 * SS], fill=(90, 200, 255), outline=HULL_D, width=SS)
+    elif kind == "howitzer":
+        d.rounded_rectangle([c - 5 * SS, 0, c + 5 * SS, c + 3 * SS], radius=2 * SS, fill=(150, 200, 235), outline=HULL_D, width=SS)
+        d.rectangle([c - 3 * SS, 0, c + 3 * SS, 5 * SS], fill=(20, 32, 48))
+        d.rectangle([c - 6 * SS, c - 6 * SS, c + 6 * SS, c - 3 * SS], fill=HULL_L, outline=HULL_D)
+        d.ellipse([c - 6 * SS, c - 4 * SS, c + 6 * SS, c + 8 * SS], fill=ICE, outline=HULL_D, width=SS)
+    elif kind == "shard":
+        for dx in (-1, 1):
+            d.polygon([(c + dx * 5 * SS, 0), (c + dx * 5 * SS + 3 * SS, 7 * SS), (c + dx * 5 * SS - 3 * SS, 7 * SS)], fill=ICE_L, outline=HULL_D)
+            d.rectangle([c + dx * 5 * SS - 2 * SS, 7 * SS, c + dx * 5 * SS + 2 * SS, c], fill=HULL_L, outline=HULL_D)
+        d.ellipse([c - 5 * SS, c - 5 * SS, c + 5 * SS, c + 5 * SS], fill=ICE, outline=HULL_D, width=SS)
+    elif kind == "maelstrom":
+        d.polygon([(c - 7 * SS, c), (c - 9 * SS, 2 * SS), (c + 9 * SS, 2 * SS), (c + 7 * SS, c)], fill=(60, 130, 190), outline=HULL_D)
+        d.rectangle([c - 5 * SS, 2 * SS, c + 5 * SS, 8 * SS], fill=(20, 36, 58))
+        for k in range(3):
+            d.arc([c - (4 + 2 * k) * SS, c - (4 + 2 * k) * SS, c + (4 + 2 * k) * SS, c + (4 + 2 * k) * SS], 30, 330, fill=(190, 235, 255), width=SS)
+        d.ellipse([c - 3 * SS, c - 3 * SS, c + 3 * SS, c + 3 * SS], fill=ICE_L, outline=HULL_D)
+    elif kind == "squall":
+        for dx in (-1, 1):
+            d.rectangle([c + dx * 6 * SS - 2 * SS, 1 * SS, c + dx * 6 * SS + 2 * SS, c], fill=HULL_L, outline=HULL_D)
+            d.ellipse([c + dx * 6 * SS - 3 * SS, 0, c + dx * 6 * SS + 3 * SS, 5 * SS], fill=(40, 52, 68), outline=HULL_D)
+        d.rectangle([c - 3 * SS, 3 * SS, c + 3 * SS, c], fill=(150, 130, 70), outline=HULL_D)
+        d.ellipse([c - 7 * SS, c - 7 * SS, c + 7 * SS, c + 7 * SS], fill=(150, 130, 70), outline=HULL_D, width=SS)
     else:  # mortar
         d.rounded_rectangle([c - 6 * SS, 2 * SS, c + 6 * SS, c + 2 * SS], radius=2 * SS, fill=(70, 96, 120), outline=HULL_D, width=SS)
         d.ellipse([c - 4 * SS, 3 * SS, c + 4 * SS, 9 * SS], fill=(20, 30, 44), outline=HULL_D)
         d.ellipse([c - 5 * SS, c - 3 * SS, c + 5 * SS, c + 7 * SS], fill=(110, 180, 230), outline=HULL_D, width=SS)
+    finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+
+
+def tower(name, size, kind):
+    """The two towers that call down lightning and raise a tornado."""
+    import math
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    c = s // 2
+    plate(d, size, color=(60, 86, 112))
+    rivets(d, size)
+    r = c - 9 * SS
+    d.ellipse([c - r, c - r, c + r, c + r], fill=(18, 36, 62), outline=HULL_D, width=2 * SS)
+    if kind == "storm":
+        # a lightning rod with three bolts around it
+        for k in range(3):
+            a = math.radians(90 + k * 120)
+            x1, y1 = c + math.cos(a) * r * 0.85, c - math.sin(a) * r * 0.85
+            d.line([(c, c), (x1, y1)], fill=(190, 235, 255), width=2 * SS)
+        d.polygon([(c - 3 * SS, c + 8 * SS), (c + 1 * SS, c - 1 * SS), (c - 1 * SS, c - 1 * SS), (c + 3 * SS, c - 9 * SS),
+                   (c - 1 * SS, c + 1 * SS), (c + 1 * SS, c + 1 * SS)], fill=(255, 245, 160), outline=HULL_D)
+    else:
+        # a funnel: rings that get wider towards the top
+        for k in range(5):
+            w = (3 + k * 2.4) * SS
+            yy = c + (6 - k * 3.2) * SS
+            d.arc([c - w, yy - 2 * SS, c + w, yy + 2 * SS], 0, 360, fill=(190, 225, 245), width=SS)
+        d.line([c - 3 * SS, c + 8 * SS, c + 3 * SS, c + 8 * SS], fill=(190, 225, 245), width=2 * SS)
+    d.ellipse([c - 2 * SS, c + 2 * SS, c + 2 * SS, c + 6 * SS], fill=ICE_L, outline=HULL_D)
+    finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
+
+
+def ice_wall(name, size):
+    """A block of ice with cracks."""
+    import random
+    rng = random.Random(size * 31)
+    img = canvas(size)
+    d = ImageDraw.Draw(img)
+    s = size * SS
+    d.rounded_rectangle([1 * SS, 1 * SS, s - 1 * SS - 1, s - 1 * SS - 1], radius=3 * SS, fill=(150, 205, 238), outline=(70, 120, 160), width=2 * SS)
+    d.rounded_rectangle([4 * SS, 4 * SS, s - 4 * SS - 1, s - 4 * SS - 1], radius=2 * SS, fill=ICE)
+    d.polygon([(5 * SS, 5 * SS), (s * 0.45, 5 * SS), (5 * SS, s * 0.45)], fill=ICE_L)
+    for _ in range(max(2, size // 12)):
+        x, y = rng.randint(6, size - 6) * SS, rng.randint(6, size - 6) * SS
+        pts = [(x, y)]
+        for _k in range(3):
+            x += rng.randint(-5, 5) * SS
+            y += rng.randint(2, 6) * SS
+            pts.append((x, y))
+        d.line(pts, fill=(120, 175, 215), width=SS)
     finish(img, size, os.path.join(BLOCK_DIR, name + ".png"))
 
 
@@ -848,6 +929,17 @@ def defense_sprites():
     turret("tide-cannon", 64, "cannon")
     turret("whirl-mortar", 96, "mortar")
     vortex_gen("vortex-generator", 96)
+    ice_wall("ice-wall", 32)
+    ice_wall("ice-wall-large", 64)
+    ice_wall("ice-wall-huge", 96)
+    launch_pad("interplanetary-launch-pad", 160)
+    tower("stormcaller", 96, "storm")
+    tower("tornado-tower", 96, "tornado")
+    turret("tideripper", 128, "rail")
+    turret("glacier-howitzer", 128, "howitzer")
+    turret("frostshard-battery", 96, "shard")
+    turret("maelstrom", 128, "maelstrom")
+    turret("squall-battery", 128, "squall")
     mine("naval-mine", 32)
     pad("warship-yard", 128, True)
     for name, size, kind in (("patrol-boat", 28, "patrol"), ("corvette", 36, "corvette"), ("torpedo-boat", 28, "torpedo"),

@@ -24,7 +24,13 @@ public class HiemaraTechTree{
 				});
 				node(HiemaraBlocks.sandDredger);
 				node(HiemaraBlocks.sonar, with(Items.copper, 150, Items.lead, 200, Items.silicon, 80), null, () -> {});
-				node(HiemaraBlocks.iceHarvester);
+				node(HiemaraBlocks.iceHarvester, () -> {
+						node(HiemaraDefense.iceWall, () -> {
+							node(HiemaraDefense.iceWallLarge, () -> {
+								node(HiemaraDefense.iceWallHuge);
+							});
+						});
+					});
 				node(HiemaraBlocks.sporeCultivator, () -> {
 					node(HiemaraBlocks.floatingSporePress, () -> {
 						node(HiemaraBlocks.floatingCoalCentrifuge, () -> {
@@ -64,7 +70,9 @@ public class HiemaraTechTree{
 						node(HiemaraBlocks.coreMk2, with(Items.copper, 1500, Items.lead, 1500, Items.silicon, 800, Items.titanium, 300), null, () -> {
 							node(HiemaraBlocks.coreMk3, with(Items.copper, 3000, Items.lead, 3000, Items.silicon, 2000, Items.titanium, 800, Items.thorium, 600), null, () -> {});
 						});
-						node(HiemaraBlocks.launchPad, with(Items.copper, 600, Items.lead, 500, Items.silicon, 300, Items.titanium, 250), null, () -> {});
+						node(HiemaraBlocks.launchPad, with(Items.copper, 600, Items.lead, 500, Items.silicon, 300, Items.titanium, 250), null, () -> {
+								node(HiemaraBlocks.interplanetaryPad, with(Items.lead, 2000, Items.titanium, 1500, Items.silicon, 1500, Items.thorium, 800, Items.plastanium, 400), Seq.with(new Objectives.Research(HiemaraFactories.plastaniumCompressor)), () -> {});
+							});
 					});
 					node(HiemaraBlocks.hangar);
 					node(HiemaraBlocks.dock);
@@ -142,11 +150,18 @@ public class HiemaraTechTree{
 				});
 				node(HiemaraDefense.arcCoil, () -> {
 					node(HiemaraDefense.flakCannon, with(Items.copper, 250, Items.lead, 150, Items.sand, 100), null, () -> {
-						node(HiemaraDefense.skyneedle, with(Items.lead, 400, Items.titanium, 200, Items.silicon, 250), null, () -> {});
+						node(HiemaraDefense.skyneedle, with(Items.lead, 400, Items.titanium, 200, Items.silicon, 250), null, () -> {
+								node(HiemaraDefense.squallBattery, with(Items.lead, 900, Items.titanium, 600, Items.silicon, 600, Items.plastanium, 150), Seq.with(new Objectives.Research(HiemaraFactories.plastaniumCompressor)), () -> {});
+							});
+							node(HiemaraDefense.frostshard, with(Items.lead, 500, Items.titanium, 300, Items.silicon, 250), null, () -> {});
 					});
 					node(HiemaraDefense.navalMine);
 					node(HiemaraDefense.pulseLance, with(Items.lead, 300, Items.titanium, 150, Items.silicon, 100), null, () -> {
 						node(HiemaraDefense.vortexGenerator, with(Items.lead, 500, Items.titanium, 250, Items.silicon, 200, Items.sand, 200), null, () -> {});
+						node(HiemaraDefense.stormcaller, with(Items.lead, 600, Items.titanium, 350, Items.silicon, 350), null, () -> {
+							node(HiemaraDefense.tornadoTower, with(Items.lead, 1000, Items.titanium, 600, Items.silicon, 600, Items.thorium, 250), null, () -> {});
+							node(HiemaraDefense.tideripper, with(Items.lead, 1200, Items.titanium, 800, Items.silicon, 800, Items.thorium, 400, Items.tungsten, 150), Seq.with(new Objectives.Research(HiemaraBlocks.surgeTower)), () -> {});
+						});
 					});
 				});
 				node(HiemaraSupport.mender, with(Items.copper, 150, Items.lead, 150), null, () -> {
@@ -174,7 +189,10 @@ public class HiemaraTechTree{
 			
 			node(HiemaraBlocks.floatingPump, () -> {
 				node(HiemaraDefense.tideCannon, () -> {
-					node(HiemaraDefense.whirlMortar, with(Items.lead, 400, Items.titanium, 200, Items.silicon, 150, Items.coal, 100), null, () -> {});
+					node(HiemaraDefense.whirlMortar, with(Items.lead, 400, Items.titanium, 200, Items.silicon, 150, Items.coal, 100), null, () -> {
+							node(HiemaraDefense.glacierHowitzer, with(Items.lead, 900, Items.titanium, 600, Items.silicon, 400, Items.thorium, 250), null, () -> {});
+							node(HiemaraDefense.maelstrom, with(Items.lead, 900, Items.titanium, 600, Items.silicon, 450, Items.metaglass, 300), null, () -> {});
+						});
 				});
 				node(HiemaraBlocks.floatingRotaryPump, () -> {
 					node(HiemaraBlocks.electricSeparator, () -> {
