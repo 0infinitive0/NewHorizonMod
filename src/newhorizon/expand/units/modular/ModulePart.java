@@ -38,6 +38,8 @@ public class ModulePart{
 	public Prov<Ability> ability;
 	/** A hull part's effect. */
 	public StatusEffect effect;
+	/** Whether the part lets the frame build (a core part): the frame builds only with it. */
+	public boolean builds;
 	/** The pod that carries the part. */
 	public UnitType pod;
 

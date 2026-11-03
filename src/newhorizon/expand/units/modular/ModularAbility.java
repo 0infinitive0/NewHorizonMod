@@ -11,6 +11,7 @@ import mindustry.entities.abilities.Ability;
 import mindustry.entities.units.WeaponMount;
 import mindustry.gen.Unit;
 import mindustry.graphics.Layer;
+import mindustry.type.StatusEffect;
 import mindustry.type.Weapon;
 
 import java.util.Arrays;
@@ -27,6 +28,8 @@ import java.util.Arrays;
  */
 public class ModularAbility extends Ability{
 	public static final String TAG = "nh-modular-";
+	/** A permanent status that stops the frame from building; apply() takes it off when the core part that lets it build is fitted. */
+	public static StatusEffect noBuild;
 
 	/** The part id in each slot, -1 for an empty slot. */
 	public int[] installed = {-1, -1, -1, -1};
@@ -112,6 +115,11 @@ public class ModularAbility extends Ability{
 		int base = Math.min(unit.abilities.length, unit.type.abilities.size);
 		if(coreId != builtCore){
 			coreAbility = coreId < 0 ? null : core.ability.get();
+			//The unit's own abilities are set up when it is made; this one is made now.
+			if(coreAbility != null){
+				coreAbility.init(unit.type);
+				coreAbility.created(unit);
+			}
 			builtCore = coreId;
 		}
 		Ability[] abilities = Arrays.copyOf(unit.abilities, base + (coreAbility == null ? 0 : 1));
@@ -124,6 +132,12 @@ public class ModularAbility extends Ability{
 			if(p.kind == ModulePart.Kind.hull && p.effect != null && p != hull) unit.unapply(p.effect);
 		}
 		if(hull != null && hull.effect != null) unit.apply(hull.effect, 1f);
+
+		//Building: only with the core part that allows it.
+		if(noBuild != null){
+			if(core != null && core.builds) unit.unapply(noBuild);
+			else unit.apply(noBuild, 1f);
+		}
 	}
 
 	//---------------------------------------------------------------- persistence

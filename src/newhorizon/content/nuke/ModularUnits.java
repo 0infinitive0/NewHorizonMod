@@ -2,10 +2,14 @@ package newhorizon.content.nuke;
 
 import arc.func.Cons;
 import arc.func.Func;
+import arc.struct.Seq;
 import arc.graphics.Color;
 import mindustry.content.Fx;
 import mindustry.content.StatusEffects;
+import mindustry.ai.UnitCommand;
+import mindustry.ai.UnitStance;
 import mindustry.entities.abilities.Ability;
+import mindustry.entities.abilities.ShieldArcAbility;
 import mindustry.entities.abilities.ForceFieldAbility;
 import mindustry.entities.abilities.StatusFieldAbility;
 import mindustry.entities.bullet.BasicBulletType;
@@ -29,7 +33,17 @@ import newhorizon.expand.bullets.nuke.ConeBulletType;
 import newhorizon.expand.bullets.nuke.TractorBulletType;
 import newhorizon.NewHorizon;
 import newhorizon.expand.units.crab.AreaHealAbility;
+import newhorizon.expand.units.modular.AutoBlinkStance;
+import newhorizon.expand.units.modular.CloakAbility;
+import newhorizon.expand.units.modular.HealSuppressAbility;
+import newhorizon.expand.units.modular.HitCapAbility;
+import newhorizon.expand.units.modular.LaserBlockAbility;
 import newhorizon.expand.units.modular.ModularAbility;
+import newhorizon.expand.units.modular.PointDefenseAbility;
+import newhorizon.expand.units.modular.TeleportAI;
+import newhorizon.expand.units.modular.TeleportAbility;
+import newhorizon.expand.units.unitType.ModularUnitType;
+import newhorizon.expand.zmodular.ChimeraEntity;
 import newhorizon.expand.units.modular.ModulePart;
 import newhorizon.expand.units.modular.ModulePart.Kind;
 import newhorizon.expand.units.unitType.NHUnitType;
@@ -47,6 +61,11 @@ import newhorizon.expand.units.unitType.NHUnitType;
  */
 public class ModularUnits{
 	public static NHUnitType frame;
+	/** The later cores: ids 18 to 26. */
+	public static ModulePart blink, jump, cloak, pointdefense, arcshield, hitcap, laserblock, builder, suppress;
+	public static UnitCommand blinkCommand, jumpCommand;
+	public static UnitStance autoBlink;
+	public static StatusEffect noBuildEffect;
 	public static ModulePart autocannon, lance, missile, shield, repair, overdrive, plating, servos, overcharge;
 	/** The later arms: ids 9 to 17. */
 	public static ModulePart howitzer, siege, beam, tractor, tesla, pulse, mender, flak, sword;
@@ -61,6 +80,17 @@ public class ModularUnits{
 		Color steel = Color.valueOf("9fb0c8"), lime = Color.valueOf("c6ff5a"), red = Color.valueOf("ff5d4a");
 		Color orange = Color.valueOf("ff8a3d"), crimson = Color.valueOf("e8384f"), teal = Color.valueOf("3ee0c1"), sky = Color.valueOf("6cb6ff");
 		Color electric = Color.valueOf("e9f26a"), wave = Color.valueOf("a6d8ff"), blade = Color.valueOf("ff5ad1");
+
+		noBuildEffect = new StatusEffect("module-no-build"){{
+			color = steel;
+			permanent = true;
+			show = false;
+			buildSpeedMultiplier = 0f;
+		}};
+		ModularAbility.noBuild = noBuildEffect;
+		autoBlink = new AutoBlinkStance();
+		blinkCommand = new UnitCommand("nh-blink", "right", u -> new TeleportAI(false));
+		jumpCommand = new UnitCommand("nh-jump", "up", u -> new TeleportAI(true));
 
 		platingEffect = new StatusEffect("module-plating"){{
 			color = steel;
@@ -287,6 +317,46 @@ public class ModularUnits{
 			w.shootY = 6f;
 		}));
 
+		//---------------------------------------------------------------- the later cores (ids 18 to 26, after the arms)
+		blink = new ModulePart("blink", Kind.core, Color.valueOf("8ad4ff"));
+		blink.ability = () -> new TeleportAbility(){{
+			range = 144f;
+			cooldown = 60f * 8f;
+			color = Color.valueOf("8ad4ff");
+		}};
+		jump = new ModulePart("jump", Kind.core, Color.valueOf("3f7bff"));
+		jump.ability = () -> new TeleportAbility(){{
+			longRange = true;
+			range = 800f;
+			cooldown = 60f * 60f;
+			charge = 60f * 2.5f;
+			color = Color.valueOf("3f7bff");
+		}};
+		cloak = new ModulePart("cloak", Kind.core, Color.valueOf("8f9bb3"));
+		cloak.ability = CloakAbility::new;
+		pointdefense = new ModulePart("pointdefense", Kind.core, Color.valueOf("ffcc66"));
+		pointdefense.ability = PointDefenseAbility::new;
+		arcshield = new ModulePart("arcshield", Kind.core, Color.valueOf("5ce0d8"));
+		arcshield.ability = () -> new ShieldArcAbility(){{
+			radius = 90f;
+			angle = 130f;
+			regen = 4f;
+			max = 8000f;
+			cooldown = 60f * 6f;
+			width = 7f;
+			whenShooting = false;
+			drawArc = true;
+			color = Color.valueOf("5ce0d8");
+		}};
+		hitcap = new ModulePart("hitcap", Kind.core, Color.valueOf("ff8a8a"));
+		hitcap.ability = HitCapAbility::new;
+		laserblock = new ModulePart("laserblock", Kind.core, Color.valueOf("e86bff"));
+		laserblock.ability = LaserBlockAbility::new;
+		builder = new ModulePart("builder", Kind.core, Color.valueOf("ffa94d"));
+		builder.builds = true;
+		suppress = new ModulePart("suppress", Kind.core, Color.valueOf("ff5f7a"));
+		suppress.ability = HealSuppressAbility::new;
+
 		//---------------------------------------------------------------- pods
 		BulletType podGun = new BasicBulletType(7f, 14f){{
 			lifetime = 30f;
@@ -404,12 +474,40 @@ public class ModularUnits{
 			damage = 46f;
 			color = blade;
 		}}), null);
+		blink.pod = pod(blink, 480f, small(40f, Sounds.shootDuo, podGun), null);
+		jump.pod = pod(jump, 480f, small(40f, Sounds.shootDuo, podGun), null);
+		cloak.pod = pod(cloak, 480f, small(40f, Sounds.shootDuo, podGun), () -> new CloakAbility(){{
+			delay = 150f;
+		}});
+		pointdefense.pod = pod(pointdefense, 480f, small(40f, Sounds.shootDuo, podGun), () -> new PointDefenseAbility(){{
+			range = 110f;
+			reload = 14f;
+			bulletDamage = 30f;
+		}});
+		arcshield.pod = pod(arcshield, 520f, small(40f, Sounds.shootDuo, podGun), () -> new ShieldArcAbility(){{
+			radius = 34f;
+			angle = 110f;
+			regen = 1.2f;
+			max = 1500f;
+			cooldown = 60f * 6f;
+			width = 4f;
+			whenShooting = false;
+			drawArc = true;
+			color = Color.valueOf("5ce0d8");
+		}});
+		hitcap.pod = pod(hitcap, 640f, small(40f, Sounds.shootDuo, podGun), null);
+		laserblock.pod = pod(laserblock, 520f, small(40f, Sounds.shootDuo, podGun), null);
+		builder.pod = pod(builder, 480f, small(40f, Sounds.shootDuo, podGun), null);
+		builder.pod.buildSpeed = 0.6f;
+		suppress.pod = pod(suppress, 480f, small(40f, Sounds.shootDuo, podGun), () -> new HealSuppressAbility(){{
+			range = 100f;
+		}});
 		servos.pod.speed = 3.6f;
 		plating.pod.armor = 8f;
 
 		//---------------------------------------------------------------- the frame
-		frame = new NHUnitType(NewHorizon.name("chimera")){{
-			constructor = LegsUnit::create;
+		frame = new ModularUnitType(NewHorizon.name("chimera")){{
+			constructor = ChimeraEntity::new;
 			outlineColor = Color.valueOf("1b1b22");
 			drawCell = false;
 			//It enters a Refit Bay as a payload.
@@ -424,6 +522,12 @@ public class ModularUnits{
 			faceTarget = true;
 			//One approach distance for whatever the arms carry (a cannon reaches over 500, a sword under 100): the guns each shoot at their own range.
 			range = maxRange = 300f;
+
+			//It builds only with the Builder core (a hidden status holds its build speed at nothing otherwise).
+			buildSpeed = 1.2f;
+			commands = Seq.with(UnitCommand.moveCommand, blinkCommand, jumpCommand);
+			//The command panel shows a row of stance buttons only when there is more than one, so the usual ones are kept beside Auto blink.
+			stances = Seq.with(UnitStance.stop, UnitStance.holdFire, UnitStance.pursueTarget, UnitStance.patrol, autoBlink);
 
 			//Legged: it walks over land, deep water and blocks alike.
 			hovering = true;
@@ -516,7 +620,7 @@ public class ModularUnits{
 
 	/** A pod: a small flier that carries a part. */
 	private static NHUnitType pod(ModulePart part, float health, Weapon gun, arc.func.Prov<Ability> ability){
-		return new NHUnitType(NewHorizon.name("chimera-pod-" + part.name)){{
+		return new ModularUnitType(NewHorizon.name("chimera-pod-" + part.name)){{
 			constructor = UnitEntity::create;
 			outlineColor = Color.valueOf("1b1b22");
 			flying = true;

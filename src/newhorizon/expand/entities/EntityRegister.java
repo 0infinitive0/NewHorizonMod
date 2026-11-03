@@ -16,6 +16,7 @@ import newhorizon.expand.units.unitEntity.NucleoidEntity;
 import newhorizon.expand.units.unitEntity.PesterEntity;
 import newhorizon.expand.units.unitEntity.ProbeEntity;
 import newhorizon.expand.weather.MatterStorm;
+import newhorizon.expand.zmodular.ChimeraEntity;
 
 public class EntityRegister {
 
@@ -37,6 +38,7 @@ public class EntityRegister {
 		put(AdaptedTimedKillUnit.class, AdaptedTimedKillUnit::new);
 		put(NucleoidEntity.class, NucleoidEntity::new);
 		put(ProbeEntity.class, ProbeEntity::new);
+		put(ChimeraEntity.class, ChimeraEntity::new);
 
 		put(AutoEventTrigger.class, AutoEventTrigger::new);
 		put(WorldEvent.class, WorldEvent::new);
