@@ -132,6 +132,8 @@ public class ModularAbility extends Ability{
 			if(p.kind == ModulePart.Kind.hull && p.effect != null && p != hull) unit.unapply(p.effect);
 		}
 		if(hull != null && hull.effect != null) unit.apply(hull.effect, 1f);
+		//Armor goes with the hull too: set from the type's own, so that taking the hull off, or a load, puts it back.
+		unit.armor = unit.type.armor * (hull == null ? 1f : hull.armorScale);
 
 		//Building: only with the core part that allows it.
 		if(noBuild != null){

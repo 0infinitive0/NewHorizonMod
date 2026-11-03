@@ -38,6 +38,8 @@ public class ModulePart{
 	public Prov<Ability> ability;
 	/** A hull part's effect. */
 	public StatusEffect effect;
+	/** A hull part's share of the frame's armor (1 keeps it, 0 takes it all away, 2 doubles it): armor has no status field, so it is set when the part is fitted. */
+	public float armorScale = 1f;
 	/** Whether the part lets the frame build (a core part): the frame builds only with it. */
 	public boolean builds;
 	/** The pod that carries the part. */

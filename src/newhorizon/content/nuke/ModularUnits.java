@@ -66,6 +66,8 @@ public class ModularUnits{
 	public static UnitCommand blinkCommand, jumpCommand;
 	public static UnitStance autoBlink;
 	public static StatusEffect noBuildEffect;
+	/** The later hulls: ids 27 to 33. */
+	public static ModulePart sprint, rapid, emplacement, bulk, glass, comet, bastion;
 	public static ModulePart autocannon, lance, missile, shield, repair, overdrive, plating, servos, overcharge;
 	/** The later arms: ids 9 to 17. */
 	public static ModulePart howitzer, siege, beam, tractor, tesla, pulse, mender, flak, sword;
@@ -113,6 +115,15 @@ public class ModularUnits{
 			damageMultiplier = 1.4f;
 			healthMultiplier = 0.85f;
 		}};
+
+		//The later hulls (the user's numbers): speed, health (hit points: damage taken is divided by it), damage and fire rate here, armor on the part.
+		StatusEffect sprintEffect = hullEffect("module-sprint", Color.valueOf("ffd23f"), 5f, 0.2f, 1f, 1f);
+		StatusEffect rapidEffect = hullEffect("module-rapid", Color.valueOf("ff9f43"), 0.2f, 1f, 1f, 3f);
+		StatusEffect emplacementEffect = hullEffect("module-emplacement", Color.valueOf("c0392b"), 0f, 1f, 1.5f, 7f);
+		StatusEffect bulkEffect = hullEffect("module-bulk", Color.valueOf("7f8c8d"), 1f, 2f, 1f, 1f);
+		StatusEffect glassEffect = hullEffect("module-glass", Color.valueOf("a29bfe"), 1f, 1f, 3f, 1f);
+		StatusEffect cometEffect = hullEffect("module-comet", Color.valueOf("55efc4"), 10f, 0.2f, 1f, 1f);
+		StatusEffect bastionEffect = hullEffect("module-bastion", Color.valueOf("0984e3"), 1f, 2f, 0.3f, 1f);
 
 		//---------------------------------------------------------------- arms
 		BulletType autoBullet = new BasicBulletType(11f, 48f){{
@@ -357,6 +368,14 @@ public class ModularUnits{
 		suppress = new ModulePart("suppress", Kind.core, Color.valueOf("ff5f7a"));
 		suppress.ability = HealSuppressAbility::new;
 
+		sprint = hullPart("sprint", Color.valueOf("ffd23f"), sprintEffect, 1f);
+		rapid = hullPart("rapid", Color.valueOf("ff9f43"), rapidEffect, 1f);
+		emplacement = hullPart("emplacement", Color.valueOf("c0392b"), emplacementEffect, 1f);
+		bulk = hullPart("bulk", Color.valueOf("7f8c8d"), bulkEffect, 0.5f);
+		glass = hullPart("glass", Color.valueOf("a29bfe"), glassEffect, 0f);
+		comet = hullPart("comet", Color.valueOf("55efc4"), cometEffect, 0f);
+		bastion = hullPart("bastion", Color.valueOf("0984e3"), bastionEffect, 2f);
+
 		//---------------------------------------------------------------- pods
 		BulletType podGun = new BasicBulletType(7f, 14f){{
 			lifetime = 30f;
@@ -502,6 +521,19 @@ public class ModularUnits{
 		suppress.pod = pod(suppress, 480f, small(40f, Sounds.shootDuo, podGun), () -> new HealSuppressAbility(){{
 			range = 100f;
 		}});
+		sprint.pod = pod(sprint, 420f, small(30f, Sounds.shootDuo, podGun), null);
+		sprint.pod.speed = 4.2f;
+		rapid.pod = pod(rapid, 480f, small(14f, Sounds.shootDuo, podGun), null);
+		emplacement.pod = pod(emplacement, 520f, small(8f, Sounds.shootDuo, podGun), null);
+		bulk.pod = pod(bulk, 900f, small(40f, Sounds.shootDuo, podGun), null);
+		glass.pod = pod(glass, 380f, small(40f, Sounds.shootDuo, podGun), null);
+		comet.pod = pod(comet, 360f, small(30f, Sounds.shootDuo, podGun), null);
+		comet.pod.speed = 4.6f;
+		bastion.pod = pod(bastion, 1000f, small(60f, Sounds.shootDuo, podGun), null);
+		bulk.pod.armor = 2f;
+		glass.pod.armor = 0f;
+		comet.pod.armor = 0f;
+		bastion.pod.armor = 10f;
 		servos.pod.speed = 3.6f;
 		plating.pod.armor = 8f;
 
@@ -568,6 +600,28 @@ public class ModularUnits{
 			this.percent = percent;
 			this.color = Pal.heal;
 		}};
+	}
+
+	/** A hull's permanent hidden status: its speed, health (hit points), damage and fire-rate multipliers. */
+	private static StatusEffect hullEffect(String name, Color color, float speedMult, float healthMult, float damageMult, float reloadMult){
+		return new StatusEffect(name){{
+			this.color = color;
+			permanent = true;
+			show = false;
+			//(the parameters have their own names: a status effect has a field called damage, which would shadow one of that name)
+			speedMultiplier = speedMult;
+			healthMultiplier = healthMult;
+			damageMultiplier = damageMult;
+			reloadMultiplier = reloadMult;
+		}};
+	}
+
+	/** A part of the hull kind, with its status and its share of the frame's armor. */
+	private static ModulePart hullPart(String name, Color color, StatusEffect effect, float armorScale){
+		ModulePart part = new ModulePart(name, Kind.hull, color);
+		part.effect = effect;
+		part.armorScale = armorScale;
+		return part;
 	}
 
 	/** A part of the arm kind: a left and a right weapon from the maker. */
