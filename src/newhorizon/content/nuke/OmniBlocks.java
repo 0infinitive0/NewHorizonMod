@@ -106,6 +106,15 @@ public class OmniBlocks{
 			plans.add(new UnitFactory.UnitPlan(ModularUnits.plating.pod, 60f * 20f, with(Items.silicon, 100, Items.titanium, 200, Items.thorium, 60)));
 			plans.add(new UnitFactory.UnitPlan(ModularUnits.servos.pod, 60f * 20f, with(Items.silicon, 160, Items.titanium, 100, Items.plastanium, 20)));
 			plans.add(new UnitFactory.UnitPlan(ModularUnits.overcharge.pod, 60f * 22f, with(Items.silicon, 150, Items.thorium, 100, Items.surgeAlloy, 30)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.howitzer.pod, 60f * 30f, with(Items.silicon, 180, Items.titanium, 200, Items.thorium, 120, Items.plastanium, 60)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.siege.pod, 60f * 32f, with(Items.silicon, 200, Items.titanium, 160, Items.plastanium, 80, Items.surgeAlloy, 60)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.beam.pod, 60f * 30f, with(Items.silicon, 200, Items.thorium, 120, Items.plastanium, 60, Items.surgeAlloy, 60)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.tractor.pod, 60f * 24f, with(Items.silicon, 150, Items.titanium, 120, Items.phaseFabric, 40)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.tesla.pod, 60f * 22f, with(Items.silicon, 140, Items.titanium, 100, Items.surgeAlloy, 40)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.pulse.pod, 60f * 22f, with(Items.silicon, 140, Items.titanium, 140, Items.plastanium, 40)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.mender.pod, 60f * 22f, with(Items.silicon, 140, Items.titanium, 100, Items.phaseFabric, 30)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.flak.pod, 60f * 20f, with(Items.silicon, 130, Items.titanium, 100, Items.plastanium, 30)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.sword.pod, 60f * 24f, with(Items.silicon, 150, Items.thorium, 120, Items.surgeAlloy, 50)));
 		}};
 
 		//Takes a frame and pods in and fits the one out with the others.

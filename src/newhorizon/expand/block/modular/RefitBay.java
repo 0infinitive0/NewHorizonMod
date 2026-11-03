@@ -185,7 +185,7 @@ public class RefitBay extends PayloadBlock{
 
 		@Override
 		public void buildConfiguration(Table table){
-			table.table(Styles.black6, t -> {
+			table.pane(Styles.noBarPane, scroll -> scroll.table(Styles.black6, t -> {
 				t.margin(8f);
 				t.defaults().left().padBottom(4f);
 				t.label(() -> statusText()).width(300f).wrap().row();
@@ -196,8 +196,11 @@ public class RefitBay extends PayloadBlock{
 					t.label(() -> Core.bundle.get(slotNames[s]) + ": " + (fit() == null || fit().part(s) == null ? Core.bundle.get("nh.modular.empty") : fit().part(s).localized())).row();
 					t.table(row -> {
 						row.defaults().size(96f, 40f).pad(2f);
+						int shown = 0;
 						for(ModulePart part : ModulePart.all){
 							if(!part.fits(s)) continue;
+							//Four to a row: an arm slot takes a dozen parts.
+							if(shown++ > 0 && shown % 4 == 1) row.row();
 							row.button(part.localized() + "\n[lightgray]x" + "[]", Styles.togglet, () -> configure(code(installOp, s, part.id)))
 								.update(b -> {
 									b.setText(part.localized() + "\n[lightgray]x" + stock[part.id]);
@@ -226,7 +229,7 @@ public class RefitBay extends PayloadBlock{
 					configure(code(frameOp, 0, 0));
 					Vars.control.input.config.hideConfig();
 				}).size(200f, 40f).disabled(b -> payload == null || !payVector.isZero(0.5f) || releasing);
-			});
+			})).maxHeight(440f);
 		}
 
 		public String statusText(){

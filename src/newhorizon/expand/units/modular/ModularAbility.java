@@ -101,7 +101,8 @@ public class ModularAbility extends Ability{
 					break;
 				}
 			}
-			mounts.add(keep != null ? keep : new WeaponMount(weapon));
+			//A weapon makes its own kind of mount (a repair beam keeps its target in one).
+			mounts.add(keep != null ? keep : weapon.mountType.get(weapon));
 		}
 		unit.mounts = mounts.toArray(WeaponMount.class);
 

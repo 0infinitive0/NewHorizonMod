@@ -1,6 +1,7 @@
 package newhorizon.content.nuke;
 
 import arc.func.Cons;
+import arc.func.Func;
 import arc.graphics.Color;
 import mindustry.content.Fx;
 import mindustry.content.StatusEffects;
@@ -8,7 +9,11 @@ import mindustry.entities.abilities.Ability;
 import mindustry.entities.abilities.ForceFieldAbility;
 import mindustry.entities.abilities.StatusFieldAbility;
 import mindustry.entities.bullet.BasicBulletType;
+import mindustry.entities.bullet.ArtilleryBulletType;
 import mindustry.entities.bullet.BulletType;
+import mindustry.entities.bullet.ContinuousLaserBulletType;
+import mindustry.entities.bullet.FlakBulletType;
+import mindustry.entities.bullet.LightningBulletType;
 import mindustry.entities.bullet.LaserBulletType;
 import mindustry.entities.bullet.MissileBulletType;
 import mindustry.gen.LegsUnit;
@@ -19,6 +24,9 @@ import mindustry.graphics.Layer;
 import mindustry.graphics.Pal;
 import mindustry.type.StatusEffect;
 import mindustry.type.Weapon;
+import mindustry.type.weapons.RepairBeamWeapon;
+import newhorizon.expand.bullets.nuke.ConeBulletType;
+import newhorizon.expand.bullets.nuke.TractorBulletType;
 import newhorizon.NewHorizon;
 import newhorizon.expand.units.crab.AreaHealAbility;
 import newhorizon.expand.units.modular.ModularAbility;
@@ -40,6 +48,8 @@ import newhorizon.expand.units.unitType.NHUnitType;
 public class ModularUnits{
 	public static NHUnitType frame;
 	public static ModulePart autocannon, lance, missile, shield, repair, overdrive, plating, servos, overcharge;
+	/** The later arms: ids 9 to 17. */
+	public static ModulePart howitzer, siege, beam, tractor, tesla, pulse, mender, flak, sword;
 	public static StatusEffect platingEffect, servosEffect, overchargeEffect;
 
 	/** How far to each side the arms sit. */
@@ -49,6 +59,8 @@ public class ModularUnits{
 		Color amber = Color.valueOf("ffb347"), cyan = Color.valueOf("5ad7ff"), rose = Color.valueOf("ff6f91");
 		Color mint = Color.valueOf("7dffb0"), gold = Color.valueOf("ffe066"), violet = Color.valueOf("b58cff");
 		Color steel = Color.valueOf("9fb0c8"), lime = Color.valueOf("c6ff5a"), red = Color.valueOf("ff5d4a");
+		Color orange = Color.valueOf("ff8a3d"), crimson = Color.valueOf("e8384f"), teal = Color.valueOf("3ee0c1"), sky = Color.valueOf("6cb6ff");
+		Color electric = Color.valueOf("e9f26a"), wave = Color.valueOf("a6d8ff"), blade = Color.valueOf("ff5ad1");
 
 		platingEffect = new StatusEffect("module-plating"){{
 			color = steel;
@@ -148,6 +160,133 @@ public class ModularUnits{
 		overcharge = new ModulePart("overcharge", Kind.hull, red);
 		overcharge.effect = overchargeEffect;
 
+		//---------------------------------------------------------------- the later arms (their ids come after the hulls', so the first twelve stay as saved)
+		howitzer = armPart("howitzer", orange, left -> arm("chimera-howitzer", left, 110f, Sounds.shootArtillery, new ArtilleryBulletType(6f, 0f){{
+			lifetime = 94f;
+			width = 16f;
+			height = 24f;
+			splashDamage = 260f;
+			splashDamageRadius = 72f;
+			hitShake = 3f;
+			frontColor = Color.white;
+			backColor = hitColor = trailColor = orange;
+			hitEffect = despawnEffect = Fx.massiveExplosion;
+		}}, w -> {
+			w.recoil = 7f;
+			w.shootY = 22f;
+			w.inaccuracy = 1f;
+		}));
+		siege = armPart("siege", crimson, left -> arm("chimera-siege", left, 200f, Sounds.shootMissileLarge, new MissileBulletType(4.2f, 70f){{
+			lifetime = 152f;
+			width = 14f;
+			height = 22f;
+			splashDamage = 520f;
+			splashDamageRadius = 96f;
+			homingPower = 0.08f;
+			homingRange = 320f;
+			hitShake = 5f;
+			trailLength = 28;
+			trailWidth = 3f;
+			trailColor = backColor = hitColor = crimson;
+			hitEffect = despawnEffect = Fx.massiveExplosion;
+		}}, w -> {
+			w.recoil = 6f;
+			w.shootY = 18f;
+		}));
+		beam = armPart("beam", teal, left -> arm("chimera-beam", left, 220f, Sounds.shootMeltdown, new ContinuousLaserBulletType(38f){{
+			length = 260f;
+			lifetime = 150f;
+			damageInterval = 5f;
+			width = 9f;
+			colors = new Color[]{teal.cpy().a(0.4f), teal, Color.white};
+			hitColor = teal;
+			shake = 1f;
+		}}, w -> {
+			w.continuous = true;
+			w.shootStatus = StatusEffects.slow;
+			w.shootStatusDuration = 150f + 20f;
+			w.recoil = 0f;
+			w.shootY = 16f;
+		}));
+		tractor = armPart("tractor", sky, left -> arm("chimera-tractor", left, 70f, Sounds.shootLaser, new TractorBulletType(7f){{
+			length = 250f;
+			lifetime = 120f;
+			color = hitColor = sky;
+		}}, w -> {
+			w.continuous = true;
+			w.recoil = 0f;
+			w.shootY = 16f;
+		}));
+		tesla = armPart("tesla", electric, left -> arm("chimera-tesla", left, 20f, Sounds.shootArc, new LightningBulletType(){{
+			damage = 34f;
+			lightningLength = 22;
+			lightningLengthRand = 8;
+			lightningColor = electric;
+			status = StatusEffects.shocked;
+			statusDuration = 60f;
+		}}, w -> {
+			w.shoot = new mindustry.entities.pattern.ShootSpread(3, 14f);
+			w.recoil = 1f;
+			w.shootY = 12f;
+		}));
+		pulse = armPart("pulse", wave, left -> arm("chimera-pulse", left, 90f, Sounds.shootBreach, new ConeBulletType(){{
+			radius = 130f;
+			cone = 110f;
+			damage = 22f;
+			knockback = 18f;
+			color = wave;
+		}}, w -> {
+			w.recoil = 4f;
+			w.shootY = 12f;
+		}));
+		mender = armPart("mender", Color.valueOf("ff9ee8"), left -> new RepairBeamWeapon(NewHorizon.name("chimera-mender")){{
+			x = left ? -armX : armX;
+			y = 4f;
+			mirror = false;
+			alternate = false;
+			flipSprite = left;
+			rotate = true;
+			rotateSpeed = 12f;
+			shootY = 12f;
+			targetBuildings = true;
+			targetUnits = true;
+			repairSpeed = 1.6f;
+			fractionRepairSpeed = 0.0008f;
+			beamWidth = 0.8f;
+			laserColor = healColor = Color.valueOf("98ffa9");
+			bullet = new BulletType(){{
+				maxRange = 220f;
+			}};
+		}});
+		flak = armPart("flak", Color.valueOf("e6e6ff"), left -> arm("chimera-flak", left, 14f, Sounds.shootCyclone, new FlakBulletType(4.6f, 3f){{
+			lifetime = 62f;
+			width = 7f;
+			height = 12f;
+			splashDamage = 78f;
+			splashDamageRadius = 54f;
+			explodeRange = 44f;
+			collidesGround = false;
+			frontColor = Color.white;
+			backColor = trailColor = hitColor = gold;
+			hitEffect = despawnEffect = Fx.flakExplosion;
+		}}, w -> {
+			w.inaccuracy = 3f;
+			w.recoil = 2f;
+			w.shootY = 14f;
+		}));
+		sword = armPart("sword", blade, left -> arm("chimera-sword", left, 20f, Sounds.shootScathe, new ConeBulletType(){{
+			radius = 92f;
+			cone = 130f;
+			damage = 520f;
+			buildingDamageMultiplier = 0.6f;
+			color = blade;
+		}}, w -> {
+			w.recoil = 0f;
+			w.rotateSpeed = 22f;
+			w.shootCone = 360f;
+			w.shootY = 6f;
+		}));
+
 		//---------------------------------------------------------------- pods
 		BulletType podGun = new BasicBulletType(7f, 14f){{
 			lifetime = 30f;
@@ -188,6 +327,83 @@ public class ModularUnits{
 		plating.pod = pod(plating, 900f, small(40f, Sounds.shootDuo, podGun), null);
 		servos.pod = pod(servos, 440f, small(24f, Sounds.shootDuo, podGun), null);
 		overcharge.pod = pod(overcharge, 460f, small(30f, Sounds.shootDuo, podGun), null);
+		howitzer.pod = pod(howitzer, 520f, small(120f, Sounds.shootArtillery, new ArtilleryBulletType(3.2f, 0f){{
+			lifetime = 60f;
+			width = 9f;
+			height = 13f;
+			splashDamage = 56f;
+			splashDamageRadius = 38f;
+			backColor = hitColor = trailColor = orange;
+			hitEffect = despawnEffect = Fx.flakExplosion;
+		}}), null);
+		siege.pod = pod(siege, 500f, small(160f, Sounds.shootMissileSmall, new MissileBulletType(3.6f, 20f){{
+			lifetime = 90f;
+			width = 8f;
+			height = 12f;
+			splashDamage = 120f;
+			splashDamageRadius = 52f;
+			homingPower = 0.08f;
+			trailColor = backColor = hitColor = crimson;
+			hitEffect = despawnEffect = Fx.flakExplosion;
+		}}), null);
+		beam.pod = pod(beam, 500f, contin(small(150f, Sounds.shootMeltdown, new ContinuousLaserBulletType(9f){{
+			length = 120f;
+			lifetime = 60f;
+			damageInterval = 5f;
+			width = 4f;
+			colors = new Color[]{teal.cpy().a(0.4f), teal, Color.white};
+			hitColor = teal;
+		}})), null);
+		tractor.pod = pod(tractor, 500f, contin(small(70f, Sounds.shootLaser, new TractorBulletType(2f){{
+			length = 130f;
+			lifetime = 60f;
+			width = 8f;
+			force = 18f;
+			scaledForce = 8f;
+			color = hitColor = sky;
+		}})), null);
+		tesla.pod = pod(tesla, 480f, small(26f, Sounds.shootArc, new LightningBulletType(){{
+			damage = 14f;
+			lightningLength = 12;
+			lightningColor = electric;
+		}}), null);
+		pulse.pod = pod(pulse, 520f, small(100f, Sounds.shootBreach, new ConeBulletType(){{
+			radius = 66f;
+			cone = 90f;
+			damage = 8f;
+			knockback = 7f;
+			color = wave;
+		}}), null);
+		mender.pod = pod(mender, 480f, new RepairBeamWeapon(){{
+			x = 0f;
+			y = 2f;
+			mirror = false;
+			rotate = true;
+			targetBuildings = true;
+			repairSpeed = 0.6f;
+			beamWidth = 0.5f;
+			laserColor = healColor = Color.valueOf("98ffa9");
+			bullet = new BulletType(){{
+				maxRange = 110f;
+			}};
+		}}, null);
+		flak.pod = pod(flak, 480f, small(20f, Sounds.shootCyclone, new FlakBulletType(4f, 2f){{
+			lifetime = 50f;
+			width = 5f;
+			height = 9f;
+			splashDamage = 26f;
+			splashDamageRadius = 30f;
+			explodeRange = 28f;
+			collidesGround = false;
+			backColor = trailColor = hitColor = gold;
+			hitEffect = despawnEffect = Fx.flakExplosion;
+		}}), null);
+		sword.pod = pod(sword, 560f, small(26f, Sounds.shootScathe, new ConeBulletType(){{
+			radius = 38f;
+			cone = 130f;
+			damage = 46f;
+			color = blade;
+		}}), null);
 		servos.pod.speed = 3.6f;
 		plating.pod.armor = 8f;
 
@@ -206,6 +422,8 @@ public class ModularUnits{
 			accel = 0.2f;
 			rotateSpeed = 2.2f;
 			faceTarget = true;
+			//One approach distance for whatever the arms carry (a cannon reaches over 500, a sword under 100): the guns each shoot at their own range.
+			range = maxRange = 300f;
 
 			//Legged: it walks over land, deep water and blocks alike.
 			hovering = true;
@@ -233,7 +451,7 @@ public class ModularUnits{
 			abilities.add(new ModularAbility());
 
 			//Every arm weapon, left and right, is listed so that its sprite is loaded; the ability mounts only the ones the arms carry.
-			for(ModulePart part : new ModulePart[]{autocannon, lance, missile}){
+			for(ModulePart part : new ModulePart[]{autocannon, lance, missile, howitzer, siege, beam, tractor, tesla, pulse, mender, flak, sword}){
 				weapons.add(part.left, part.right);
 			}
 		}};
@@ -246,6 +464,20 @@ public class ModularUnits{
 			this.percent = percent;
 			this.color = Pal.heal;
 		}};
+	}
+
+	/** A part of the arm kind: a left and a right weapon from the maker. */
+	private static ModulePart armPart(String name, Color color, Func<Boolean, Weapon> maker){
+		ModulePart part = new ModulePart(name, Kind.arm, color);
+		part.left = maker.get(true);
+		part.right = maker.get(false);
+		return part;
+	}
+
+	/** Makes a pod's gun hold its beam. */
+	private static Weapon contin(Weapon w){
+		w.continuous = true;
+		return w;
 	}
 
 	/** One arm gun, on the left or the right of the frame. */
