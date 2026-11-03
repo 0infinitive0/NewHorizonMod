@@ -576,7 +576,7 @@ public class ModularUnits{
 			legPairOffset = 3f;
 			legMoveSpace = 1.1f;
 			legLength = 44f;
-			legExtension = -14f;
+			legExtension = -3f;
 			legBaseOffset = 9f;
 			legLengthScl = 0.94f;
 			legForwardScl = 0.9f;
