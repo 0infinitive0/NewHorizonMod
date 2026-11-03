@@ -544,7 +544,8 @@ public class ModularUnits{
 		plating.pod.armor = 8f;
 
 		//---------------------------------------------------------------- the frame
-		frame = new ModularUnitType(NewHorizon.name("chimera")){{
+		//(A unit's own name is plain: the game puts the mod's name in front of it, as for the other units. Weapon sprite names are not content, and carry it.)
+		frame = new ModularUnitType("chimera"){{
 			constructor = ChimeraEntity::new;
 			outlineColor = Color.valueOf("1b1b22");
 			drawCell = false;
@@ -680,7 +681,7 @@ public class ModularUnits{
 
 	/** A pod: a small flier that carries a part. */
 	private static NHUnitType pod(ModulePart part, float health, Weapon gun, arc.func.Prov<Ability> ability){
-		return new ModularUnitType(NewHorizon.name("chimera-pod-" + part.name)){{
+		return new ModularUnitType("chimera-pod-" + part.name){{
 			constructor = UnitEntity::create;
 			outlineColor = Color.valueOf("1b1b22");
 			flying = true;
