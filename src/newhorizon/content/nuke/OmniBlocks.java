@@ -23,7 +23,7 @@ import static mindustry.type.ItemStack.with;
  * of items every planet has, but the shield and the wall also need omni-matter to build.
  */
 public class OmniBlocks{
-	public static Block omniFactory, omniExtractor, omniShield, omniWall, omniStabilizer, antiMatterCannon, crabDock;
+	public static Block omniFactory, omniExtractor, omniShield, omniWall, omniStabilizer, antiMatterCannon, crabDock, modularFoundry, refitBay;
 	/** Makes the head of the Serpent and its body sections. */
 	public static Block serpentNest;
 
@@ -87,6 +87,31 @@ public class OmniBlocks{
 			health = 9000;
 			consumePower(30f);
 			plans.add(new UnitFactory.UnitPlan(CrabUnits.kingCrab, 60f * 300f, with(Items.silicon, 3000, Items.thorium, 2500, Items.surgeAlloy, 1500, Items.plastanium, 1200, Items.phaseFabric, 800, NukeItems.omniMatter, 800)));
+		}};
+
+		//Builds the Chimera frame and the pods that fit into it.
+		modularFoundry = new UnitFactory("modular-foundry"){{
+			requirements(Category.units, with(Items.silicon, 1200, Items.titanium, 1200, Items.thorium, 600, Items.plastanium, 400, Items.surgeAlloy, 300, NukeItems.omniMatter, 150));
+			size = 6;
+			health = 4500;
+			envEnabled = mindustry.world.meta.Env.any;
+			consumePower(16f);
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.frame, 60f * 90f, with(Items.silicon, 1500, Items.titanium, 1500, Items.thorium, 800, Items.plastanium, 500, Items.surgeAlloy, 400, NukeItems.omniMatter, 200)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.autocannon.pod, 60f * 20f, with(Items.silicon, 120, Items.titanium, 100, Items.plastanium, 30)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.lance.pod, 60f * 24f, with(Items.silicon, 140, Items.titanium, 120, Items.plastanium, 40, Items.surgeAlloy, 20)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.missile.pod, 60f * 22f, with(Items.silicon, 130, Items.titanium, 100, Items.plastanium, 40)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.shield.pod, 60f * 24f, with(Items.silicon, 150, Items.titanium, 100, Items.phaseFabric, 40)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.repair.pod, 60f * 22f, with(Items.silicon, 140, Items.titanium, 100, Items.phaseFabric, 30)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.overdrive.pod, 60f * 24f, with(Items.silicon, 150, Items.thorium, 80, Items.phaseFabric, 40)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.plating.pod, 60f * 20f, with(Items.silicon, 100, Items.titanium, 200, Items.thorium, 60)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.servos.pod, 60f * 20f, with(Items.silicon, 160, Items.titanium, 100, Items.plastanium, 20)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.overcharge.pod, 60f * 22f, with(Items.silicon, 150, Items.thorium, 100, Items.surgeAlloy, 30)));
+		}};
+
+		//Takes a frame and pods in and fits the one out with the others.
+		refitBay = new newhorizon.expand.block.modular.RefitBay("refit-bay"){{
+			requirements(Category.units, with(Items.silicon, 800, Items.titanium, 800, Items.thorium, 400, Items.plastanium, 300, Items.surgeAlloy, 150, NukeItems.omniMatter, 100));
+			health = 3500;
 		}};
 
 		omniWall = new OmniWall("omni-wall"){{

@@ -62,6 +62,12 @@ public class NukeTechTree{
 			child(factory, OmniBlocks.antiMatterCannon);
 			TechNode dock = child(factory, OmniBlocks.crabDock);
 			child(dock, CrabUnits.kingCrab);
+			TechNode foundry = child(factory, OmniBlocks.modularFoundry);
+			TechNode frame = child(foundry, ModularUnits.frame);
+			child(foundry, OmniBlocks.refitBay);
+			for(newhorizon.expand.units.modular.ModulePart part : newhorizon.expand.units.modular.ModulePart.all){
+				child(frame, part.pod);
+			}
 			TechNode nest = child(factory, OmniBlocks.serpentNest);
 			TechNode head = child(nest, SerpentUnits.head);
 			child(head, SerpentUnits.body);
