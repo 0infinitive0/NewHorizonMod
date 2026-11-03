@@ -131,6 +131,7 @@ public class OmniBlocks{
 			plans.add(new UnitFactory.UnitPlan(ModularUnits.glass.pod, 60f * 24f, with(Items.silicon, 200, Items.surgeAlloy, 100, Items.phaseFabric, 40)));
 			plans.add(new UnitFactory.UnitPlan(ModularUnits.comet.pod, 60f * 26f, with(Items.silicon, 220, Items.plastanium, 100, Items.phaseFabric, 80)));
 			plans.add(new UnitFactory.UnitPlan(ModularUnits.bastion.pod, 60f * 30f, with(Items.silicon, 160, Items.titanium, 300, Items.thorium, 200, Items.plastanium, 80)));
+			plans.add(new UnitFactory.UnitPlan(ModularUnits.dash.pod, 60f * 24f, with(Items.silicon, 200, Items.plastanium, 80, Items.phaseFabric, 60)));
 		}};
 
 		//Takes a frame and pods in and fits the one out with the others.

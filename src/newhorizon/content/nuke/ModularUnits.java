@@ -67,7 +67,7 @@ public class ModularUnits{
 	public static UnitStance autoBlink;
 	public static StatusEffect noBuildEffect;
 	/** The later hulls: ids 27 to 33. */
-	public static ModulePart sprint, rapid, emplacement, bulk, glass, comet, bastion;
+	public static ModulePart sprint, rapid, emplacement, bulk, glass, comet, bastion, dash;
 	public static ModulePart autocannon, lance, missile, shield, repair, overdrive, plating, servos, overcharge;
 	/** The later arms: ids 9 to 17. */
 	public static ModulePart howitzer, siege, beam, tractor, tesla, pulse, mender, flak, sword;
@@ -124,6 +124,9 @@ public class ModularUnits{
 		StatusEffect glassEffect = hullEffect("module-glass", Color.valueOf("a29bfe"), 1f, 1f, 3f, 1f);
 		StatusEffect cometEffect = hullEffect("module-comet", Color.valueOf("55efc4"), 10f, 0.2f, 1f, 1f);
 		StatusEffect bastionEffect = hullEffect("module-bastion", Color.valueOf("0984e3"), 1f, 2f, 0.3f, 1f);
+		//15x speed and 5x drag: it gets up to speed at once and stops just as fast.
+		StatusEffect dashEffect = hullEffect("module-dash", Color.valueOf("fd79a8"), 15f, 1f, 1f, 1f);
+		dashEffect.dragMultiplier = 5f;
 
 		//---------------------------------------------------------------- arms
 		BulletType autoBullet = new BasicBulletType(11f, 48f){{
@@ -375,6 +378,7 @@ public class ModularUnits{
 		glass = hullPart("glass", Color.valueOf("a29bfe"), glassEffect, 0f);
 		comet = hullPart("comet", Color.valueOf("55efc4"), cometEffect, 0f);
 		bastion = hullPart("bastion", Color.valueOf("0984e3"), bastionEffect, 2f);
+		dash = hullPart("dash", Color.valueOf("fd79a8"), dashEffect, 1f);
 
 		//---------------------------------------------------------------- pods
 		BulletType podGun = new BasicBulletType(7f, 14f){{
@@ -530,6 +534,8 @@ public class ModularUnits{
 		comet.pod = pod(comet, 360f, small(30f, Sounds.shootDuo, podGun), null);
 		comet.pod.speed = 4.6f;
 		bastion.pod = pod(bastion, 1000f, small(60f, Sounds.shootDuo, podGun), null);
+		dash.pod = pod(dash, 380f, small(30f, Sounds.shootDuo, podGun), null);
+		dash.pod.speed = 4.4f;
 		bulk.pod.armor = 2f;
 		glass.pod.armor = 0f;
 		comet.pod.armor = 0f;
