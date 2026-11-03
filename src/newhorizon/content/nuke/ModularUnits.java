@@ -41,6 +41,7 @@ import newhorizon.expand.units.modular.LaserBlockAbility;
 import newhorizon.expand.units.modular.ModularAbility;
 import newhorizon.expand.units.modular.PointDefenseAbility;
 import newhorizon.expand.units.modular.TeleportAI;
+import newhorizon.expand.units.modular.TractorWeapon;
 import newhorizon.expand.units.modular.TeleportAbility;
 import newhorizon.expand.units.unitType.ModularUnitType;
 import newhorizon.expand.zmodular.ChimeraEntity;
@@ -74,7 +75,7 @@ public class ModularUnits{
 	public static StatusEffect platingEffect, servosEffect, overchargeEffect;
 
 	/** How far to each side the arms sit. */
-	public static final float armX = 20f;
+	public static final float armX = 16f;
 
 	public static void load(){
 		Color amber = Color.valueOf("ffb347"), cyan = Color.valueOf("5ad7ff"), rose = Color.valueOf("ff6f91");
@@ -163,25 +164,25 @@ public class ModularUnits{
 		}};
 
 		autocannon = new ModulePart("autocannon", Kind.arm, amber);
-		autocannon.left = arm("chimera-autocannon", true, 7f, Sounds.shootDuo, autoBullet, w -> {
+		autocannon.left = arm("chimera-autocannon", true, 7f, Sounds.shootDuo, 22.5f, autoBullet, w -> {
 			w.inaccuracy = 2f;
 			w.recoil = 2f;
 		});
-		autocannon.right = arm("chimera-autocannon", false, 7f, Sounds.shootDuo, autoBullet, w -> {
+		autocannon.right = arm("chimera-autocannon", false, 7f, Sounds.shootDuo, 22.5f, autoBullet, w -> {
 			w.inaccuracy = 2f;
 			w.recoil = 2f;
 		});
 		lance = new ModulePart("lance", Kind.arm, cyan);
-		lance.left = arm("chimera-lance", true, 80f, Sounds.shootLancer, lanceBullet, w -> w.recoil = 5f);
-		lance.right = arm("chimera-lance", false, 80f, Sounds.shootLancer, lanceBullet, w -> w.recoil = 5f);
+		lance.left = arm("chimera-lance", true, 80f, Sounds.shootLancer, 23.25f, lanceBullet, w -> w.recoil = 5f);
+		lance.right = arm("chimera-lance", false, 80f, Sounds.shootLancer, 23.25f, lanceBullet, w -> w.recoil = 5f);
 		missile = new ModulePart("missile", Kind.arm, rose);
-		missile.left = arm("chimera-missile", true, 60f, Sounds.shootMissile, missileBullet, w -> {
+		missile.left = arm("chimera-missile", true, 60f, Sounds.shootMissile, 18.0f, missileBullet, w -> {
 			w.shoot.shots = 4;
 			w.shoot.shotDelay = 5f;
 			w.inaccuracy = 4f;
 			w.velocityRnd = 0.1f;
 		});
-		missile.right = arm("chimera-missile", false, 60f, Sounds.shootMissile, missileBullet, w -> {
+		missile.right = arm("chimera-missile", false, 60f, Sounds.shootMissile, 18.0f, missileBullet, w -> {
 			w.shoot.shots = 4;
 			w.shoot.shotDelay = 5f;
 			w.inaccuracy = 4f;
@@ -205,7 +206,7 @@ public class ModularUnits{
 		overcharge.effect = overchargeEffect;
 
 		//---------------------------------------------------------------- the later arms (their ids come after the hulls', so the first twelve stay as saved)
-		howitzer = armPart("howitzer", orange, left -> arm("chimera-howitzer", left, 110f, Sounds.shootArtillery, new ArtilleryBulletType(6f, 0f){{
+		howitzer = armPart("howitzer", orange, left -> arm("chimera-howitzer", left, 110f, Sounds.shootArtillery, 25.0f, new ArtilleryBulletType(6f, 0f){{
 			lifetime = 94f;
 			width = 16f;
 			height = 24f;
@@ -217,10 +218,9 @@ public class ModularUnits{
 			hitEffect = despawnEffect = Fx.massiveExplosion;
 		}}, w -> {
 			w.recoil = 7f;
-			w.shootY = 22f;
 			w.inaccuracy = 1f;
 		}));
-		siege = armPart("siege", crimson, left -> arm("chimera-siege", left, 200f, Sounds.shootMissileLarge, new MissileBulletType(4.2f, 70f){{
+		siege = armPart("siege", crimson, left -> arm("chimera-siege", left, 200f, Sounds.shootMissileLarge, 23.25f, new MissileBulletType(4.2f, 70f){{
 			lifetime = 152f;
 			width = 14f;
 			height = 22f;
@@ -235,9 +235,8 @@ public class ModularUnits{
 			hitEffect = despawnEffect = Fx.massiveExplosion;
 		}}, w -> {
 			w.recoil = 6f;
-			w.shootY = 18f;
 		}));
-		beam = armPart("beam", teal, left -> arm("chimera-beam", left, 220f, Sounds.shootMeltdown, new ContinuousLaserBulletType(38f){{
+		beam = armPart("beam", teal, left -> arm("chimera-beam", left, 220f, Sounds.shootMeltdown, 22.25f, new ContinuousLaserBulletType(38f){{
 			length = 260f;
 			lifetime = 150f;
 			damageInterval = 5f;
@@ -250,18 +249,15 @@ public class ModularUnits{
 			w.shootStatus = StatusEffects.slow;
 			w.shootStatusDuration = 150f + 20f;
 			w.recoil = 0f;
-			w.shootY = 16f;
 		}));
-		tractor = armPart("tractor", sky, left -> arm("chimera-tractor", left, 70f, Sounds.shootLaser, new TractorBulletType(7f){{
+		tractor = armPart("tractor", sky, left -> arm(new TractorWeapon(NewHorizon.name("chimera-tractor")), left, 70f, Sounds.shootLaser, 19.5f, new TractorBulletType(7f){{
 			length = 250f;
 			lifetime = 120f;
 			color = hitColor = sky;
 		}}, w -> {
-			w.continuous = true;
 			w.recoil = 0f;
-			w.shootY = 16f;
 		}));
-		tesla = armPart("tesla", electric, left -> arm("chimera-tesla", left, 20f, Sounds.shootArc, new LightningBulletType(){{
+		tesla = armPart("tesla", electric, left -> arm("chimera-tesla", left, 20f, Sounds.shootArc, 20.0f, new LightningBulletType(){{
 			damage = 34f;
 			lightningLength = 22;
 			lightningLengthRand = 8;
@@ -271,9 +267,8 @@ public class ModularUnits{
 		}}, w -> {
 			w.shoot = new mindustry.entities.pattern.ShootSpread(3, 14f);
 			w.recoil = 1f;
-			w.shootY = 12f;
 		}));
-		pulse = armPart("pulse", wave, left -> arm("chimera-pulse", left, 90f, Sounds.shootBreach, new ConeBulletType(){{
+		pulse = armPart("pulse", wave, left -> arm("chimera-pulse", left, 90f, Sounds.shootBreach, 16.0f, new ConeBulletType(){{
 			radius = 130f;
 			cone = 110f;
 			damage = 22f;
@@ -281,7 +276,6 @@ public class ModularUnits{
 			color = wave;
 		}}, w -> {
 			w.recoil = 4f;
-			w.shootY = 12f;
 		}));
 		mender = armPart("mender", Color.valueOf("ff9ee8"), left -> new RepairBeamWeapon(NewHorizon.name("chimera-mender")){{
 			x = left ? -armX : armX;
@@ -291,7 +285,7 @@ public class ModularUnits{
 			flipSprite = left;
 			rotate = true;
 			rotateSpeed = 12f;
-			shootY = 12f;
+			shootY = 18.5f;
 			targetBuildings = true;
 			targetUnits = true;
 			repairSpeed = 1.6f;
@@ -302,7 +296,7 @@ public class ModularUnits{
 				maxRange = 220f;
 			}};
 		}});
-		flak = armPart("flak", Color.valueOf("e6e6ff"), left -> arm("chimera-flak", left, 14f, Sounds.shootCyclone, new FlakBulletType(4.6f, 3f){{
+		flak = armPart("flak", Color.valueOf("e6e6ff"), left -> arm("chimera-flak", left, 14f, Sounds.shootCyclone, 20.0f, new FlakBulletType(4.6f, 3f){{
 			lifetime = 62f;
 			width = 7f;
 			height = 12f;
@@ -316,9 +310,8 @@ public class ModularUnits{
 		}}, w -> {
 			w.inaccuracy = 3f;
 			w.recoil = 2f;
-			w.shootY = 14f;
 		}));
-		sword = armPart("sword", blade, left -> arm("chimera-sword", left, 20f, Sounds.shootScathe, new ConeBulletType(){{
+		sword = armPart("sword", blade, left -> arm("chimera-sword", left, 20f, Sounds.shootScathe, 33.75f, new ConeBulletType(){{
 			radius = 92f;
 			cone = 130f;
 			damage = 520f;
@@ -328,7 +321,6 @@ public class ModularUnits{
 			w.recoil = 0f;
 			w.rotateSpeed = 22f;
 			w.shootCone = 360f;
-			w.shootY = 6f;
 		}));
 
 		//---------------------------------------------------------------- the later cores (ids 18 to 26, after the arms)
@@ -447,14 +439,14 @@ public class ModularUnits{
 			colors = new Color[]{teal.cpy().a(0.4f), teal, Color.white};
 			hitColor = teal;
 		}})), null);
-		tractor.pod = pod(tractor, 500f, contin(small(70f, Sounds.shootLaser, new TractorBulletType(2f){{
+		tractor.pod = pod(tractor, 500f, small(new TractorWeapon(""), 70f, Sounds.shootLaser, new TractorBulletType(2f){{
 			length = 130f;
 			lifetime = 60f;
 			width = 8f;
 			force = 18f;
 			scaledForce = 8f;
 			color = hitColor = sky;
-		}})), null);
+		}}), null);
 		tesla.pod = pod(tesla, 480f, small(26f, Sounds.shootArc, new LightningBulletType(){{
 			damage = 14f;
 			lightningLength = 12;
@@ -645,30 +637,35 @@ public class ModularUnits{
 		return w;
 	}
 
-	/** One arm gun, on the left or the right of the frame. */
-	private static Weapon arm(String sprite, boolean left, float reload, Sound sound, BulletType bullet, Cons<Weapon> extra){
-		Weapon w = new Weapon(NewHorizon.name(sprite)){{
-			x = left ? -armX : armX;
-			y = 4f;
-			mirror = false;
-			alternate = false;
-			flipSprite = left;
-			rotate = true;
-			rotateSpeed = 10f;
-			shootY = 14f;
-			recoilTime = 14f;
-			ejectEffect = Fx.none;
-		}};
+	/** One arm gun, on the left or the right of the frame: {@code len} is the distance from the shoulder (where the arm's sprite is centred) to the muzzle. */
+	private static Weapon arm(String sprite, boolean left, float reload, Sound sound, float len, BulletType bullet, Cons<Weapon> extra){
+		return arm(new Weapon(NewHorizon.name(sprite)), left, reload, sound, len, bullet, extra);
+	}
+
+	private static Weapon arm(Weapon w, boolean left, float reload, Sound sound, float len, BulletType bullet, Cons<Weapon> extra){
+		w.x = left ? -armX : armX;
+		w.y = 4f;
+		w.mirror = false;
+		w.alternate = false;
+		w.flipSprite = left;
+		w.rotate = true;
+		w.rotateSpeed = 10f;
+		w.recoilTime = 14f;
+		w.ejectEffect = Fx.none;
 		w.reload = reload;
 		w.shootSound = sound;
 		w.bullet = bullet;
 		extra.get(w);
+		w.shootY = len;
 		return w;
 	}
 
 	/** A pod's gun: a small unnamed weapon. */
 	private static Weapon small(float reload, Sound sound, BulletType bullet){
-		Weapon w = new Weapon();
+		return small(new Weapon(), reload, sound, bullet);
+	}
+
+	private static Weapon small(Weapon w, float reload, Sound sound, BulletType bullet){
 		w.reload = reload;
 		w.x = 0f;
 		w.y = 2f;

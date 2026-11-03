@@ -187,7 +187,7 @@ public class ModularAbility extends Ability{
 	//---------------------------------------------------------------- looks
 
 	/** Where each slot's socket plate sits, as (forward, right) in shares of the unit's size. */
-	protected static final float[][] sockets = {{0.18f, -0.46f}, {0.18f, 0.46f}, {-0.3f, 0f}, {0.34f, 0f}};
+	protected static final float[][] sockets = {{0.13f, -0.53f}, {0.13f, 0.53f}, {-0.3f, 0f}, {0.34f, 0f}};
 
 	@Override
 	public void draw(Unit unit){
