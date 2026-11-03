@@ -37,14 +37,20 @@ import static mindustry.Vars.tilesize;
  * <li>a pod is let out of the stock, as a unit that flies off and fights;</li>
  * <li>the frame is let out, the way the bay faces.</li>
  * </ul>
- * Changes need power. All of it is a config command (see {@link RefitBayBuild#command}), so every peer does the same.
+ * <p>It can also run by itself: a preset says which part each slot should carry (or "leave it"), and with Auto on, a frame that arrives is
+ * fitted from the stock one slot at a time until it matches the preset, then sent on out of the front. A frame that cannot be finished because a
+ * part is out of stock waits for it, and says which. With a Foundry feeding it pods and frames, that is a line that turns out finished frames.
+ *
+ * <p>Changes need power. All of it is a config command (see {@link RefitBayBuild#command}), so every peer does the same.
  */
 public class RefitBay extends PayloadBlock{
 	/** How many pods of one kind the bay keeps. */
 	public int stockCap = 20;
 
 	/** Config commands: the kind of command times 1000 plus the slot times 100 plus the part. */
-	public static final int installOp = 1, removeOp = 2, podOp = 3, frameOp = 4;
+	public static final int installOp = 1, removeOp = 2, podOp = 3, frameOp = 4, presetOp = 5, presetClearOp = 6, presetCopyOp = 7, autoOp = 8;
+	/** Ticks between one fitting and the next when running by itself. */
+	public float autoInterval = 15f;
 
 	public RefitBay(String name){
 		super(name);
@@ -74,6 +80,13 @@ public class RefitBay extends PayloadBlock{
 		public boolean releasing;
 		/** A flash after a fitting, for the looks. */
 		public float flash;
+		/** The part wanted in each slot (a part id), or -1 to leave the slot as it is. */
+		public int[] preset = {-1, -1, -1, -1};
+		/** Whether the bay fits a frame to the preset and sends it on by itself. */
+		public boolean auto;
+		/** The part an automatic fitting is waiting for, out of stock, or -1. */
+		public int missing = -1;
+		protected float autoTimer;
 
 		public Unit frameUnit(){
 			return payload == null ? null : payload.unit;
@@ -134,6 +147,7 @@ public class RefitBay extends PayloadBlock{
 			}
 			moveInPayload(false);
 			if(payload != null) payload.set(x + payVector.x, y + payVector.y, payRotation);
+			if(auto) autoStep();
 		}
 
 		/** Whether the bay may change anything now. */
@@ -149,10 +163,7 @@ public class RefitBay extends PayloadBlock{
 			if(op == installOp){
 				ModulePart p = ModulePart.get(part);
 				if(unit == null || fit == null || p == null || !p.fits(slot) || stock[p.id] <= 0 || !ready()) return;
-				stock[p.id]--;
-				ModulePart old = fit.install(unit, slot, p);
-				if(old != null) stock[old.id] = Math.min(stockCap, stock[old.id] + 1);
-				fitted();
+				install(unit, fit, slot, p);
 			}else if(op == removeOp){
 				if(unit == null || fit == null || !ready()) return;
 				ModulePart old = fit.remove(unit, slot);
@@ -160,6 +171,17 @@ public class RefitBay extends PayloadBlock{
 					stock[old.id] = Math.min(stockCap, stock[old.id] + 1);
 					fitted();
 				}
+			}else if(op == presetOp){
+				ModulePart p = ModulePart.get(part);
+				if(p != null && p.fits(slot)) preset[slot] = p.id;
+			}else if(op == presetClearOp){
+				if(slot >= 0 && slot < preset.length) preset[slot] = -1;
+			}else if(op == presetCopyOp){
+				if(fit != null) System.arraycopy(fit.installed, 0, preset, 0, preset.length);
+			}else if(op == autoOp){
+				auto = part != 0;
+				autoTimer = 0f;
+				missing = -1;
 			}else if(op == podOp){
 				ModulePart p = ModulePart.get(part);
 				if(p == null || p.pod == null || stock[p.id] <= 0 || !Units.canCreate(team, p.pod)) return;
@@ -177,6 +199,56 @@ public class RefitBay extends PayloadBlock{
 			}
 		}
 
+		/** Puts a part from the stock into a slot; the part that was there goes back to the stock. */
+		protected void install(Unit unit, ModularAbility fit, int slot, ModulePart p){
+			stock[p.id]--;
+			ModulePart old = fit.install(unit, slot, p);
+			if(old != null) stock[old.id] = Math.min(stockCap, stock[old.id] + 1);
+			fitted();
+		}
+
+		/**
+		 * One step of the bay running by itself: fits the first slot that does not match the preset, from the stock, and when every slot does,
+		 * sends the frame on. A slot whose part is out of stock holds the frame back, and {@link #missing} says which part.
+		 */
+		protected void autoStep(){
+			if(!ready()) return;
+			Unit unit = frameUnit();
+			ModularAbility fit = fit();
+			if(unit == null || fit == null) return;
+			autoTimer += Time.delta;
+			if(autoTimer < autoInterval) return;
+			autoTimer = 0f;
+
+			missing = -1;
+			for(int slot = 0; slot < preset.length; slot++){
+				ModulePart want = ModulePart.get(preset[slot]);
+				if(want == null || !want.fits(slot) || fit.installed[slot] == want.id) continue;
+				if(stock[want.id] > 0){
+					install(unit, fit, slot, want);
+					return;
+				}
+				missing = want.id;
+			}
+			if(missing < 0) releasing = true;
+		}
+
+		/** The command that moves a slot's preset on to the next part that fits it, and after the last one to "leave it". */
+		public int nextPreset(int slot){
+			arc.struct.Seq<ModulePart> fits = ModulePart.all.select(p -> p.fits(slot));
+			int at = -1;
+			for(int i = 0; i < fits.size; i++){
+				if(fits.get(i).id == preset[slot]) at = i;
+			}
+			int next = at + 1;
+			return next >= fits.size ? code(presetClearOp, slot, 0) : code(presetOp, slot, fits.get(next).id);
+		}
+
+		public String presetName(int slot){
+			ModulePart p = ModulePart.get(preset[slot]);
+			return p == null ? Core.bundle.get("nh.modular.leave") : p.localized();
+		}
+
 		protected void fitted(){
 			flash = 1f;
 			Sounds.click.at(x, y, 1.2f);
@@ -189,6 +261,22 @@ public class RefitBay extends PayloadBlock{
 				t.margin(8f);
 				t.defaults().left().padBottom(4f);
 				t.label(() -> statusText()).width(300f).wrap().row();
+
+				//The preset and the Auto switch: a frame that comes in is fitted to it and sent on by itself.
+				t.add(Core.bundle.get("nh.modular.preset")).row();
+				String[] presetNames = {"nh.modular.armleft", "nh.modular.armright", "nh.modular.core", "nh.modular.hull"};
+				for(int slot = 0; slot < ModulePart.slots; slot++){
+					final int s = slot;
+					t.button("", Styles.defaultt, () -> configure(nextPreset(s))).size(300f, 34f).update(b -> b.setText(Core.bundle.get(presetNames[s]) + ": " + presetName(s))).row();
+				}
+				t.table(row -> {
+					row.defaults().size(148f, 36f).pad(2f);
+					row.button(Core.bundle.get("nh.modular.copy"), Styles.defaultt, () -> configure(code(presetCopyOp, 0, 0))).disabled(b -> fit() == null);
+					row.button("", Styles.togglet, () -> configure(code(autoOp, 0, auto ? 0 : 1))).update(b -> {
+						b.setText(Core.bundle.get(auto ? "nh.modular.autoon" : "nh.modular.autooff"));
+						b.setChecked(auto);
+					});
+				}).row();
 
 				String[] slotNames = {"nh.modular.armleft", "nh.modular.armright", "nh.modular.core", "nh.modular.hull"};
 				for(int slot = 0; slot < ModulePart.slots; slot++){
@@ -235,6 +323,8 @@ public class RefitBay extends PayloadBlock{
 		public String statusText(){
 			if(payload == null) return Core.bundle.get("nh.modular.noframe");
 			if(efficiency <= 0.5f) return Core.bundle.get("nh.modular.nopower");
+			if(auto && missing >= 0) return Core.bundle.format("nh.modular.waiting", ModulePart.get(missing).localized());
+			if(auto) return Core.bundle.get("nh.modular.auto");
 			return Core.bundle.get("nh.modular.ready");
 		}
 
@@ -254,10 +344,18 @@ public class RefitBay extends PayloadBlock{
 		}
 
 		@Override
+		public byte version(){
+			return 1;
+		}
+
+		@Override
 		public void write(Writes write){
 			super.write(write);
 			write.i(stock.length);
 			for(int n : stock) write.i(n);
+			write.i(preset.length);
+			for(int n : preset) write.i(n);
+			write.bool(auto);
 		}
 
 		@Override
@@ -267,6 +365,15 @@ public class RefitBay extends PayloadBlock{
 			for(int i = 0; i < n; i++){
 				int v = read.i();
 				if(i < stock.length) stock[i] = Mathf.clamp(v, 0, stockCap);
+			}
+			//Saves from before the preset have none.
+			if(revision >= 1){
+				int m = read.i();
+				for(int i = 0; i < m; i++){
+					int v = read.i();
+					if(i < preset.length) preset[i] = ModulePart.get(v) != null && ModulePart.get(v).fits(i) ? v : -1;
+				}
+				auto = read.bool();
 			}
 		}
 	}
