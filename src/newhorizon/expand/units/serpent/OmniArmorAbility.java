@@ -22,6 +22,8 @@ import static mindustry.Vars.tilesize;
 public class OmniArmorAbility extends Ability{
 	public float maxCharge = 3000f, threshold = 100f, triggerRange = 4f * tilesize, blastRadius = 5f * tilesize;
 	public float blastCooldown = 20f;
+	/** How many points of damage a point of stored charge becomes when it is let out. */
+	public float multiplier = 1f;
 	public arc.graphics.Color color = arc.graphics.Color.valueOf("c885ff");
 
 	private float last = -1f, cooldown, scan;
@@ -61,7 +63,7 @@ public class OmniArmorAbility extends Ability{
 
 	/** Lets out what was kept, in a blast around the unit. */
 	public void release(Unit unit){
-		float damage = data;
+		float damage = data * multiplier;
 		data = 0f;
 		cooldown = blastCooldown;
 		Damage.damage(unit.team, unit.x, unit.y, blastRadius, damage, false, true, true);

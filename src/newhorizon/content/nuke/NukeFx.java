@@ -12,6 +12,10 @@ import mindustry.graphics.Layer;
 
 /** Effects of the nukes. The blast effects take their radius as the effect's rotation and their colour as the effect's colour. */
 public class NukeFx{
+	private static void Drawf_light(float x1, float y1, float x2, float y2, float a){
+		mindustry.graphics.Drawf.light(x1, y1, x2, y2, 90f * a, Color.valueOf("b45cff"), 0.8f * a);
+	}
+
 	public static final Effect
 		/** A fireball and shockwave of the given radius. */
 		blast = new Effect(80f, 1200f, e -> {
@@ -181,6 +185,55 @@ public class NukeFx{
 			arc.math.Angles.randLenVectors(e.id, 9, e.rotation * 1.5f * e.finpow(), (x, y) -> Fill.circle(e.x + x, e.y + y, 1.2f + 2.6f * e.fout()));
 			Draw.color(Color.gray, 0.45f * e.fout());
 			arc.math.Angles.randLenVectors(e.id + 1, 7, e.rotation * 0.9f * e.finpow(), (x, y) -> Fill.circle(e.x + x, e.y + y, 3f + 7f * e.fin()));
+			Draw.reset();
+		}),
+
+		/** The anti-matter cannon's beam: from the muzzle (the effect's place) at the effect's angle, as long as the colour's red says (4 units a step). */
+		antiBeam = new Effect(34f, 3000f, e -> {
+			float len = e.color.r * 255f * 4f;
+			if(len < 1f) return;
+			float a = e.fout(Interp.pow2Out), ex = e.x + Angles.trnsx(e.rotation, len), ey = e.y + Angles.trnsy(e.rotation, len);
+			Color violet = Color.valueOf("b45cff"), cyan = Color.valueOf("7ff4ff");
+			Draw.z(Layer.effect + 3f);
+			Drawf_light(e.x, e.y, ex, ey, a);
+			Draw.color(violet, 0.5f * a);
+			Lines.stroke(34f * a);
+			Lines.line(e.x, e.y, ex, ey, false);
+			Draw.color(cyan, 0.9f * a);
+			Lines.stroke(17f * a);
+			Lines.line(e.x, e.y, ex, ey, false);
+			Draw.color(Color.white, a);
+			Lines.stroke(7f * a);
+			Lines.line(e.x, e.y, ex, ey, false);
+			//A flash at each end and a ring where it lands.
+			Fill.circle(e.x, e.y, 26f * a);
+			Fill.circle(ex, ey, 22f * a);
+			Draw.color(violet, a);
+			Lines.stroke(4f * a);
+			Lines.circle(ex, ey, 14f + 70f * e.fin(Interp.pow3Out));
+			Draw.reset();
+		}),
+
+		/** A thing destroyed by anti-matter: a white flash that folds in on itself, a ring and sparks. The rotation is its size. */
+		antiPop = new Effect(34f, 400f, e -> {
+			Draw.z(Layer.effect + 2f);
+			Draw.color(Color.white, Color.valueOf("b45cff"), e.fin());
+			Fill.circle(e.x, e.y, e.rotation * 0.8f * e.fout(Interp.pow2In));
+			Lines.stroke(2.4f * e.fout());
+			Lines.circle(e.x, e.y, e.rotation * (0.6f + 1.4f * e.finpow()));
+			Draw.color(Color.valueOf("7ff4ff"), e.fout());
+			Angles.randLenVectors(e.id, 8, e.rotation * 1.6f * e.finpow(), (x, y) -> Lines.lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), 2f + 5f * e.fout()));
+			Draw.reset();
+		}),
+
+		/** Venting while the cannon cools: a spark and a wisp. */
+		antiVent = new Effect(40f, 120f, e -> {
+			Draw.z(Layer.effect);
+			Draw.color(Color.white, Color.valueOf("ff9a4d"), e.fin());
+			Draw.alpha(e.fout());
+			Fill.circle(e.x + Angles.trnsx(e.rotation, 10f * e.finpow()), e.y + Angles.trnsy(e.rotation, 10f * e.finpow()), 1.2f + 3f * e.fin());
+			Draw.color(Color.gray, 0.35f * e.fout());
+			Fill.circle(e.x + Angles.trnsx(e.rotation, 16f * e.finpow()), e.y + Angles.trnsy(e.rotation, 16f * e.finpow()), 2f + 5f * e.fin());
 			Draw.reset();
 		}),
 
