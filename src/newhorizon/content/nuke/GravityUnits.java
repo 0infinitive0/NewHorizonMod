@@ -31,7 +31,7 @@ public class GravityUnits{
 
 	public static void load(){
 		Color violet = Color.valueOf("8a6bff"), ice = Color.valueOf("c9f4ff");
-		float field = 300f;
+		float field = 200f;
 
 		//The black hole it drops: huge, 30 seconds, drags enemies to its middle and crushes what gets there.
 		collapseHole = new BlackHoleBulletType(){{

@@ -36,9 +36,10 @@ import mindustry.graphics.Layer;
 /**
  * The Gravity Base's field: a disc of {@link #radius} round the unit in which
  * <ul>
- * <li>enemy units revolve round the unit (a unit that cannot be pushed, {@code knockbackMultiplier} 0, does not);</li>
+ * <li>enemy units revolve round the unit and fall steadily toward it, down to a certain radius (a unit that cannot be pushed,
+ * {@code knockbackMultiplier} 0, does neither);</li>
  * <li>enemy bullets are caught and made to revolve too, and the moment one is caught it changes to the unit's team, so it circles inside
- * the field hitting the enemy that is in it; bullets faster than {@link #maxCatchSpeed} keep their team but their path is bent round the
+ * the field (spiralling in to the same radius) hitting the enemy that is in it; bullets faster than {@link #maxCatchSpeed} keep their team but their path is bent round the
  * unit; lasers and instant hits are not affected at all;</li>
  * <li>everything of the enemy's (units, and buildings at a lower rate) is crushed: damage over time that goes past armor and is
  * stronger toward the centre;</li>
@@ -48,9 +49,11 @@ import mindustry.graphics.Layer;
  */
 public class GravityFieldAbility extends Ability{
 	/** How far the field reaches. */
-	public float radius = 300f;
+	public float radius = 200f;
 	/** How fast enemy units revolve, in degrees a tick (for a unit that can be pushed fully). */
 	public float spin = 0.55f;
+	/** The steady fall inward: units that can be pushed fall this many px a tick toward the unit, bullets that were caught this many, and a bent (fast) bullet leans {@link #bendInward} degrees inward; none of them falls closer than {@link #innerRadius} (for a unit, plus half its own size). */
+	public float fall = 0.7f, bulletFall = 0.5f, bendInward = 25f, innerRadius = 60f;
 
 	/** Bullets faster than this (px a tick) are not caught: they keep their team, and their path is bent toward going round the unit by {@link #bendRate} degrees a tick. Instant ones are not touched. */
 	public float maxCatchSpeed = 10f, bendRate = 4f;
@@ -60,7 +63,7 @@ public class GravityFieldAbility extends Ability{
 	public int catchPerTick = 80;
 
 	/** Crush: damage a second to a unit at the edge of the field, how many times more it is at the centre, and the share that buildings take. */
-	public float crushDamage = 450f, crushCentre = 3f, crushBuildings = 0.45f;
+	public float crushDamage = 225f, crushCentre = 3f, crushBuildings = 0.45f;
 	public float crushInterval = 5f;
 
 	/** The victim of a death counts if it is within {@code radius * shieldRange} of the unit; the shield it gives is {@code maxHealth * shieldShare}, to at most {@code shieldCap} times the unit's own max health. */
@@ -163,7 +166,7 @@ public class GravityFieldAbility extends Ability{
 			if(b.team == unit.team || !b.within(unit, radius)) return;
 			if(bendable(b)){
 				//Too fast to be caught: it keeps its team and speed, and its path is bent round the unit.
-				float desired = Angles.angle(unit.x, unit.y, b.x, b.y) + 90f;
+				float desired = Angles.angle(unit.x, unit.y, b.x, b.y) + 90f + (b.within(unit, innerRadius) ? 0f : bendInward);
 				b.vel.setAngle(Angles.moveToward(b.vel.angle(), desired, bendRate * Time.delta));
 				b.rotation(b.vel.angle());
 				return;
@@ -177,13 +180,13 @@ public class GravityFieldAbility extends Ability{
 			if(b.lifetime < minBulletLife) b.lifetime = minBulletLife;
 			float min = b.lifetime - minBulletLife;
 			if(b.time > min) b.time = min;
-			hold.put(b, Mathf.clamp(b.dst(unit), 50f, radius * 0.85f));
+			hold.put(b, Mathf.clamp(b.dst(unit), innerRadius, radius * 0.85f));
 			caught.add(b);
 			Fx.hitLaserBlast.at(b.x, b.y, b.rotation(), color);
 		});
 	}
 
-	/** Keeps the caught bullets going round: velocity along the tangent, nudged to hold the radius each was caught at. */
+	/** Keeps the caught bullets going round: velocity along the tangent, nudged to hold a radius that shrinks to the inner radius. */
 	protected void steerBullets(Unit unit){
 		for(int i = caught.size - 1; i >= 0; i--){
 			Bullet b = caught.get(i);
@@ -193,6 +196,11 @@ public class GravityFieldAbility extends Ability{
 				continue;
 			}
 			float dist = Math.max(b.dst(unit), 1f), want = hold.get(b, dist);
+			//The radius it holds shrinks steadily, down to the inner radius: it spirals in and then circles there.
+			if(want > innerRadius){
+				want = Math.max(innerRadius, want - bulletFall * Time.delta);
+				hold.put(b, want);
+			}
 			float angle = Angles.angle(unit.x, unit.y, b.x, b.y);
 			float desired = angle + 90f + Mathf.clamp((dist - want) * 0.25f, -40f, 40f);
 			float speed = Math.max(b.vel.len(), minOrbitSpeed);
@@ -208,6 +216,12 @@ public class GravityFieldAbility extends Ability{
 			if(scale <= 0f) return;
 			float dx = e.x - unit.x, dy = e.y - unit.y;
 			v.set(dx, dy).rotate(spin * scale * Time.delta).sub(dx, dy);
+			//and falls toward the unit, but not past the inner radius.
+			float dist = Mathf.dst(dx, dy), stop = innerRadius + e.hitSize / 2f;
+			if(dist > stop){
+				float step = Math.min(fall * scale * Time.delta, dist - stop);
+				v.add(-dx / dist * step, -dy / dist * step);
+			}
 			e.move(v.x, v.y);
 		});
 	}
