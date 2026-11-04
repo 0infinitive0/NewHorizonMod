@@ -27,6 +27,7 @@ import mindustry.graphics.Pal;
 import mindustry.ui.Bar;
 import mindustry.world.blocks.defense.turrets.PowerTurret;
 import mindustry.world.meta.Env;
+import mindustry.world.meta.Stat;
 import newhorizon.content.nuke.NukeFx;
 import newhorizon.expand.units.nuke.AntiMatter;
 
@@ -94,6 +95,14 @@ public class AntiMatterCannon extends PowerTurret{
 		return true;
 	}
 
+	/** The range is the whole map (see {@link AntiMatterBuild#range()}): the database says so instead of the {@link #range} field, which only keeps the placement and vision radii at their usual size. */
+	@Override
+	public void setStats(){
+		super.setStats();
+		stats.remove(Stat.range);
+		stats.add(Stat.range, Core.bundle.get("stat.nh-whole-map", "The whole map"));
+	}
+
 	@Override
 	public void setBars(){
 		super.setBars();
@@ -119,6 +128,13 @@ public class AntiMatterCannon extends PowerTurret{
 			if(holding && energy > 0f) return State.charging;
 			if(holding) return State.charging;
 			return energy > 0f ? State.down : State.idle;
+		}
+
+		/** The whole map: as far as its diagonal, and never less than the {@link AntiMatterCannon#range} field. */
+		@Override
+		public float range(){
+			if(Vars.world == null || Vars.world.width() <= 0) return AntiMatterCannon.this.range;
+			return Math.max(AntiMatterCannon.this.range, Mathf.dst(Vars.world.unitWidth(), Vars.world.unitHeight()));
 		}
 
 		/** No target of its own, ever. */
@@ -191,7 +207,8 @@ public class AntiMatterCannon extends PowerTurret{
 			AntiMatter.Block shield = AntiMatter.shield(team, mx, my, tx, ty, t instanceof Building ? (Building)t : null);
 			float ex = shield != null ? shield.x : tx, ey = shield != null ? shield.y : ty;
 			float angle = Angles.angle(mx, my, ex, ey), len = Mathf.dst(mx - ex, my - ey);
-			Call.effect(NukeFx.antiBeam, mx, my, angle, new Color(Math.min(1f, len / 1020f), 0f, 0f, 1f));
+			//The length goes as the effect's data (whatever the distance); the colour's red keeps the old short-range encoding for anything that reads it.
+			Call.effect(NukeFx.antiBeam, mx, my, angle, new Color(Math.min(1f, len / 1020f), 0f, 0f, 1f), Float.valueOf(len));
 			if(shield != null) AntiMatter.destroyShield(shield);
 			else AntiMatter.annihilate(t);
 
@@ -293,7 +310,7 @@ public class AntiMatterCannon extends PowerTurret{
 
 		@Override
 		public void drawSelect(){
-			Drawf.dashCircle(x, y, range(), team.color);
+			//Its range is the whole map, so there is no circle to show.
 		}
 
 		@Override
