@@ -64,7 +64,7 @@ public class GravityUnits{
 				rotate = true;
 				rotateSpeed = 6f;
 				recoil = 0f;
-				shootY = 20f;
+				shootY = 25f;
 				shootSound = Sounds.shootLaser;
 				bullet = new TractorBulletType(1f){{
 					length = 560f;
