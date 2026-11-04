@@ -37,12 +37,13 @@ import mindustry.graphics.Layer;
  * The Gravity Base's field: a disc of {@link #radius} round the unit in which
  * <ul>
  * <li>enemy units revolve round the unit (a unit that cannot be pushed, {@code knockbackMultiplier} 0, does not);</li>
- * <li>enemy bullets are caught and made to revolve too, except lasers, instant hits and very fast bullets, and the moment one is caught it
- * changes to the unit's team, so it circles inside the field hitting the enemy that is in it;</li>
+ * <li>enemy bullets are caught and made to revolve too, and the moment one is caught it changes to the unit's team, so it circles inside
+ * the field hitting the enemy that is in it; bullets faster than {@link #maxCatchSpeed} keep their team but their path is bent round the
+ * unit; lasers and instant hits are not affected at all;</li>
  * <li>everything of the enemy's (units, and buildings at a lower rate) is crushed: damage over time that goes past armor and is
  * stronger toward the centre;</li>
  * </ul>
- * and whenever an enemy unit or building is destroyed near the unit, the unit gains a shield worth the victim's max health, up to
+ * and whenever an enemy unit or building is destroyed near the unit, the unit steals a shield worth {@link #shieldShare} of the victim's max health, up to
  * {@link #shieldCap} times its own.
  */
 public class GravityFieldAbility extends Ability{
@@ -51,8 +52,8 @@ public class GravityFieldAbility extends Ability{
 	/** How fast enemy units revolve, in degrees a tick (for a unit that can be pushed fully). */
 	public float spin = 0.55f;
 
-	/** Bullets faster than this (px a tick), and instant ones, are not caught. */
-	public float maxCatchSpeed = 10f;
+	/** Bullets faster than this (px a tick) are not caught: they keep their team, and their path is bent toward going round the unit by {@link #bendRate} degrees a tick. Instant ones are not touched. */
+	public float maxCatchSpeed = 10f, bendRate = 4f;
 	/** A caught bullet circles at least this fast (px a tick) and for at least this long (ticks). */
 	public float minOrbitSpeed = 3f, minBulletLife = 300f;
 	/** The most bullets caught in a tick. */
@@ -63,7 +64,7 @@ public class GravityFieldAbility extends Ability{
 	public float crushInterval = 5f;
 
 	/** The victim of a death counts if it is within {@code radius * shieldRange} of the unit; the shield it gives is {@code maxHealth * shieldShare}, to at most {@code shieldCap} times the unit's own max health. */
-	public float shieldRange = 1.25f, shieldShare = 1f, shieldCap = 10f;
+	public float shieldRange = 1.25f, shieldShare = 0.5f, shieldCap = 10f;
 
 	public Color color = Color.valueOf("8a6bff"), glow = Color.valueOf("c9f4ff");
 	public int orbs = 6;
@@ -123,13 +124,22 @@ public class GravityFieldAbility extends Ability{
 		return null;
 	}
 
-	/** Whether a bullet can be caught: not an instant or very fast one, and not a laser. */
-	public boolean catchable(Bullet b){
+	/** Instant and beam bullets, which nothing here can touch. */
+	protected boolean instant(Bullet b){
 		BulletType t = b.type;
-		if(t instanceof ContinuousBulletType || t instanceof LaserBulletType || t instanceof LightningBulletType || t instanceof PointBulletType
-			|| t instanceof PointLaserBulletType || t instanceof RailBulletType || t instanceof SapBulletType || t instanceof ShrapnelBulletType) return false;
-		float speed = b.vel.len();
-		return speed > 0.01f && speed <= maxCatchSpeed && t.speed <= maxCatchSpeed && b.lifetime > 1f;
+		return t instanceof ContinuousBulletType || t instanceof LaserBulletType || t instanceof LightningBulletType || t instanceof PointBulletType
+			|| t instanceof PointLaserBulletType || t instanceof RailBulletType || t instanceof SapBulletType || t instanceof ShrapnelBulletType
+			|| b.vel.len() <= 0.01f || b.lifetime <= 1f;
+	}
+
+	/** Whether a bullet can be caught: not an instant one, and not a very fast one. */
+	public boolean catchable(Bullet b){
+		return !instant(b) && b.vel.len() <= maxCatchSpeed && b.type.speed <= maxCatchSpeed;
+	}
+
+	/** Whether a bullet is only bent: a fast one that is not instant. */
+	public boolean bendable(Bullet b){
+		return !instant(b) && !catchable(b);
 	}
 
 	@Override
@@ -150,7 +160,15 @@ public class GravityFieldAbility extends Ability{
 	protected void catchBullets(Unit unit){
 		int[] left = {catchPerTick};
 		Groups.bullet.intersect(unit.x - radius, unit.y - radius, radius * 2f, radius * 2f, b -> {
-			if(left[0] <= 0 || b.team == unit.team || !b.within(unit, radius) || !catchable(b)) return;
+			if(b.team == unit.team || !b.within(unit, radius)) return;
+			if(bendable(b)){
+				//Too fast to be caught: it keeps its team and speed, and its path is bent round the unit.
+				float desired = Angles.angle(unit.x, unit.y, b.x, b.y) + 90f;
+				b.vel.setAngle(Angles.moveToward(b.vel.angle(), desired, bendRate * Time.delta));
+				b.rotation(b.vel.angle());
+				return;
+			}
+			if(left[0] <= 0 || !catchable(b)) return;
 			left[0]--;
 			b.team = unit.team;
 			b.owner = unit;
