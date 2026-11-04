@@ -63,7 +63,7 @@ public class GravityFieldAbility extends Ability{
 	public int catchPerTick = 80;
 
 	/** Crush: damage a second to a unit at the edge of the field, how many times more it is at the centre, and the share that buildings take. */
-	public float crushDamage = 225f, crushCentre = 3f, crushBuildings = 0.45f;
+	public float crushDamage = 100f, crushCentre = 3f, crushBuildings = 0.45f;
 	public float crushInterval = 5f;
 
 	/** The victim of a death counts if it is within {@code radius * shieldRange} of the unit; the shield it gives is {@code maxHealth * shieldShare}, to at most {@code shieldCap} times the unit's own max health. */

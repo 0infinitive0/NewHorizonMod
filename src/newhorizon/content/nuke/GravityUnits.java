@@ -103,12 +103,12 @@ public class GravityUnits{
 				recoil = 0f;
 				shootY = 25f;
 				shootSound = Sounds.shootLaser;
-				bullet = new TractorBulletType(1f){{
+				bullet = new TractorBulletType(0f){{
 					length = 560f;
 					lifetime = 120f;
 					width = 18f;
-					force = 520f;
-					scaledForce = 320f;
+					force = 1040f;
+					scaledForce = 640f;
 					holdDistance = field * 0.8f;
 					skipWithin = field;
 					color = hitColor = violet;

@@ -87,7 +87,9 @@ public class TractorBulletType extends ContinuousBulletType{
 		if(target != null && holdStatus != null) target.apply(holdStatus, holdStatusTime);
 		if(target == null || bestDst[0] <= holdDistance || target.type.knockbackMultiplier <= 0f) return;
 		float pull = (force + (1f - Mathf.clamp(bestDst[0] / len)) * scaledForce) * Time.delta * target.type.knockbackMultiplier;
-		target.impulse(Tmp.v1.set(b).sub(target).limit(pull));
+		//The pull is along the line to the weapon at its full strength, but never so hard that one tick's change of speed is more than a third of the way left to the hold distance.
+		pull = Math.min(pull, (bestDst[0] - holdDistance) * target.mass() * 0.3f);
+		target.impulse(Tmp.v1.set(b).sub(target).setLength(pull));
 	}
 
 	@Override
