@@ -18,6 +18,8 @@ public class NukeContent{
 		OmniDrones.load();
 		SerpentUnits.load();
 		CrabUnits.load();
+		GravityUnits.load();
+		newhorizon.expand.units.gravity.GravityFieldAbility.hook();
 		ModularUnits.load();
 		NukeBlocks.load();
 		OmniBlocks.load();

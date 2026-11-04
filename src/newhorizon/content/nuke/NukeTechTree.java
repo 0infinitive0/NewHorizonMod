@@ -65,6 +65,8 @@ public class NukeTechTree{
 			child(factory, OmniBlocks.antiMatterCannon);
 			TechNode dock = child(factory, OmniBlocks.crabDock);
 			child(dock, CrabUnits.kingCrab);
+			TechNode gravityDock = child(factory, OmniBlocks.gravityDock);
+			child(gravityDock, GravityUnits.gravityBase);
 			TechNode foundry = child(factory, OmniBlocks.modularFoundry);
 			TechNode frame = child(foundry, ModularUnits.frame);
 			child(foundry, OmniBlocks.refitBay);

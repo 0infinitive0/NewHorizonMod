@@ -14,6 +14,7 @@ import mindustry.content.Fx;
 import mindustry.entities.Units;
 import mindustry.entities.bullet.ContinuousBulletType;
 import mindustry.gen.Bullet;
+import mindustry.gen.Posc;
 import mindustry.gen.Unit;
 import mindustry.type.StatusEffect;
 import mindustry.graphics.Drawf;
@@ -37,6 +38,8 @@ public class TractorBulletType extends ContinuousBulletType{
 	public float holdStatusTime = 30f;
 	/** The beam's width, as the Parallax's laserWidth. */
 	public float beamWidth = 0.6f;
+	/** Units closer than this to the one that fired the beam are neither held nor pulled by it (0: all are). */
+	public float skipWithin = 0f;
 
 	private static TextureRegion laser, laserStart, laserEnd;
 
@@ -64,8 +67,10 @@ public class TractorBulletType extends ContinuousBulletType{
 		float ex = b.x + Angles.trnsx(rot, len), ey = b.y + Angles.trnsy(rot, len);
 		Unit[] best = {null};
 		float[] bestDst = {Float.MAX_VALUE};
+		Posc from = b.owner instanceof Posc ? (Posc)b.owner : b;
 		Units.nearbyEnemies(b.team, b.x - len, b.y - len, len * 2f, len * 2f, unit -> {
 			if(unit.dead() || !unit.isAdded() || !unit.targetable(b.team) || !unit.checkTarget(collidesAir, collidesGround)) return;
+			if(skipWithin > 0f && unit.within(from, skipWithin)) return;
 			if(Intersector.distanceSegmentPoint(b.x, b.y, ex, ey, unit.x, unit.y) > width + unit.hitSize / 2f) return;
 			float d = unit.dst(b);
 			if(d < bestDst[0]){

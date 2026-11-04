@@ -23,7 +23,7 @@ import static mindustry.type.ItemStack.with;
  * of items every planet has, but the shield and the wall also need omni-matter to build.
  */
 public class OmniBlocks{
-	public static Block omniFactory, omniExtractor, omniShield, omniWall, omniStabilizer, antiMatterCannon, crabDock, modularFoundry, refitBay;
+	public static Block omniFactory, omniExtractor, omniShield, omniWall, omniStabilizer, antiMatterCannon, crabDock, gravityDock, modularFoundry, refitBay;
 	/** Makes the head of the Serpent and its body sections. */
 	public static Block serpentNest;
 
@@ -87,6 +87,15 @@ public class OmniBlocks{
 			health = 9000;
 			consumePower(30f);
 			plans.add(new UnitFactory.UnitPlan(CrabUnits.kingCrab, 60f * 300f, with(Items.silicon, 3000, Items.thorium, 2500, Items.surgeAlloy, 1500, Items.plastanium, 1200, Items.phaseFabric, 800, NukeItems.omniMatter, 800)));
+		}};
+
+		//Builds the Gravity Base, one to a team: slow and very expensive.
+		gravityDock = new newhorizon.expand.block.nuke.CrabDock("gravity-dock"){{
+			requirements(Category.units, with(Items.silicon, 1500, Items.thorium, 1200, Items.surgeAlloy, 700, Items.plastanium, 600, Items.phaseFabric, 600, NukeItems.omniMatter, 350));
+			size = 7;
+			health = 9000;
+			consumePower(30f);
+			plans.add(new UnitFactory.UnitPlan(GravityUnits.gravityBase, 60f * 270f, with(Items.silicon, 2800, Items.thorium, 2200, Items.surgeAlloy, 1300, Items.plastanium, 1000, Items.phaseFabric, 1000, NukeItems.omniMatter, 900)));
 		}};
 
 		//Builds the Chimera frame and the pods that fit into it.
