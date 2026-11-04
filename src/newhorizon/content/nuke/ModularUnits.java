@@ -67,8 +67,12 @@ public class ModularUnits{
 	public static UnitCommand blinkCommand, jumpCommand;
 	public static UnitStance autoBlink;
 	public static StatusEffect noBuildEffect;
+	/** What the tractor beam does to the unit it holds: slowed to a third and disarmed. */
+	public static StatusEffect grippedEffect;
 	/** The later hulls: ids 27 to 33. */
 	public static ModulePart sprint, rapid, emplacement, bulk, glass, comet, bastion, dash;
+	/** The arm made for what a tractor beam holds: id 35. */
+	public static ModulePart crusher;
 	public static ModulePart autocannon, lance, missile, shield, repair, overdrive, plating, servos, overcharge;
 	/** The later arms: ids 9 to 17. */
 	public static ModulePart howitzer, siege, beam, tractor, tesla, pulse, mender, flak, sword;
@@ -84,6 +88,11 @@ public class ModularUnits{
 		Color orange = Color.valueOf("ff8a3d"), crimson = Color.valueOf("e8384f"), teal = Color.valueOf("3ee0c1"), sky = Color.valueOf("6cb6ff");
 		Color electric = Color.valueOf("e9f26a"), wave = Color.valueOf("a6d8ff"), blade = Color.valueOf("ff5ad1");
 
+		grippedEffect = new StatusEffect("tractor-gripped"){{
+			color = sky;
+			speedMultiplier = 0.3f;
+			disarm = true;
+		}};
 		noBuildEffect = new StatusEffect("module-no-build"){{
 			color = steel;
 			permanent = true;
@@ -251,6 +260,7 @@ public class ModularUnits{
 			w.recoil = 0f;
 		}));
 		tractor = armPart("tractor", sky, left -> arm(new TractorWeapon(NewHorizon.name("chimera-tractor")), left, 70f, Sounds.shootLaser, 19.5f, new TractorBulletType(7f){{
+			holdStatus = grippedEffect;
 			length = 250f;
 			lifetime = 120f;
 			color = hitColor = sky;
@@ -372,6 +382,24 @@ public class ModularUnits{
 		bastion = hullPart("bastion", Color.valueOf("0984e3"), bastionEffect, 2f);
 		dash = hullPart("dash", Color.valueOf("fd79a8"), dashEffect, 1f);
 
+		//The arm made for the tractor beam (id 35, after the hulls): a short, heavy blast that goes through armor, hits air and ground, and does
+		//double to a unit the tractor beam holds. No knockback, so that it does not shove its target out of reach.
+		crusher = armPart("crusher", Color.valueOf("d35400"), left -> arm("chimera-crusher", left, 55f, Sounds.shootBreach, 17.5f, new ConeBulletType(){{
+			radius = 90f;
+			cone = 50f;
+			damage = 1100f;
+			pierceArmor = true;
+			bonusStatus = grippedEffect;
+			bonusMultiplier = 2f;
+			buildingDamageMultiplier = 0.6f;
+			collidesAir = true;
+			collidesGround = true;
+			color = Color.valueOf("ff8c1a");
+		}}, w -> {
+			w.recoil = 6f;
+			w.shootCone = 20f;
+		}));
+
 		//---------------------------------------------------------------- pods
 		BulletType podGun = new BasicBulletType(7f, 14f){{
 			lifetime = 30f;
@@ -440,6 +468,7 @@ public class ModularUnits{
 			hitColor = teal;
 		}})), null);
 		tractor.pod = pod(tractor, 500f, small(new TractorWeapon(""), 70f, Sounds.shootLaser, new TractorBulletType(2f){{
+			holdStatus = grippedEffect;
 			length = 130f;
 			lifetime = 60f;
 			width = 8f;
@@ -528,6 +557,17 @@ public class ModularUnits{
 		bastion.pod = pod(bastion, 1000f, small(60f, Sounds.shootDuo, podGun), null);
 		dash.pod = pod(dash, 380f, small(30f, Sounds.shootDuo, podGun), null);
 		dash.pod.speed = 4.4f;
+		crusher.pod = pod(crusher, 640f, small(70f, Sounds.shootBreach, new ConeBulletType(){{
+			radius = 44f;
+			cone = 60f;
+			damage = 130f;
+			pierceArmor = true;
+			bonusStatus = grippedEffect;
+			bonusMultiplier = 2f;
+			collidesAir = true;
+			collidesGround = true;
+			color = Color.valueOf("ff8c1a");
+		}}), null);
 		bulk.pod.armor = 2f;
 		glass.pod.armor = 0f;
 		comet.pod.armor = 0f;
@@ -586,7 +626,7 @@ public class ModularUnits{
 			abilities.add(new ModularAbility());
 
 			//Every arm weapon, left and right, is listed so that its sprite is loaded; the ability mounts only the ones the arms carry.
-			for(ModulePart part : new ModulePart[]{autocannon, lance, missile, howitzer, siege, beam, tractor, tesla, pulse, mender, flak, sword}){
+			for(ModulePart part : new ModulePart[]{autocannon, lance, missile, howitzer, siege, beam, tractor, tesla, pulse, mender, flak, sword, crusher}){
 				weapons.add(part.left, part.right);
 			}
 		}};

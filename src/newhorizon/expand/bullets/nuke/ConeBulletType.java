@@ -33,6 +33,11 @@ public class ConeBulletType extends BulletType{
 	public Color color = Color.white;
 	public StatusEffect coneStatus;
 	public float coneStatusTime = 60f;
+	/** A unit that has this status takes the damage times {@link #bonusMultiplier}; a unit without it takes the damage as it is. */
+	public StatusEffect bonusStatus;
+	public float bonusMultiplier = 1f;
+	/** Whether the damage to units goes past their armor. */
+	public boolean pierceArmor;
 
 	/** The swipe, drawn from the weapon. The effect's data is {@code {radius, cone}}, its rotation the heading. */
 	public static Effect swipe;
@@ -86,7 +91,9 @@ public class ConeBulletType extends BulletType{
 		Units.nearbyEnemies(b.team, b.x - reach, b.y - reach, reach * 2f, reach * 2f, unit -> {
 			if(unit.dead() || !unit.isAdded() || !unit.targetable(b.team) || !unit.checkTarget(collidesAir, collidesGround)) return;
 			if(!inside(b, rot, unit.x, unit.y, unit.hitSize / 2f)) return;
-			unit.damage(b.damage);
+			float dealt = b.damage * (bonusStatus != null && unit.hasEffect(bonusStatus) ? bonusMultiplier : 1f);
+			if(pierceArmor) unit.damagePierce(dealt);
+			else unit.damage(dealt);
 			if(coneStatus != null) unit.apply(coneStatus, coneStatusTime);
 			if(knockback != 0f && unit.type.knockbackMultiplier > 0f){
 				unit.impulse(Tmp.v3.set(unit).sub(b.x, b.y).nor().scl(knockback * 80f * unit.type.knockbackMultiplier));

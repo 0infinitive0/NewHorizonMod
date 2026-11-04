@@ -15,6 +15,7 @@ import mindustry.entities.Units;
 import mindustry.entities.bullet.ContinuousBulletType;
 import mindustry.gen.Bullet;
 import mindustry.gen.Unit;
+import mindustry.type.StatusEffect;
 import mindustry.graphics.Drawf;
 import mindustry.graphics.Layer;
 
@@ -22,7 +23,7 @@ import mindustry.graphics.Layer;
  * A tractor beam, held by the weapon like a continuous laser: while it fires, the one enemy unit nearest to the weapon that the beam
  * touches is dragged toward the weapon (harder the nearer it is to the end, easier for light units: the force is an impulse, so it is
  * divided by the unit's mass; a unit that cannot be pushed cannot be pulled either). Everything in the beam also takes a trickle of
- * damage, as with a continuous laser. The unit it holds is kept in the bullet's data, and the beam is drawn the way the Parallax's is: the base
+ * damage, as with a continuous laser, and the unit it holds also gets {@link #holdStatus}. The unit it holds is kept in the bullet's data, and the beam is drawn the way the Parallax's is: the base
  * game's beam textures from the weapon to that unit, only while there is one.
  */
 public class TractorBulletType extends ContinuousBulletType{
@@ -31,6 +32,9 @@ public class TractorBulletType extends ContinuousBulletType{
 	/** A pulled unit is not dragged closer than this. */
 	public float holdDistance = 26f;
 	public Color color = Color.valueOf("6cb6ff");
+	/** What the beam does to the unit it holds besides dragging it: this status, refreshed every tick and lasting a little after the beam lets go. */
+	public StatusEffect holdStatus;
+	public float holdStatusTime = 30f;
 	/** The beam's width, as the Parallax's laserWidth. */
 	public float beamWidth = 0.6f;
 
@@ -74,6 +78,8 @@ public class TractorBulletType extends ContinuousBulletType{
 		//Every peer keeps it, for drawing; only the server pulls.
 		b.data = target;
 		if(Vars.net.client()) return;
+		//Held: slowed and disarmed (a unit that cannot be pushed is held all the same).
+		if(target != null && holdStatus != null) target.apply(holdStatus, holdStatusTime);
 		if(target == null || bestDst[0] <= holdDistance || target.type.knockbackMultiplier <= 0f) return;
 		float pull = (force + (1f - Mathf.clamp(bestDst[0] / len)) * scaledForce) * Time.delta * target.type.knockbackMultiplier;
 		target.impulse(Tmp.v1.set(b).sub(target).limit(pull));
