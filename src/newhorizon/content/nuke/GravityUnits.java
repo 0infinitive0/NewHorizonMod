@@ -1,12 +1,19 @@
 package newhorizon.content.nuke;
 
 import arc.graphics.Color;
+import arc.struct.Seq;
+import mindustry.ai.UnitCommand;
+import mindustry.ai.UnitStance;
 import mindustry.gen.LegsUnit;
 import mindustry.gen.Sounds;
 import mindustry.graphics.Layer;
 import newhorizon.NewHorizon;
+import newhorizon.expand.bullets.chronos.BlackHoleBulletType;
 import newhorizon.expand.bullets.nuke.TractorBulletType;
 import newhorizon.expand.units.crab.OnePerTeamAbility;
+import newhorizon.expand.units.gravity.AutoCollapseStance;
+import newhorizon.expand.units.gravity.CollapseAI;
+import newhorizon.expand.units.gravity.CollapseAbility;
 import newhorizon.expand.units.gravity.GravityFieldAbility;
 import newhorizon.expand.units.gravity.PullWeapon;
 import newhorizon.expand.units.unitType.NHUnitType;
@@ -18,10 +25,32 @@ import newhorizon.expand.units.unitType.NHUnitType;
  */
 public class GravityUnits{
 	public static NHUnitType gravityBase;
+	public static BlackHoleBulletType collapseHole;
+	public static UnitCommand collapseCommand;
+	public static AutoCollapseStance autoCollapse;
 
 	public static void load(){
 		Color violet = Color.valueOf("8a6bff"), ice = Color.valueOf("c9f4ff");
 		float field = 300f;
+
+		//The black hole it drops: huge, 30 seconds, drags enemies to its middle and crushes what gets there.
+		collapseHole = new BlackHoleBulletType(){{
+			lifetime = 60f * 30f;
+			radius = 420f;
+			pullEdge = 0.06f;
+			pullCenter = 0.9f;
+			coreFraction = 0.28f;
+			coreDps = 2500f;
+			outerDps = 120f;
+			ring1 = violet;
+			ring2 = ice;
+			glowColor = violet;
+			holeColor = Color.valueOf("050309");
+			edgeColor = ice;
+			lightColor = violet;
+		}};
+		autoCollapse = new AutoCollapseStance();
+		collapseCommand = new UnitCommand("nh-collapse", "warning", u -> new CollapseAI());
 
 		gravityBase = new NHUnitType("gravity-base"){{
 			//A disc that hovers over everything: it is a legged unit with no legs, which is what lets it cross walls and deep water.
@@ -48,11 +77,19 @@ public class GravityUnits{
 			groundLayer = Layer.legUnit;
 			range = maxRange = 560f;
 
+			commands = Seq.with(UnitCommand.moveCommand, collapseCommand);
+			stances = Seq.with(UnitStance.stop, UnitStance.holdFire, UnitStance.pursueTarget, UnitStance.patrol, autoCollapse);
+
 			abilities.add(new OnePerTeamAbility());
 			abilities.add(new GravityFieldAbility(){{
 				radius = field;
 				color = violet;
 				glow = ice;
+			}});
+			abilities.add(new CollapseAbility(){{
+				hole = collapseHole;
+				range = 560f;
+				color = violet;
 			}});
 
 			//The pull: a tractor beam that reaches well past the field, at enemy units that are not in it yet.
