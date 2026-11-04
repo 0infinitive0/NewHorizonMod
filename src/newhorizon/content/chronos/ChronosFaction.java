@@ -5,7 +5,7 @@ import newhorizon.expand.block.chronos.TemporalDisable;
 /**
  * Chronos: a faction built around time. It stops enemies in place, slows their bullets, rewinds its own walls, teleports items and
  * units, and ends fights with black holes. Everything is made from silicon, graphite and two items crafted from them, so it works on
- * every planet.
+ * every planet; it is researched on the New Horizon planet only, not in the Serpulo or Erekir campaigns.
  *
  * <p>Load order matters: statuses -> items -> bullets -> units -> blocks. The tech tree branches are attached from {@code NHTechTree}.
  */
