@@ -15,6 +15,7 @@ public class NukeContent{
 		Warhead.load();
 		NukeBullets.load();
 		NukeUnits.load();
+		OmniDrones.load();
 		SerpentUnits.load();
 		CrabUnits.load();
 		ModularUnits.load();

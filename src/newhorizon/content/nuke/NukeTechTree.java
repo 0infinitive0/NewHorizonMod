@@ -29,6 +29,9 @@ public class NukeTechTree{
 	public static void loadOtherPlanets(){
 		attach(Planets.serpulo == null ? null : Planets.serpulo.techTree, Blocks.siliconSmelter);
 		attach(Planets.erekir == null ? null : Planets.erekir.techTree, Blocks.siliconArcFurnace);
+		//The Omni Miner hangs on the mono's node, where its Air Factory is.
+		TechNode mono = TechTree.all.find(n -> n.content == mindustry.content.UnitTypes.mono);
+		if(mono != null && OmniDrones.omniMiner != null) new TechNode(mono, OmniDrones.omniMiner, OmniDrones.omniMiner.researchRequirements());
 	}
 
 	private static void attach(TechNode root, UnlockableContent gate){

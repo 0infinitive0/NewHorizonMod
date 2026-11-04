@@ -10,7 +10,7 @@ import newhorizon.expand.block.env.OmniDeposit;
 
 /**
  * Omni-matter: what a siphon orb that lived long enough leaves behind, as solid deposits that can be mined but run out. They sit over
- * the ground like the wall ores of Erekir, over any ore there, and that comes back when a deposit is used up. Only units can mine them.
+ * the ground like the wall ores of Erekir, over any ore there, and that comes back when a deposit is used up. Units mine them, and so do Erekir's Plasma Bore and Large Plasma Bore.
  */
 public class NukeItems{
 	public static Item omniMatter;
@@ -23,6 +23,7 @@ public class NukeItems{
 		}};
 		omniDeposit = new OmniDeposit("omni-matter-deposit", omniMatter);
 		OmniDeposit.hook();
+		OmniDeposit.allowDrills();
 
 		//Units mine solid deposits only if they are allowed to mine walls (the units of Serpulo are not, by default). Once every unit of
 		//every mod has been made, those that mine at all may mine this: nothing else in the game has a drop to be mined from a wall that
