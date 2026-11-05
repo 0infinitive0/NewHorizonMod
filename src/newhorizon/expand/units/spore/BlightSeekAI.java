@@ -9,8 +9,7 @@ import newhorizon.content.spore.SporeContent;
 
 /**
  * What Blight does to a host's mind. It wraps the host's own controller: every {@link #interval} ticks it looks for the closest unit of
- * the host's <b>own team</b> that is alive and does not carry Blight, within {@link #seekRange} (a ground host only considers ground
- * units). With one, the host moves toward it and stops a few pixels from touching it, while its own controller still does its targeting, so
+ * the host's <b>own team</b> that is alive and does not carry Blight, within {@link #seekRange}: any kind of unit, air, ground or naval. With one, the host moves toward it and stops a few pixels from touching it, while its own controller still does its targeting, so
  * its weapons go on firing as usual. With none, the wrapper just runs the host's own controller: its normal behaviour resumes at once.
  * Whoever installs the wrapper takes it off again with {@link #release} when the infection ends.
  */
@@ -61,8 +60,7 @@ public class BlightSeekAI extends AIController{
 	}
 
 	private boolean valid(Unit u){
-		return u != null && !u.dead && u.isAdded() && u.team == unit.team && !SporeContent.carriesBlight(u) && unit.within(u, seekRange + u.hitSize / 2f)
-			&& (unit.type.flying || !u.isFlying());
+		return u != null && !u.dead && u.isAdded() && u.team == unit.team && !SporeContent.carriesBlight(u) && unit.within(u, seekRange + u.hitSize / 2f);
 	}
 
 	private Unit find(){
