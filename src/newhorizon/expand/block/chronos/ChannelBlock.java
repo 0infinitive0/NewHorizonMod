@@ -101,7 +101,7 @@ public abstract class ChannelBlock extends Block{
 		}
 
 		@Override
-		public Integer config(){
+		public Object config(){
 			return channel;
 		}
 
