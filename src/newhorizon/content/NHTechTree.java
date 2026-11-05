@@ -328,5 +328,6 @@ public class NHTechTree{
 		//The nukes are available on every planet; Chronos is researched on this one only.
 		NukeTechTree.loadOtherPlanets();
 		newhorizon.content.industry.IndustryTechTree.loadOtherPlanets();
+		newhorizon.content.spore.SporeTechTree.loadOtherPlanets();
 	}
 }

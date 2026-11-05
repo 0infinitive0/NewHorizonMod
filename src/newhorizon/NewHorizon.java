@@ -447,6 +447,7 @@ public class NewHorizon extends Mod{
 			ChronosFaction.load();
 			NukeContent.load();
 			newhorizon.content.industry.IndustryContent.load();
+			newhorizon.content.spore.SporeContent.load();
 			NHWeathers.load();
 			NHPlanets.load();
 			NHSectorPresents.load();

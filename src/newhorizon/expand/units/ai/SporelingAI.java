@@ -54,8 +54,13 @@ public class SporelingAI extends AIController{
 				moveTo(rally, 8f);
 			}
 		}else{
-			pathfind(Pathfinder.fieldCore);
+			advance();
 		}
+	}
+
+	/** What it does with nothing to hunt and no order: march along the flow field towards the enemy core (a flying copy goes straight there). */
+	protected void advance(){
+		pathfind(Pathfinder.fieldCore);
 	}
 
 	protected Teamc findPrey(){
