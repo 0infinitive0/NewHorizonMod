@@ -85,7 +85,8 @@ public class LiquidDriverBolt extends BulletType{
 			float baseAngle = data.to.angleTo(data.from);
 
 			//if the angles are close, yes it did
-			if(Mathf.within(angleTo, baseAngle, 2f)){
+			//(Angles.near, as in the base game's bolt: Mathf.within is a distance test, which never held, so a bolt faster than its hit distance flew straight past)
+			if(Angles.near(angleTo, baseAngle, 2f)){
 				intersect = true;
 				//snap back, for low frame rates
 				b.set(data.to.x + Angles.trnsx(baseAngle, hitDst), data.to.y + Angles.trnsy(baseAngle, hitDst));

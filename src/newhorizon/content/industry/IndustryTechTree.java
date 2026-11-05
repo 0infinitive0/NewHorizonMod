@@ -47,6 +47,12 @@ public class IndustryTechTree{
 		TechNode tank = child(container, IndustryBlocks.armoredTank);
 		child(tank, IndustryBlocks.singularityTank);
 
+		TechNode driver = child(factory, IndustryBlocks.advancedMassDriver);
+		child(driver, IndustryBlocks.advancedLiquidMassDriver);
+
+		TechNode teleporter = child(factory, IndustryBlocks.itemTeleporter);
+		child(teleporter, IndustryBlocks.liquidTeleporter);
+
 		TechNode bank = child(factory, IndustryBlocks.capacitorBank);
 		TechNode surge = child(bank, IndustryBlocks.surgeBattery);
 		child(surge, IndustryBlocks.singularityBattery);

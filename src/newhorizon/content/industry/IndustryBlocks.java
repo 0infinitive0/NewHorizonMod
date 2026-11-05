@@ -6,6 +6,7 @@ import mindustry.content.Items;
 import mindustry.type.Category;
 import mindustry.type.ItemStack;
 import mindustry.world.Block;
+import mindustry.world.blocks.distribution.MassDriver;
 import mindustry.world.blocks.liquid.LiquidRouter;
 import mindustry.world.blocks.power.Battery;
 import mindustry.world.blocks.production.GenericCrafter;
@@ -14,6 +15,9 @@ import mindustry.world.draw.DrawDefault;
 import mindustry.world.draw.DrawFlame;
 import mindustry.world.draw.DrawMulti;
 import mindustry.world.meta.Env;
+import newhorizon.expand.block.distribution.LiquidMassDriver;
+import newhorizon.expand.block.industry.ItemTeleporter;
+import newhorizon.expand.block.industry.LiquidTeleporter;
 
 import static mindustry.type.ItemStack.with;
 
@@ -26,6 +30,7 @@ public class IndustryBlocks{
 	public static Block turbinePump, quantumPump, singularityPump;
 	public static Block armoredContainer, armoredTank, singularityTank;
 	public static Block capacitorBank, surgeBattery, singularityBattery;
+	public static Block advancedMassDriver, advancedLiquidMassDriver, itemTeleporter, liquidTeleporter;
 
 	public static void load(){
 		//Sand and graphite (what every planet has: Serpulo's coal makes graphite, Erekir's furnace uses it too) in, a great deal of silicon out.
@@ -135,6 +140,54 @@ public class IndustryBlocks{
 			envEnabled = Env.any;
 			consumePowerBuffered(6000000f);
 			baseExplosiveness = 8f;
+		}};
+
+		//Mass drivers: the base game's reaches 440 and flies at 5.5; these reach 1,200 at 14 (items) and 12 (liquids).
+		advancedMassDriver = new MassDriver("advanced-mass-driver"){{
+			requirements(Category.distribution, with(Items.silicon, 400, Items.thorium, 250, Items.surgeAlloy, 150, Items.phaseFabric, 100));
+			size = 4;
+			health = 1800;
+			envEnabled = Env.any;
+			itemCapacity = 600;
+			minDistribute = 60;
+			range = 1200f;
+			bulletSpeed = 14f;
+			bulletLifetime = 160f;
+			reload = 60f;
+			//Degrees a tick (the base game's is 5).
+			rotateSpeed = 8f;
+			translation = 10f;
+			consumePower(6f);
+		}};
+		advancedLiquidMassDriver = new LiquidMassDriver("advanced-liquid-mass-driver"){{
+			requirements(Category.liquid, with(Items.silicon, 450, Items.thorium, 300, Items.surgeAlloy, 180, Items.phaseFabric, 120));
+			size = 4;
+			health = 1800;
+			envEnabled = Env.any;
+			liquidCapacity = 9000f;
+			minDistribute = 300f;
+			payload = 3000f;
+			range = 1200f;
+			bulletSpeed = 12f;
+			bulletLifetime = 160f;
+			reload = 60f;
+			rotateSpeed = 0.08f;
+			translation = 10f;
+			consumePower(7f);
+		}};
+
+		//Teleporters: any number on a channel, any distance apart, both ends work both ways.
+		itemTeleporter = new ItemTeleporter("item-teleporter"){{
+			requirements(Category.distribution, with(Items.silicon, 300, Items.graphite, 200, Items.thorium, 150, Items.phaseFabric, 100));
+			size = 2;
+			health = 700;
+			consumePower(4f);
+		}};
+		liquidTeleporter = new LiquidTeleporter("liquid-teleporter"){{
+			requirements(Category.liquid, with(Items.silicon, 400, Items.thorium, 250, Items.surgeAlloy, 100, Items.phaseFabric, 150));
+			size = 3;
+			health = 1400;
+			consumePower(6f);
 		}};
 	}
 }
