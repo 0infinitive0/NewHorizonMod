@@ -62,6 +62,7 @@ public class NHTechTree{
 			JadeTechTree.load();
 			ChronosTechTree.load();
 			NukeTechTree.load();
+			newhorizon.content.industry.IndustryTechTree.load();
 
 			node(NHBlocks.zetaGenerator, () -> {
 				node(NHBlocks.hyperGenerator);
@@ -326,5 +327,6 @@ public class NHTechTree{
 
 		//The nukes are available on every planet; Chronos is researched on this one only.
 		NukeTechTree.loadOtherPlanets();
+		newhorizon.content.industry.IndustryTechTree.loadOtherPlanets();
 	}
 }
