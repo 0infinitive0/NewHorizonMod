@@ -53,6 +53,9 @@ public class IndustryTechTree{
 		TechNode teleporter = child(factory, IndustryBlocks.itemTeleporter);
 		child(teleporter, IndustryBlocks.liquidTeleporter);
 
+		TechNode separator = child(factory, IndustryBlocks.electricSeparator);
+		child(separator, IndustryBlocks.fusionReactor);
+
 		TechNode bank = child(factory, IndustryBlocks.capacitorBank);
 		TechNode surge = child(bank, IndustryBlocks.surgeBattery);
 		child(surge, IndustryBlocks.singularityBattery);

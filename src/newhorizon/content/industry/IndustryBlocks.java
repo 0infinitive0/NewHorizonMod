@@ -3,8 +3,10 @@ package newhorizon.content.industry;
 import arc.graphics.Color;
 import mindustry.content.Fx;
 import mindustry.content.Items;
+import mindustry.content.Liquids;
 import mindustry.type.Category;
 import mindustry.type.ItemStack;
+import mindustry.type.LiquidStack;
 import mindustry.world.Block;
 import mindustry.world.blocks.distribution.MassDriver;
 import mindustry.world.blocks.liquid.LiquidRouter;
@@ -13,9 +15,11 @@ import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.blocks.production.Pump;
 import mindustry.world.draw.DrawDefault;
 import mindustry.world.draw.DrawFlame;
+import mindustry.world.draw.DrawGlowRegion;
 import mindustry.world.draw.DrawMulti;
 import mindustry.world.meta.Env;
 import newhorizon.expand.block.distribution.LiquidMassDriver;
+import newhorizon.expand.block.industry.FusionReactor;
 import newhorizon.expand.block.industry.ItemTeleporter;
 import newhorizon.expand.block.industry.LiquidTeleporter;
 
@@ -30,6 +34,7 @@ public class IndustryBlocks{
 	public static Block turbinePump, quantumPump, singularityPump;
 	public static Block armoredContainer, armoredTank, singularityTank;
 	public static Block capacitorBank, surgeBattery, singularityBattery;
+	public static Block electricSeparator, fusionReactor;
 	public static Block advancedMassDriver, advancedLiquidMassDriver, itemTeleporter, liquidTeleporter;
 
 	public static void load(){
@@ -188,6 +193,37 @@ public class IndustryBlocks{
 			size = 3;
 			health = 1400;
 			consumePower(6f);
+		}};
+
+		//Water and power in, hydrogen and ozone out: Erekir's Electrolyzer made from Serpulo's materials, bigger. It feeds the Fusion Reactor.
+		electricSeparator = new GenericCrafter("electric-separator"){{
+			requirements(Category.crafting, with(Items.silicon, 300, Items.graphite, 250, Items.thorium, 150, Items.surgeAlloy, 60));
+			size = 3;
+			health = 1200;
+			envEnabled = Env.any;
+			hasPower = true;
+			hasLiquids = true;
+			liquidCapacity = 600f;
+			consumeLiquid(Liquids.water, 36f / 60f);
+			consumePower(3f);
+			outputLiquids = LiquidStack.with(Liquids.hydrogen, 18f / 60f, Liquids.ozone, 6f / 60f);
+			drawer = new DrawMulti(new DrawDefault(), new DrawGlowRegion(){{
+				color = Color.valueOf("7ff4ff");
+				alpha = 0.85f;
+				glowScale = 5f;
+				glowIntensity = 0.25f;
+			}});
+		}};
+
+		//Hydrogen (or less well ozone) in, 200 power a tick out, a little thorium on the side; it takes a great deal of power to light.
+		fusionReactor = new FusionReactor("fusion-reactor"){{
+			requirements(Category.power, with(Items.silicon, 1500, Items.thorium, 1200, Items.surgeAlloy, 700, Items.phaseFabric, 800));
+			size = 5;
+			health = 5500;
+			armor = 6f;
+			envEnabled = Env.any;
+			powerProduction = 200f;
+			consumePower(200f);
 		}};
 	}
 }
