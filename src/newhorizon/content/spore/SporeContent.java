@@ -1,5 +1,7 @@
 package newhorizon.content.spore;
 
+import arc.Events;
+import arc.struct.IntSet;
 import arc.struct.Seq;
 import mindustry.ai.UnitCommand;
 import mindustry.content.Blocks;
@@ -7,6 +9,7 @@ import mindustry.content.Fx;
 import mindustry.content.Items;
 import mindustry.entities.bullet.BulletType;
 import mindustry.entities.effect.MultiEffect;
+import mindustry.game.EventType;
 import mindustry.gen.Bullet;
 import mindustry.gen.Sounds;
 import mindustry.gen.Unit;
@@ -31,6 +34,8 @@ public class SporeContent{
 	public static BulletType moteBlast;
 	public static NHUnitType sporeMote;
 	public static UnitCommand moteHunt;
+	/** Motes that have just gone off by their own blast, which killed them: their death must not set the blast off again. */
+	private static final IntSet exploded = new IntSet();
 
 	public static void load(){
 		blight = new StatusEffect("blight"){{
@@ -70,6 +75,8 @@ public class SporeContent{
 			//An instantly vanishing bullet does its splash in despawned(), without going through hit(): record the infection there (and in hit() too, which does no harm).
 			@Override
 			public void despawned(Bullet b){
+				//Its own blast kills the Mote that fired it: that death is not a second explosion.
+				if(b.owner instanceof Unit && ((Unit)b.owner).type == sporeMote) exploded.add(((Unit)b.owner).id);
 				super.despawned(b);
 				BlightInfection.infectArea(b.team, b.x, b.y, splashDamageRadius);
 			}
@@ -111,7 +118,7 @@ public class SporeContent{
 			engineColor = SporeFx.amber;
 
 			weapons.add(new Weapon(){{
-				shootOnDeath = true;
+				//(No shootOnDeath: a flying wreck would only go off after it landed; the death is handled at once, see below.)
 				reload = 24f;
 				shootCone = 180f;
 				ejectEffect = Fx.none;
@@ -126,6 +133,22 @@ public class SporeContent{
 		((UnitFactory)Blocks.groundFactory).plans.add(new UnitFactory.UnitPlan(sporeMote, 60f * 11f, with(Items.silicon, 14, Items.coal, 10)));
 
 		BlightInfection.load();
+
+		//A Mote that dies any other way (shot down, crushed...) explodes where it is, the moment it dies, and spreads Blight all the same. A
+		//flying unit's wreck only "is destroyed" (the destroy event, the death weapons) after it has fallen, so the dead Mote is caught here.
+		Events.run(EventType.Trigger.update, () -> {
+			if(mindustry.Vars.net.client()) return;
+			for(int i = 0; i < mindustry.gen.Groups.unit.size(); i++){
+				Unit u = mindustry.gen.Groups.unit.index(i);
+				if(u.type == sporeMote && u.dead && exploded.add(u.id)){
+					moteBlast.create(null, u.team, u.x, u.y, 0f);
+				}
+			}
+		});
+		Events.on(EventType.UnitDestroyEvent.class, e -> {
+			if(e.unit != null && e.unit.type == sporeMote) exploded.remove(e.unit.id);
+		});
+		Events.on(EventType.ResetEvent.class, e -> exploded.clear());
 	}
 
 	/**
