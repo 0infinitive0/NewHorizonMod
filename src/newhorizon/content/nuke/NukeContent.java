@@ -15,8 +15,12 @@ public class NukeContent{
 		Warhead.load();
 		NukeBullets.load();
 		NukeUnits.load();
+		OmniDrones.load();
 		SerpentUnits.load();
 		CrabUnits.load();
+		GravityUnits.load();
+		newhorizon.expand.units.gravity.GravityFieldAbility.hook();
+		ModularUnits.load();
 		NukeBlocks.load();
 		OmniBlocks.load();
 		//The detected nukes are drawn on the minimap once the game is up.

@@ -188,9 +188,9 @@ public class NukeFx{
 			Draw.reset();
 		}),
 
-		/** The anti-matter cannon's beam: from the muzzle (the effect's place) at the effect's angle, as long as the colour's red says (4 units a step). */
-		antiBeam = new Effect(34f, 3000f, e -> {
-			float len = e.color.r * 255f * 4f;
+		/** The anti-matter cannon's beam: from the muzzle (the effect's place) at the effect's angle, as long as the effect's data says (a Float; else as the colour's red says, 4 units a step). A huge clip, so that a beam across the map is drawn wherever the camera is. */
+		antiBeam = new Effect(34f, 1e6f, e -> {
+			float len = e.data instanceof Float ? (Float)e.data : e.color.r * 255f * 4f;
 			if(len < 1f) return;
 			float a = e.fout(Interp.pow2Out), ex = e.x + Angles.trnsx(e.rotation, len), ey = e.y + Angles.trnsy(e.rotation, len);
 			Color violet = Color.valueOf("b45cff"), cyan = Color.valueOf("7ff4ff");

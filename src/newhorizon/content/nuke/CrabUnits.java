@@ -53,7 +53,8 @@ public class CrabUnits{
 			legPairOffset = 3f;
 			legMoveSpace = 1.1f;
 			legLength = 70f;
-			legExtension = -26f;
+			//The lower piece of a leg is drawn from this far behind the knee (the sign is ignored): a few units, so that it overlaps the knee and not so much that the knee sits in the middle of the bar.
+			legExtension = -4f;
 			legBaseOffset = 16f;
 			legLengthScl = 0.94f;
 			legForwardScl = 0.9f;
@@ -98,19 +99,22 @@ public class CrabUnits{
 
 			//Two claws that keep snapping at whatever of the enemy's is in reach: a short, wide slash that goes through everything in it.
 			weapons.add(new Weapon(NewHorizon.name("king-crab-claw")){{
-				x = 38f;
-				y = 30f;
+				//The claw turns about its shoulder, which is where its sprite is centred and where the shell has a socket for it; the arm lies under the
+				//edge of the shell and the jaws are out in front.
+				x = 24f;
+				y = 7f;
+				layerOffset = -0.001f;
 				mirror = true;
 				alternate = false;
 				rotate = true;
 				rotateSpeed = 14f;
-				rotationLimit = 80f;
+				rotationLimit = 45f;
 				baseRotation = 0f;
 				reload = 8f;
 				shootCone = 360f;
 				recoil = 4f;
 				recoilTime = 10f;
-				shootY = 24f;
+				shootY = 36f;
 				ejectEffect = Fx.none;
 				shootSound = Sounds.shootScathe;
 				bullet = new ShrapnelBulletType(){{

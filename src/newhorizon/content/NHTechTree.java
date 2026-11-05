@@ -324,8 +324,7 @@ public class NHTechTree{
 		root.planet = NHPlanets.midantha;
 		root.children.each(c -> c.planet = NHPlanets.midantha);
 
-		//Chronos is available on every planet.
-		ChronosTechTree.loadOtherPlanets();
+		//The nukes are available on every planet; Chronos is researched on this one only.
 		NukeTechTree.loadOtherPlanets();
 	}
 }

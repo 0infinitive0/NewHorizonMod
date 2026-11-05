@@ -29,6 +29,9 @@ public class NukeTechTree{
 	public static void loadOtherPlanets(){
 		attach(Planets.serpulo == null ? null : Planets.serpulo.techTree, Blocks.siliconSmelter);
 		attach(Planets.erekir == null ? null : Planets.erekir.techTree, Blocks.siliconArcFurnace);
+		//The Omni Miner hangs on the mono's node, where its Air Factory is.
+		TechNode mono = TechTree.all.find(n -> n.content == mindustry.content.UnitTypes.mono);
+		if(mono != null && OmniDrones.omniMiner != null) new TechNode(mono, OmniDrones.omniMiner, OmniDrones.omniMiner.researchRequirements());
 	}
 
 	private static void attach(TechNode root, UnlockableContent gate){
@@ -62,6 +65,14 @@ public class NukeTechTree{
 			child(factory, OmniBlocks.antiMatterCannon);
 			TechNode dock = child(factory, OmniBlocks.crabDock);
 			child(dock, CrabUnits.kingCrab);
+			TechNode gravityDock = child(factory, OmniBlocks.gravityDock);
+			child(gravityDock, GravityUnits.gravityBase);
+			TechNode foundry = child(factory, OmniBlocks.modularFoundry);
+			TechNode frame = child(foundry, ModularUnits.frame);
+			child(foundry, OmniBlocks.refitBay);
+			for(newhorizon.expand.units.modular.ModulePart part : newhorizon.expand.units.modular.ModulePart.all){
+				child(frame, part.pod);
+			}
 			TechNode nest = child(factory, OmniBlocks.serpentNest);
 			TechNode head = child(nest, SerpentUnits.head);
 			child(head, SerpentUnits.body);

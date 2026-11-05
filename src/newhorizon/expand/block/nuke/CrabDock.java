@@ -6,7 +6,7 @@ import mindustry.world.meta.Env;
 import newhorizon.content.nuke.CrabUnits;
 import newhorizon.expand.units.crab.OnePerTeamAbility;
 
-/** Makes the King Crab. A team can have only one, so it does not start another while the team's crab is alive. */
+/** Makes the units a team can have only one of (the King Crab, the Gravity Base): it does not start another while the team's is alive. */
 public class CrabDock extends UnitFactory{
 	public CrabDock(String name){
 		super(name);

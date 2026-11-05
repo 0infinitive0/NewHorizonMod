@@ -34,8 +34,8 @@ import static mindustry.Vars.tilesize;
  * a siphon orb has been striking everything in its reach the whole time it lived, so little is left standing there by the time it ends.
  *
  * <p>The game does not say when a unit has mined an item, so {@link #track} watches every mining unit: each time the mining timer falls
- * back to zero on a deposit tile an item has been mined and one is taken from the tile. Only units can mine it (the ground under it is
- * out of reach of a drill, and nothing can be built on it). Only the server counts.
+ * back to zero on a deposit tile an item has been mined and one is taken from the tile. Units mine it, and so do Erekir's Plasma Bore and Large Plasma
+ * Bore (see {@link #allowDrills}); the ground under it is out of reach of the other drills, and nothing can be built on it. Only the server counts.
  *
  * <p>A deposit wears away by itself: every tile loses one every {@link #decaySeconds} seconds, each at a different second of the minute
  * (by where it is), until it is used up like a mined-out tile. A powered {@link OmniStabilizer} in reach stops that. To find the tiles
@@ -187,6 +187,18 @@ public class OmniDeposit extends Block{
 			if(other != null && before.contains(other.pos())) return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Makes the Plasma Bore and the Large Plasma Bore take what they mine off the deposit (see {@link newhorizon.expand.block.production.OmniBeamDrillBuild}).
+	 * They can already mine one, as it is solid and drops omni-matter, which is hardness 3, within the reach of their tiers (3 and 5).
+	 */
+	public static void allowDrills(){
+		for(Block block : new Block[]{Blocks.plasmaBore, Blocks.largePlasmaBore}){
+			if(!(block instanceof mindustry.world.blocks.production.BeamDrill)) continue;
+			mindustry.world.blocks.production.BeamDrill drill = (mindustry.world.blocks.production.BeamDrill)block;
+			drill.buildType = () -> new newhorizon.expand.block.production.OmniBeamDrillBuild(drill);
+		}
 	}
 
 	/** Starts watching the miners. */

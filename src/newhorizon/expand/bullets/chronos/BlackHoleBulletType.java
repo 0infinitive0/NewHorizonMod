@@ -1,5 +1,6 @@
 package newhorizon.expand.bullets.chronos;
 
+import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Lines;
@@ -32,6 +33,8 @@ public class BlackHoleBulletType extends BulletType{
 	public float outerDps = 28f;
 	/** Bullets this close to the centre are swallowed, as a share of the radius. */
 	public float absorbFraction = 0.9f;
+	/** The colours of the rings, the glow, the hole and its edge (the Chronos ones unless changed). */
+	public Color ring1 = ChronosColor.violet, ring2 = ChronosColor.chrono, glowColor = ChronosColor.violet, holeColor = ChronosColor.hole, edgeColor = ChronosColor.chronoLight;
 
 	public BlackHoleBulletType(){
 		super(0f, 0f);
@@ -99,7 +102,7 @@ public class BlackHoleBulletType extends BulletType{
 		//Faint accretion rings, spinning faster the closer to the middle.
 		for(int i = 0; i < 4; i++){
 			float f = (i + 1) / 4f;
-			Draw.color(i % 2 == 0 ? ChronosColor.violet : ChronosColor.chrono, 0.18f + 0.1f * (1f - f));
+			Draw.color(i % 2 == 0 ? ring1 : ring2, 0.18f + 0.1f * (1f - f));
 			Lines.stroke(1.6f);
 			float rr = r * f;
 			float spin = spin(b, 70f / f);
@@ -107,11 +110,11 @@ public class BlackHoleBulletType extends BulletType{
 			Lines.arc(b.x, b.y, rr, 0.35f, spin + 180f);
 		}
 
-		Draw.color(ChronosColor.violet, 0.25f);
+		Draw.color(glowColor, 0.25f);
 		Fill.circle(b.x, b.y, r * coreFraction * 1.3f);
-		Draw.color(ChronosColor.hole);
+		Draw.color(holeColor);
 		Fill.circle(b.x, b.y, r * coreFraction);
-		Draw.color(ChronosColor.chronoLight, 0.9f);
+		Draw.color(edgeColor, 0.9f);
 		Lines.stroke(2f);
 		Lines.circle(b.x, b.y, r * coreFraction);
 		Draw.reset();
