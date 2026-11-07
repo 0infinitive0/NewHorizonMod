@@ -1,5 +1,6 @@
 package newhorizon.content.industry;
 
+import arc.Core;
 import arc.struct.Seq;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
@@ -75,5 +76,20 @@ public class IndustryTechTree{
 
 	private static TechNode child(TechNode parent, UnlockableContent content){
 		return new TechNode(parent, content, content.researchRequirements());
+	}
+
+	/** Settings key of the one-time re-lock below. */
+	public static final String relockKey = "nh-industry-relock-1";
+
+	/**
+	 * Unlocks are kept in the player's settings, and a block that was unlocked while this branch was being built (or with the Debug panel's
+	 * unlock buttons) stays unlocked in every campaign after that. The Electric Separator and the Fusion Reactor are locked again, once, so
+	 * that they have to be researched like the rest of the branch.
+	 */
+	public static void relockOnce(){
+		if(Core.settings == null || Core.settings.getBool(relockKey, false)) return;
+		Core.settings.put(relockKey, true);
+		if(IndustryBlocks.electricSeparator != null) IndustryBlocks.electricSeparator.clearUnlock();
+		if(IndustryBlocks.fusionReactor != null) IndustryBlocks.fusionReactor.clearUnlock();
 	}
 }

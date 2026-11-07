@@ -454,6 +454,7 @@ public class NewHorizon extends Mod{
 			NHPlanets.load();
 			NHSectorPresents.load();
 			NHTechTree.load();
+			newhorizon.content.industry.IndustryTechTree.relockOnce();
 			NHInbuiltEvents.load();
 		}
 		
