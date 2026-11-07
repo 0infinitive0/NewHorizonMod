@@ -97,14 +97,19 @@ public class RicochetBlocks{
 				spread = 7.5f;
 			}};
 
+			//Two plain barrel parts (the images already have their barrel at the left or right: a mirrored part would flip one of them onto the other).
+			recoils = 2;
 			drawer = new DrawTurret(){{
-				parts.add(new RegionPart("-barrel"){{
-					mirror = true;
-					under = true;
-					moveY = -3f;
-					progress = PartProgress.recoil;
-					heatColor = magenta.cpy().a(0.8f);
-				}});
+				for(int i = 0; i < 2; i++){
+					int index = i;
+					parts.add(new RegionPart("-barrel-" + (i == 0 ? "l" : "r")){{
+						under = true;
+						moveY = -3f;
+						progress = PartProgress.recoil;
+						recoilIndex = index;
+						heatColor = magenta.cpy().a(0.8f);
+					}});
+				}
 			}};
 
 			ammo(

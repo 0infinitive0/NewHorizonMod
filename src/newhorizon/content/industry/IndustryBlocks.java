@@ -16,7 +16,9 @@ import mindustry.world.blocks.production.Pump;
 import mindustry.world.draw.DrawDefault;
 import mindustry.world.draw.DrawFlame;
 import mindustry.world.draw.DrawGlowRegion;
+import mindustry.world.draw.DrawLiquidOutputs;
 import mindustry.world.draw.DrawMulti;
+import mindustry.world.draw.DrawRegion;
 import mindustry.world.meta.Env;
 import newhorizon.expand.block.distribution.LiquidMassDriver;
 import newhorizon.expand.block.industry.FusionReactor;
@@ -207,7 +209,12 @@ public class IndustryBlocks{
 			consumeLiquid(Liquids.water, 36f / 60f);
 			consumePower(3f);
 			outputLiquids = LiquidStack.with(Liquids.hydrogen, 18f / 60f, Liquids.ozone, 6f / 60f);
-			drawer = new DrawMulti(new DrawDefault(), new DrawGlowRegion(){{
+			//Like the Electrolyzer: it can be turned, and each liquid leaves from its own side (relative to the rotation: 1 is the left, 3 the right),
+			//with the ports drawn on those sides. Hydrogen out of the left, ozone out of the right.
+			rotate = true;
+			invertFlip = true;
+			liquidOutputDirections = new int[]{1, 3};
+			drawer = new DrawMulti(new DrawRegion(), new DrawLiquidOutputs(), new DrawGlowRegion(){{
 				color = Color.valueOf("7ff4ff");
 				alpha = 0.85f;
 				glowScale = 5f;

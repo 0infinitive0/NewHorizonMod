@@ -55,6 +55,8 @@ public class FusionReactor extends PowerGenerator{
 		hasLiquids = true;
 		hasItems = true;
 		outputsPower = true;
+		//A generator is not a consumer of the power graph unless it says so, and then its ignition power is never delivered (efficiency stays 0).
+		consumesPower = true;
 		itemCapacity = 20;
 		liquidCapacity = 1200f;
 		explosionDamage = 0;
@@ -84,6 +86,11 @@ public class FusionReactor extends PowerGenerator{
 	@Override
 	public void setBars(){
 		super.setBars();
+		//How much of the ignition power the grid actually delivers (the generator's own bar shows only what it makes).
+		addBar("nh-fusion-supply", (FusionReactorBuild b) -> new Bar(
+			() -> Core.bundle.format("bar.nh-fusion-supply", (int)(b.power.status * 100f)),
+			() -> Pal.powerBar,
+			() -> b.power.status));
 		addBar("nh-fusion-ignition", (FusionReactorBuild b) -> new Bar(
 			() -> Core.bundle.format("bar.nh-fusion-ignition", (int)(b.ignition * 100f), b.lit ? Core.bundle.get("bar.nh-fusion-lit") : ""),
 			() -> b.lit ? Pal.accent : Pal.lighterOrange,
