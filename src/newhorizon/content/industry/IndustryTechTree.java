@@ -10,6 +10,7 @@ import mindustry.ctype.UnlockableContent;
 import mindustry.game.Objectives;
 import mindustry.type.ItemStack;
 import newhorizon.content.NHBlocks;
+import newhorizon.content.jade.JadeBlocks;
 
 import static mindustry.content.TechTree.node;
 
@@ -22,23 +23,29 @@ public class IndustryTechTree{
 
 	/** Inside the New Horizon tree. */
 	public static void load(){
-		node(IndustryBlocks.ultimateSiliconFactory, cost, Seq.with(new Objectives.Research(NHBlocks.jumpGatePrimary)), () -> fill(TechTree.context()));
+		node(IndustryBlocks.ultimateSiliconFactory, cost, Seq.with(new Objectives.Research(NHBlocks.jumpGatePrimary)), () -> fill(TechTree.context(), null, false));
 	}
 
 	/** The vanilla trees of the other planets. */
 	public static void loadOtherPlanets(){
-		attach(Planets.serpulo == null ? null : Planets.serpulo.techTree, Blocks.siliconSmelter);
-		attach(Planets.erekir == null ? null : Planets.erekir.techTree, Blocks.siliconArcFurnace);
+		//On Serpulo the normal Liquid Mass Driver goes under the base game's Mass Driver, where one looks for it.
+		attach(Planets.serpulo == null ? null : Planets.serpulo.techTree, Blocks.siliconSmelter, Blocks.massDriver);
+		attach(Planets.erekir == null ? null : Planets.erekir.techTree, Blocks.siliconArcFurnace, null);
 	}
 
-	private static void attach(TechNode root, UnlockableContent gate){
+	private static void attach(TechNode root, UnlockableContent gate, UnlockableContent driverParent){
 		if(root == null || gate == null) return;
 		TechNode factory = new TechNode(root, IndustryBlocks.ultimateSiliconFactory, cost);
 		factory.objectives.add(new Objectives.Research(gate));
-		fill(factory);
+		TechNode parent = driverParent == null ? null : TechTree.all.find(n -> n.content == driverParent);
+		fill(factory, parent, true);
 	}
 
-	private static void fill(TechNode factory){
+	/**
+	 * @param liquidParent where the normal Liquid Mass Driver goes (null: under the factory)
+	 * @param addLiquidDriver false inside the New Horizon tree, where the Jade branch already has that block's node (a block has one node per tree)
+	 */
+	private static void fill(TechNode factory, TechNode liquidParent, boolean addLiquidDriver){
 		TechNode pump = child(factory, IndustryBlocks.turbinePump);
 		TechNode quantum = child(pump, IndustryBlocks.quantumPump);
 		child(quantum, IndustryBlocks.singularityPump);
@@ -47,8 +54,13 @@ public class IndustryTechTree{
 		TechNode tank = child(container, IndustryBlocks.armoredTank);
 		child(tank, IndustryBlocks.singularityTank);
 
+		//The normal Liquid Mass Driver (a Jade block with a universal cost), then the advanced one, which needs it.
 		TechNode driver = child(factory, IndustryBlocks.advancedMassDriver);
-		child(driver, IndustryBlocks.advancedLiquidMassDriver);
+		TechNode advancedLiquid = child(driver, IndustryBlocks.advancedLiquidMassDriver);
+		if(JadeBlocks.liquidMassDriver != null){
+			if(addLiquidDriver) child(liquidParent == null ? factory : liquidParent, JadeBlocks.liquidMassDriver);
+			advancedLiquid.objectives.add(new Objectives.Research(JadeBlocks.liquidMassDriver));
+		}
 
 		TechNode teleporter = child(factory, IndustryBlocks.itemTeleporter);
 		child(teleporter, IndustryBlocks.liquidTeleporter);

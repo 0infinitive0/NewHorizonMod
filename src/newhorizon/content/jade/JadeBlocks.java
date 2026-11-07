@@ -20,6 +20,7 @@ import mindustry.world.consumers.ConsumeItemFlammable;
 import mindustry.world.draw.DrawDefault;
 import mindustry.world.draw.DrawMulti;
 import mindustry.world.draw.DrawRegion;
+import mindustry.world.meta.Env;
 import newhorizon.expand.block.defence.ContagionSpire;
 import newhorizon.expand.block.defence.RegrowthWall;
 import newhorizon.expand.block.defence.SporeWall;
@@ -105,7 +106,9 @@ public class JadeBlocks{
 
 		//Fires liquid in bolts to a linked driver, over anything in between. Needs a pump on one end and a conduit on the other.
 		liquidMassDriver = new LiquidMassDriver("liquid-mass-driver"){{
-			requirements(Category.liquid, with(Items.titanium, 125, Items.silicon, 75, Items.metaglass, 125, JadeItems.jadeSilk, 40));
+			//Items every planet has, and it works on every planet: the industry branch (Serpulo, Erekir) researches this block too.
+			requirements(Category.liquid, with(Items.silicon, 125, Items.graphite, 100, Items.thorium, 60));
+			envEnabled = Env.any;
 			size = 3;
 			health = 640;
 			range = 440f;

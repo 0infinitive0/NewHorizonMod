@@ -4,6 +4,8 @@ import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
+import arc.math.geom.Geometry;
 import arc.math.Mathf;
 import arc.util.Time;
 import arc.util.io.Reads;
@@ -101,10 +103,18 @@ public class OmniWall extends Wall{
 		public void draw(){
 			super.draw();
 			if(charge > 1f){
+				//The stored charge fills the diamond core of the plate and lights the conduits that run out of it.
+				float fill = Mathf.clamp(charge / 1500f);
 				Draw.z(Layer.blockOver);
-				Draw.color(color, Mathf.clamp(charge / 1500f) * (0.4f + 0.15f * Mathf.absin(Time.time, 10f, 1f)));
-				Fill.square(x, y, tilesize / 2f - 1f);
-				Draw.color();
+				Draw.color(color, fill * (0.45f + 0.15f * Mathf.absin(Time.time, 10f, 1f)));
+				Fill.poly(x, y, 4, 2f, 0f);
+				Draw.color(color, fill);
+				Lines.stroke(0.3f);
+				for(int i = 0; i < 4; i++){
+					float c = Geometry.d4x(i), s = Geometry.d4y(i);
+					Lines.line(x + c * 2f, y + s * 2f, x + c * 2.5f, y + s * 2.5f);
+				}
+				Draw.reset();
 			}
 		}
 
