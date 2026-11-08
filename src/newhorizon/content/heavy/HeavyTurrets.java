@@ -30,7 +30,7 @@ import java.util.Set;
  */
 public class HeavyTurrets{
 	/** How much stronger. */
-	public static final float damage = 1.5f, range = 1.5f, reload = 0.7f, health = 2f, ammo = 1.5f, rotate = 1.25f, power = 1.5f, cost = 3f;
+	public static final float damage = 1.5f, range = 1.5f, reload = 0.7f, health = 2f, ammo = 1.5f, rotate = 1.25f, power = 1.5f, cost = 4f;
 	public static final float armorAdded = 4f;
 
 	/** Each original and its heavy version, in the order they are made. */
@@ -136,7 +136,7 @@ public class HeavyTurrets{
 			((PointDefenseTurret)h).bulletDamage = ((PointDefenseTurret)o).bulletDamage * damage;
 		}
 
-		//Three times the price, and surge alloy.
+		//The same items as the original, `cost` times over (no new item).
 		h.requirements(Category.turret, price(o));
 
 		//The original's drawer, with its animated parts, copied: the images it asks for are the heavy ones.
@@ -153,19 +153,12 @@ public class HeavyTurrets{
 
 	//---------------------------------------------------------------- stats
 
+	/** The original's own items, {@link #cost} times over. */
 	private static ItemStack[] price(Block o){
-		int surge = Math.round(15f * o.size * o.size);
 		Seq<ItemStack> out = new Seq<>();
-		boolean had = false;
 		for(ItemStack s : o.requirements){
-			int amount = Math.round(s.amount * cost);
-			if(s.item == Items.surgeAlloy){
-				amount += surge;
-				had = true;
-			}
-			out.add(new ItemStack(s.item, amount));
+			out.add(new ItemStack(s.item, Math.round(s.amount * cost)));
 		}
-		if(!had) out.add(new ItemStack(Items.surgeAlloy, surge));
 		return out.toArray(ItemStack.class);
 	}
 
