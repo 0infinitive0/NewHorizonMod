@@ -12,6 +12,7 @@ import mindustry.world.blocks.liquid.Conduit;
 import arc.graphics.Color;
 import newhorizon.content.NHStatusEffects;
 import newhorizon.content.jade.JadeStatus;
+import newhorizon.expand.block.supply.SectorLauncher;
 import newhorizon.expand.block.supply.StatusTower;
 import newhorizon.expand.block.supply.WindGenerator;
 import mindustry.world.blocks.liquid.LiquidBridge;
@@ -40,6 +41,7 @@ public class SupplyBlocks{
 	public static Block rotaryDrill, augerDrill, heavyLaserDrill, colossusDrill;
 	public static Block windTurbine;
 	public static Block statusTower1, statusTower2, statusTower3;
+	public static Block sectorLauncher;
 
 	public static void load(){
 		loadBelts();
@@ -47,6 +49,7 @@ public class SupplyBlocks{
 		loadPower();
 		SupplyUnits.load();
 		loadTowers();
+		loadLauncher();
 	}
 
 	/**
@@ -253,6 +256,16 @@ public class SupplyBlocks{
 			liquid(Liquids.water, StatusEffects.wet, false);
 			liquid(Liquids.cryofluid, StatusEffects.freezing, false);
 			liquid(Liquids.oil, StatusEffects.tarred, false);
+		}};
+	}
+
+	/** Sends items straight into the core of another sector of the planet. */
+	private static void loadLauncher(){
+		sectorLauncher = new SectorLauncher("sector-launcher"){{
+			requirements(Category.effect, with(Items.silicon, 600, Items.graphite, 400, Items.thorium, 300, Items.surgeAlloy, 150, Items.phaseFabric, 150));
+			size = 4;
+			health = 1800;
+			consumePower(8f);
 		}};
 	}
 }

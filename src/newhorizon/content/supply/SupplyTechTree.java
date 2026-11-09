@@ -16,6 +16,8 @@ public class SupplyTechTree{
 		child(find(Blocks.solarPanel), SupplyBlocks.windTurbine);
 		walkers();
 		towers();
+		//Under the Advanced Launch Pad (the vanilla pad's own sector objective applies through its parent).
+		child(find(Blocks.advancedLaunchPad), SupplyBlocks.sectorLauncher);
 	}
 
 	private static TechNode find(UnlockableContent content){

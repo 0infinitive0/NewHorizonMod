@@ -65,6 +65,8 @@ public class IndustryTechTree{
 
 		TechNode teleporter = child(factory, IndustryBlocks.itemTeleporter);
 		child(teleporter, IndustryBlocks.liquidTeleporter);
+		//The Sector Launcher: inside the New Horizon tree it follows the item teleporter (in the Serpulo tree it hangs under the Advanced Launch Pad, see SupplyTechTree).
+		if(!addLiquidDriver && newhorizon.content.supply.SupplyBlocks.sectorLauncher != null) child(teleporter, newhorizon.content.supply.SupplyBlocks.sectorLauncher);
 
 		TechNode separator = child(factory, IndustryBlocks.electricSeparator);
 		child(separator, IndustryBlocks.fusionReactor);
