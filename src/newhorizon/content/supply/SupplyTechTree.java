@@ -11,6 +11,7 @@ public class SupplyTechTree{
 	public static void loadOtherPlanets(){
 		if(SupplyBlocks.conveyors[0] == null) return;
 		belts();
+		drills();
 	}
 
 	private static TechNode find(UnlockableContent content){
@@ -34,5 +35,15 @@ public class SupplyTechTree{
 			//The top tier asks for the base game's titanium conveyor first.
 			if(i == 3 && c != null) c.objectives.add(new Objectives.Research(Blocks.titaniumConveyor));
 		}
+	}
+
+	private static void drills(){
+		TechNode mech = find(Blocks.mechanicalDrill), pneu = find(Blocks.pneumaticDrill), laser = find(Blocks.laserDrill), blast = find(Blocks.blastDrill);
+		child(mech, SupplyBlocks.rotaryDrill);
+		TechNode auger = child(pneu, SupplyBlocks.augerDrill);
+		if(auger != null) auger.objectives.add(new Objectives.Research(SupplyBlocks.rotaryDrill));
+		TechNode heavy = child(laser, SupplyBlocks.heavyLaserDrill);
+		TechNode colossus = child(blast, SupplyBlocks.colossusDrill);
+		if(colossus != null) colossus.objectives.add(new Objectives.Research(SupplyBlocks.heavyLaserDrill));
 	}
 }

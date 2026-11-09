@@ -1,12 +1,15 @@
 package newhorizon.content.supply;
 
+import mindustry.content.Fx;
 import mindustry.content.Items;
+import mindustry.content.Liquids;
 import mindustry.type.Category;
 import mindustry.world.Block;
 import mindustry.world.blocks.distribution.Conveyor;
 import mindustry.world.blocks.distribution.ItemBridge;
 import mindustry.world.blocks.liquid.Conduit;
 import mindustry.world.blocks.liquid.LiquidBridge;
+import mindustry.world.blocks.production.Drill;
 
 import static mindustry.type.ItemStack.with;
 
@@ -28,8 +31,63 @@ public class SupplyBlocks{
 
 	public static final Block[] conveyors = new Block[4], pipes = new Block[4], bridges = new Block[4], pipeBridges = new Block[4];
 
+	public static Block rotaryDrill, augerDrill, heavyLaserDrill, colossusDrill;
+
 	public static void load(){
 		loadBelts();
+		loadDrills();
+	}
+
+	/**
+	 * Four drills a step above the base game's: two that need no power (2x2) and two powered ones (3x3, 5x5), all with the water boost.
+	 * Output of one ore tile a second is 60 / drillTime(item); the base game's mechanical drill is 600, pneumatic 400, laser 280, blast 280.
+	 */
+	private static void loadDrills(){
+		rotaryDrill = new Drill("rotary-drill"){{
+			requirements(Category.production, with(Items.copper, 30, Items.lead, 20));
+			size = 2;
+			tier = 2;
+			drillTime = 420;
+			consumeLiquid(Liquids.water, 0.06f).boost();
+		}};
+
+		augerDrill = new Drill("auger-drill"){{
+			requirements(Category.production, with(Items.copper, 40, Items.graphite, 30, Items.titanium, 20));
+			size = 2;
+			tier = 3;
+			drillTime = 260;
+			consumeLiquid(Liquids.water, 0.07f).boost();
+		}};
+
+		heavyLaserDrill = new Drill("heavy-laser-drill"){{
+			requirements(Category.production, with(Items.copper, 60, Items.graphite, 50, Items.silicon, 50, Items.titanium, 40, Items.thorium, 20));
+			size = 3;
+			tier = 4;
+			drillTime = 170;
+			hasPower = true;
+			drawRim = true;
+			updateEffect = Fx.pulverizeMedium;
+			updateEffectChance = 0.03f;
+			drillEffect = Fx.mineBig;
+			consumePower(1.8f);
+			consumeLiquid(Liquids.water, 0.10f).boost();
+		}};
+
+		colossusDrill = new Drill("colossus-drill"){{
+			requirements(Category.production, with(Items.copper, 150, Items.silicon, 120, Items.titanium, 100, Items.thorium, 120, Items.plastanium, 40));
+			size = 5;
+			tier = 5;
+			drillTime = 200;
+			hasPower = true;
+			drawRim = true;
+			updateEffect = Fx.pulverizeRed;
+			updateEffectChance = 0.04f;
+			drillEffect = Fx.mineHuge;
+			rotateSpeed = 3.5f;
+			liquidBoostIntensity = 1.8f;
+			consumePower(6f);
+			consumeLiquid(Liquids.water, 0.15f).boost();
+		}};
 	}
 
 	private static void loadBelts(){
