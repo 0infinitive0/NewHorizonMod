@@ -331,5 +331,6 @@ public class NHTechTree{
 		newhorizon.content.spore.SporeTechTree.loadOtherPlanets();
 		newhorizon.content.heavy.HeavyTechTree.loadOtherPlanets();
 		newhorizon.content.ricochet.RicochetTechTree.loadOtherPlanets();
+		newhorizon.content.supply.SupplyTechTree.loadOtherPlanets();
 	}
 }

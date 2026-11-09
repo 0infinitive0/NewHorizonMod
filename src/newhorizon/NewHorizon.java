@@ -450,6 +450,7 @@ public class NewHorizon extends Mod{
 			newhorizon.content.spore.SporeContent.load();
 			newhorizon.content.heavy.HeavyTurrets.load();
 			newhorizon.content.ricochet.RicochetBlocks.load();
+			newhorizon.content.supply.SupplyBlocks.load();
 			NHWeathers.load();
 			NHPlanets.load();
 			NHSectorPresents.load();
