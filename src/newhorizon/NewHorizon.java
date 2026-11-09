@@ -182,6 +182,14 @@ public class NewHorizon extends Mod{
 					Log.err("Unit info panel failed to load", t);
 				}
 			});
+			Core.app.post(() -> {
+				try{
+					newhorizon.expand.research.PinnedResearch.load();
+					newhorizon.expand.research.ResearchPinUI.init();
+				}catch(Throwable t){
+					Log.err("Pinned research failed to load", t);
+				}
+			});
 			updateServer();
 			fetchNewRelease();
 			showNewDialog();
