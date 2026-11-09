@@ -19,7 +19,7 @@ import mindustry.type.Sector;
 import static mindustry.Vars.state;
 
 /**
- * Pinned research and auto research. The player pins research nodes (a queue); about once a minute the first pinned node that can be
+ * Pinned research and auto research. The player pins research nodes (a queue); about every ten seconds the first pinned node that can be
  * researched has its missing items paid for out of the stored items of the player's OTHER sectors, and when it is complete it is unlocked
  * like a normal research and the next pin gets the items.
  *
@@ -28,14 +28,14 @@ import static mindustry.Vars.state;
  */
 public class PinnedResearch{
 	public static final String key = "nh-pinned-research", settingKey = "nh_auto_research";
-	/** Ticks between two rounds of spending: one minute. */
-	public static final float intervalTicks = 60f * 60f;
+	/** Ticks between two rounds of spending: ten seconds. */
+	public static final float intervalTicks = 60f * 10f;
 
 	private static final Seq<String> pinned = new Seq<>();
 	private static float timer;
 	private static boolean loaded;
 
-	/** Reads the saved pins and starts the once-a-minute spending. */
+	/** Reads the saved pins and starts the ten-second spending. */
 	public static void load(){
 		if(loaded) return;
 		loaded = true;
@@ -145,7 +145,7 @@ public class PinnedResearch{
 		tickFor(Time.delta);
 	}
 
-	/** Advances the clock by {@code ticks} and spends when a minute is up (public so a test can drive it). Returns the items spent. */
+	/** Advances the clock by {@code ticks} and spends when the interval is up (public so a test can drive it). Returns the items spent. */
 	public static int tickFor(float ticks){
 		if(Vars.net.client() || !state.isCampaign() || !enabled()) return 0;
 		timer += ticks;
