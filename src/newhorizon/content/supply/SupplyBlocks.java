@@ -39,6 +39,7 @@ public class SupplyBlocks{
 		loadBelts();
 		loadDrills();
 		loadPower();
+		SupplyUnits.load();
 	}
 
 	/**

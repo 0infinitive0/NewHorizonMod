@@ -3,6 +3,7 @@ package newhorizon.content.supply;
 import mindustry.content.Blocks;
 import mindustry.content.TechTree;
 import mindustry.content.TechTree.TechNode;
+import mindustry.content.UnitTypes;
 import mindustry.ctype.UnlockableContent;
 import mindustry.game.Objectives;
 
@@ -13,6 +14,7 @@ public class SupplyTechTree{
 		belts();
 		drills();
 		child(find(Blocks.solarPanel), SupplyBlocks.windTurbine);
+		walkers();
 	}
 
 	private static TechNode find(UnlockableContent content){
@@ -46,5 +48,17 @@ public class SupplyTechTree{
 		TechNode heavy = child(laser, SupplyBlocks.heavyLaserDrill);
 		TechNode colossus = child(blast, SupplyBlocks.colossusDrill);
 		if(colossus != null) colossus.objectives.add(new Objectives.Research(SupplyBlocks.heavyLaserDrill));
+	}
+
+	/** The walkers hang next to the crawler (under the crawler's parent), each tier under the last, once the Ground Factory is researched. */
+	private static void walkers(){
+		if(SupplyUnits.digger == null) return;
+		TechNode crawler = find(UnitTypes.crawler);
+		if(crawler == null || crawler.parent == null) return;
+		TechNode node = child(crawler.parent, SupplyUnits.digger);
+		node.objectives.add(new Objectives.Research(Blocks.groundFactory));
+		node = child(node, SupplyUnits.delver);
+		node = child(node, SupplyUnits.burrower);
+		child(node, SupplyUnits.excavator);
 	}
 }
