@@ -8,6 +8,7 @@ import mindustry.world.Block;
 import mindustry.world.blocks.distribution.Conveyor;
 import mindustry.world.blocks.distribution.ItemBridge;
 import mindustry.world.blocks.liquid.Conduit;
+import newhorizon.expand.block.supply.WindGenerator;
 import mindustry.world.blocks.liquid.LiquidBridge;
 import mindustry.world.blocks.production.Drill;
 
@@ -32,10 +33,12 @@ public class SupplyBlocks{
 	public static final Block[] conveyors = new Block[4], pipes = new Block[4], bridges = new Block[4], pipeBridges = new Block[4];
 
 	public static Block rotaryDrill, augerDrill, heavyLaserDrill, colossusDrill;
+	public static Block windTurbine;
 
 	public static void load(){
 		loadBelts();
 		loadDrills();
+		loadPower();
 	}
 
 	/**
@@ -162,5 +165,15 @@ public class SupplyBlocks{
 			((Conveyor)conveyors[i]).bridgeReplacement = bridges[i];
 			((Conduit)pipes[i]).bridgeReplacement = pipeBridges[i];
 		}
+	}
+
+	/** A fuel-free generator: 15 to 60 power a second depending on the wind, which swings about once a minute. */
+	private static void loadPower(){
+		windTurbine = new WindGenerator("wind-turbine"){{
+			requirements(Category.power, with(Items.copper, 40, Items.lead, 35, Items.silicon, 25));
+			size = 2;
+			health = 190;
+			powerProduction = 0.5f;
+		}};
 	}
 }

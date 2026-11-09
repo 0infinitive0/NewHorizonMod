@@ -12,6 +12,7 @@ public class SupplyTechTree{
 		if(SupplyBlocks.conveyors[0] == null) return;
 		belts();
 		drills();
+		child(find(Blocks.solarPanel), SupplyBlocks.windTurbine);
 	}
 
 	private static TechNode find(UnlockableContent content){
