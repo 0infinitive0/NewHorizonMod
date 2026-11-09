@@ -3,11 +3,16 @@ package newhorizon.content.supply;
 import mindustry.content.Fx;
 import mindustry.content.Items;
 import mindustry.content.Liquids;
+import mindustry.content.StatusEffects;
 import mindustry.type.Category;
 import mindustry.world.Block;
 import mindustry.world.blocks.distribution.Conveyor;
 import mindustry.world.blocks.distribution.ItemBridge;
 import mindustry.world.blocks.liquid.Conduit;
+import arc.graphics.Color;
+import newhorizon.content.NHStatusEffects;
+import newhorizon.content.jade.JadeStatus;
+import newhorizon.expand.block.supply.StatusTower;
 import newhorizon.expand.block.supply.WindGenerator;
 import mindustry.world.blocks.liquid.LiquidBridge;
 import mindustry.world.blocks.production.Drill;
@@ -34,12 +39,14 @@ public class SupplyBlocks{
 
 	public static Block rotaryDrill, augerDrill, heavyLaserDrill, colossusDrill;
 	public static Block windTurbine;
+	public static Block statusTower1, statusTower2, statusTower3;
 
 	public static void load(){
 		loadBelts();
 		loadDrills();
 		loadPower();
 		SupplyUnits.load();
+		loadTowers();
 	}
 
 	/**
@@ -175,6 +182,77 @@ public class SupplyBlocks{
 			size = 2;
 			health = 190;
 			powerProduction = 0.5f;
+		}};
+	}
+
+	/**
+	 * Three Status Towers. Each feeds item and liquid "ammo" to status effects: buffs for its own team, debuffs for its enemies. Higher
+	 * tiers reach further, run more effects at once, and take more kinds of ammo.
+	 */
+	private static void loadTowers(){
+		statusTower1 = new StatusTower("status-tower-1"){{
+			requirements(Category.effect, with(Items.lead, 100, Items.silicon, 60, Items.graphite, 40));
+			size = 2;
+			health = 320;
+			range = 110f;
+			maxActive = 2;
+			itemTime = 600f;
+			liquidUse = 0.05f;
+			itemCapacity = 10;
+			liquidCapacity = 60f;
+			color = Color.valueOf("6ee8d6");
+			consumePower(0.8f);
+			item(Items.silicon, StatusEffects.overclock, true);
+			item(Items.sporePod, JadeStatus.regrowth, true);
+			item(Items.pyratite, StatusEffects.burning, false);
+			liquid(Liquids.water, StatusEffects.wet, false);
+		}};
+
+		statusTower2 = new StatusTower("status-tower-2"){{
+			requirements(Category.effect, with(Items.titanium, 150, Items.silicon, 120, Items.metaglass, 80, Items.thorium, 40));
+			size = 3;
+			health = 700;
+			range = 170f;
+			maxActive = 4;
+			itemTime = 900f;
+			liquidUse = 0.08f;
+			itemCapacity = 20;
+			liquidCapacity = 120f;
+			color = Color.valueOf("ffc45a");
+			consumePower(2f);
+			item(Items.silicon, StatusEffects.overclock, true);
+			item(Items.sporePod, JadeStatus.regrowth, true);
+			item(Items.phaseFabric, NHStatusEffects.phased, true);
+			item(Items.pyratite, StatusEffects.burning, false);
+			item(Items.thorium, StatusEffects.sapped, false);
+			item(Items.blastCompound, StatusEffects.melting, false);
+			liquid(Liquids.water, StatusEffects.wet, false);
+			liquid(Liquids.cryofluid, StatusEffects.freezing, false);
+		}};
+
+		statusTower3 = new StatusTower("status-tower-3"){{
+			requirements(Category.effect, with(Items.titanium, 300, Items.silicon, 250, Items.plastanium, 100, Items.thorium, 150, Items.phaseFabric, 60));
+			size = 4;
+			health = 1400;
+			range = 230f;
+			maxActive = 6;
+			itemTime = 1200f;
+			liquidUse = 0.12f;
+			itemCapacity = 30;
+			liquidCapacity = 200f;
+			color = Color.valueOf("b084ff");
+			consumePower(4f);
+			item(Items.silicon, StatusEffects.overclock, true);
+			item(Items.sporePod, JadeStatus.regrowth, true);
+			item(Items.phaseFabric, NHStatusEffects.phased, true);
+			item(Items.plastanium, StatusEffects.overdrive, true);
+			item(Items.pyratite, StatusEffects.burning, false);
+			item(Items.thorium, StatusEffects.sapped, false);
+			item(Items.blastCompound, StatusEffects.melting, false);
+			item(Items.surgeAlloy, NHStatusEffects.emp2, false);
+			liquid(Liquids.water, StatusEffects.wet, false);
+			liquid(Liquids.cryofluid, StatusEffects.freezing, false);
+			liquid(Liquids.oil, StatusEffects.tarred, false);
 		}};
 	}
 }

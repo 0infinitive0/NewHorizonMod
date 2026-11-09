@@ -15,6 +15,7 @@ public class SupplyTechTree{
 		drills();
 		child(find(Blocks.solarPanel), SupplyBlocks.windTurbine);
 		walkers();
+		towers();
 	}
 
 	private static TechNode find(UnlockableContent content){
@@ -60,5 +61,14 @@ public class SupplyTechTree{
 		node = child(node, SupplyUnits.delver);
 		node = child(node, SupplyUnits.burrower);
 		child(node, SupplyUnits.excavator);
+	}
+
+	/** Tower I under the Mender Projector; each next tier under the last, asking for a bigger projector first. */
+	private static void towers(){
+		TechNode one = child(find(Blocks.mendProjector), SupplyBlocks.statusTower1);
+		TechNode two = child(one, SupplyBlocks.statusTower2);
+		if(two != null) two.objectives.add(new Objectives.Research(Blocks.overdriveProjector));
+		TechNode three = child(two, SupplyBlocks.statusTower3);
+		if(three != null) three.objectives.add(new Objectives.Research(Blocks.forceProjector));
 	}
 }
