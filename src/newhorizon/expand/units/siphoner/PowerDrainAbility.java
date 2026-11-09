@@ -22,7 +22,8 @@ import mindustry.world.blocks.power.PowerGraph;
  * a hidden producer with a negative output in the graph, see {@link PowerLeech}), before the enemy's own buildings get any, however busy the
  * grid is; what the generators do not make comes out of the batteries. The energy it really takes also becomes the unit's shield
  * ({@code shieldPerPower} for each unit of power), up to {@link #shieldCap} times its maximum health, but the drain does not depend on the
- * shield: with a full shield it drains all the same.
+ * shield: with a full shield it drains all the same. While it channels its Tesla also fires faster, up to {@link #maxAttackSpeed} times as fast
+ * by the time the drain becomes unlimited, and it slowly heals itself.
  *
  * <p>It drains one network at a time, and keeps the one it started on while any of its blocks is in range. The channel starts over when it
  * moves to another network or when it has had nothing in range for {@link #loseTicks}. It works for whoever controls the unit.
@@ -34,6 +35,10 @@ public class PowerDrainAbility extends Ability{
 	public float startPerSecond = 1000f, rampPerSecond = 1000f, infiniteAfter = 60f;
 	/** Shield for each unit of power taken, and the shield's limit as a multiple of the unit's maximum health. */
 	public float shieldPerPower = 1f, shieldCap = 10f;
+	/** The Tesla's rate of fire grows with the channel, from x1 to this at {@link #infiniteAfter} seconds (and stays there). */
+	public float maxAttackSpeed = 8f;
+	/** How much of its maximum health it heals a second, in percent, while it is channeling. */
+	public float healPercentPerSecond = 1f;
 	/** Ticks between looking for a block, and ticks with nothing in reach before the channel ends. */
 	public float scanInterval = 10f, loseTicks = 90f;
 	public Color beamColor = Color.valueOf("6fe8ff");
@@ -59,6 +64,17 @@ public class PowerDrainAbility extends Ability{
 		return unlimited() ? Float.POSITIVE_INFINITY : startPerSecond + rampPerSecond * channel;
 	}
 
+	/** Whether a block of the network is in reach now (the channel is live, not just waiting out its grace period). */
+	public boolean channeling(){
+		return graph != null && lost <= 0f;
+	}
+
+	/** The Tesla's rate of fire now: x1 with no channel, up to {@link #maxAttackSpeed} as the channel reaches {@link #infiniteAfter} seconds. */
+	public float attackSpeed(){
+		if(graph == null) return 1f;
+		return 1f + (maxAttackSpeed - 1f) * Math.min(1f, channel / Math.max(0.0001f, infiniteAfter));
+	}
+
 	@Override
 	public void update(Unit unit){
 		if(PowerLeech.block == null || !unit.isValid()) return;
@@ -80,12 +96,26 @@ public class PowerDrainAbility extends Ability{
 
 		channel += Time.delta / 60f;
 		step(unit, Time.delta);
+		fasterWeapons(unit, Time.delta);
+		if(channeling() && unit.health < unit.maxHealth){
+			unit.heal(unit.maxHealth * healPercentPerSecond / 100f * Time.delta / 60f);
+		}
 
 		beamTimer -= Time.delta;
 		if(beamTimer <= 0f && anchor != null && lost <= 0f && lastDemand > 0f){
 			beamTimer = 8f;
 			Fx.chainLightning.at(unit.x, unit.y, 0f, beamColor, anchor);
 		}
+	}
+
+	/**
+	 * The attack speed. A unit's statuses work out its reload multiplier at the start of every update, before its abilities and its weapons, and
+	 * a weapon's reload goes down by delta times that multiplier. So the speed-up is a factor on the multiplier, set here every tick (it is
+	 * worked out afresh next tick, so it never piles up), and it stacks with any status. Public so the tests can drive it.
+	 */
+	public void fasterWeapons(Unit unit, float dt){
+		float speed = attackSpeed();
+		if(speed > 1f) unit.reloadMultiplier *= speed;
 	}
 
 	/**
@@ -167,6 +197,8 @@ public class PowerDrainAbility extends Ability{
 	public void displayBars(Unit unit, Table bars){
 		bars.add(new Bar(() -> unlimited() ? Core.bundle.get("bar.nh-drain-unlimited") : Core.bundle.format("bar.nh-drain", Strings.fixed(rate(), 0)), () -> Pal.accent,
 			() -> graph == null ? 0f : Math.min(1f, channel / infiniteAfter))).row();
+		bars.add(new Bar(() -> Core.bundle.format("bar.nh-drain-speed", Strings.fixed(attackSpeed(), 1)), () -> Pal.lighterOrange,
+			() -> Math.min(1f, (attackSpeed() - 1f) / Math.max(0.0001f, maxAttackSpeed - 1f)))).row();
 		bars.add(new Bar(() -> Core.bundle.format("bar.nh-drain-shield", (int)unit.shield, (int)(unit.maxHealth * shieldCap)), () -> beamColor,
 			() -> Math.min(1f, unit.shield / Math.max(1f, unit.maxHealth * shieldCap)))).row();
 	}
@@ -174,7 +206,7 @@ public class PowerDrainAbility extends Ability{
 	@Override
 	public void addStats(Table t){
 		super.addStats(t);
-		t.add(Core.bundle.format("ability.nh-powerdrain.stats", (int)startPerSecond, (int)rampPerSecond, (int)infiniteAfter, (int)(range / 8f), (int)shieldCap)).wrap().width(descriptionWidth).row();
+		t.add(Core.bundle.format("ability.nh-powerdrain.stats", (int)startPerSecond, (int)rampPerSecond, (int)infiniteAfter, (int)(range / 8f), (int)shieldCap, (int)maxAttackSpeed, Strings.fixed(healPercentPerSecond, 1))).wrap().width(descriptionWidth).row();
 	}
 
 	@Override
