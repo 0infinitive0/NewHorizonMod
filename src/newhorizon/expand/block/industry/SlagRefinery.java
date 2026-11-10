@@ -51,6 +51,8 @@ public class SlagRefinery extends Block{
 	public final Seq<Recipe> recipes = new Seq<>();
 	/** Crafting speed: a recipe's time is divided by this (and its slag and ozone are used that much faster). */
 	public float speed = 1f;
+	/** How big the chosen item is drawn on the block (world units): a small badge, not half the block. */
+	public float iconSize = 6f;
 	public Color color = Color.valueOf("ff9a4a");
 	public TextureRegion topRegion;
 
@@ -223,7 +225,7 @@ public class SlagRefinery extends Block{
 			}
 			if(target != null && target.fullIcon != null){
 				Draw.z(Layer.blockOver + 0.1f);
-				Draw.rect(target.fullIcon, x, y, 12f, 12f);
+				Draw.rect(target.fullIcon, x, y, iconSize, iconSize);
 			}
 		}
 

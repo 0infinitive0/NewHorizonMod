@@ -33,6 +33,8 @@ import newhorizon.content.nuke.NukeItems;
 public class OmniFactory extends Block{
 	/** Ticks to turn one omni-matter into its resource. */
 	public float craftTime = 30f;
+	/** How big the chosen item is drawn on the block (world units): a small badge, not half the block. */
+	public float iconSize = 6f;
 	public Color color = Color.valueOf("c885ff");
 	public TextureRegion topRegion;
 
@@ -185,7 +187,7 @@ public class OmniFactory extends Block{
 			}
 			if(target != null && target.fullIcon != null){
 				Draw.z(Layer.blockOver + 0.1f);
-				Draw.rect(target.fullIcon, x, y, 12f, 12f);
+				Draw.rect(target.fullIcon, x, y, iconSize, iconSize);
 			}
 		}
 

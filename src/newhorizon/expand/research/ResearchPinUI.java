@@ -37,7 +37,9 @@ public class ResearchPinUI{
 		var dialog = Vars.ui.research;
 		Table info = dialog.view.infoTable;
 
-		info.update(() -> {
+		//The game empties the info panel and takes its update hook off every time it shows a node (View.showInfo), so the button is added from
+		//the dialog's own update, which it never touches: whenever a node's panel is up and has no pin button yet.
+		dialog.update(() -> {
 			var hover = dialog.view.hoverNode;
 			if(hover == null || !(hover.userObject instanceof TechNode node) || !info.hasChildren()) return;
 			if(!state.isCampaign() || Vars.net.client() || info.find("nh-pin-button") != null) return;
@@ -49,6 +51,13 @@ public class ResearchPinUI{
 			info.invalidateHierarchy();
 			info.pack();
 		});
+
+		//The auto research switch, in the bar at the bottom with Close and Database.
+		dialog.buttons.button("", Icon.star, () -> Core.settings.put(PinnedResearch.settingKey, !PinnedResearch.enabled()))
+			.size(210f, 64f).name("nh-auto-research")
+			.update(b -> b.setText(Core.bundle.get(PinnedResearch.enabled() ? "research.nh-auto.on" : "research.nh-auto.off")))
+			.visible(() -> state.isCampaign() && !Vars.net.client())
+			.tooltip(Core.bundle.get("research.nh-auto.tip"));
 
 		dialog.update(() -> {
 			for(Element e : dialog.view.getChildren()){
