@@ -151,3 +151,4 @@ android/libs/
 /.run/
 /.vs/NewHorizonMod/FileContentIndex
 .vs/
+__pycache__/

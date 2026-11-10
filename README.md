@@ -19,3 +19,14 @@
 ---
 ## Mod Server
 `175.178.22.6:6666`
+
+---
+## Tools
++ **Image to map** (`tools/image_to_map.py`, needs Python 3, Pillow, numpy)
+  turns any image into a Mindustry map built only from floor tiles (1 pixel = 1 tile):
+  ```
+  python3 tools/image_to_map.py picture.png -o picture.msav --width 200 --dither floyd --preview preview.png
+  ```
+  Drop the `.msav` into the game's `maps` folder or open it from the map editor. Floors come from vanilla
+  Mindustry plus this mod (`--palette vanilla|newhorizon|all`); see the header of the script for all options.
+  Tests: `python3 -m unittest tools/test_image_to_map.py`
