@@ -65,6 +65,24 @@ public class GroundMinerAI extends MinerAI{
 		return true;
 	}
 
+	/**
+	 * Whether the player has told the unit, with its stance buttons, which items to mine. The base game's Command AI turns on "mine anything"
+	 * by itself, but only for its own Mine command, not for this one, so a unit with no item stance at all just mines anything (it used to
+	 * choose nothing and stand still).
+	 */
+	protected boolean byStance(CommandAI ai){
+		return ai != null && !ai.hasStance(UnitStance.mineAuto) && mindustry.ai.ItemUnitStance.all().contains(ai::hasStance);
+	}
+
+	/** The base game drops the item and stops when the stances change to ones that do not allow it; only item stances can do that here. */
+	@Override
+	public void stanceChanged(){
+		if(targetItem != null && unit.controller() instanceof CommandAI ai && byStance(ai) && !ai.hasStance(mindustry.ai.ItemUnitStance.getByItem(targetItem))){
+			mining = false;
+			targetItem = null;
+		}
+	}
+
 	@Override
 	public void updateMovement(){
 		Building core = unit.closestCore();
@@ -78,7 +96,7 @@ public class GroundMinerAI extends MinerAI{
 
 		if(mining){
 			if(timer.get(timerTarget2, 60 * 4) || targetItem == null){
-				if(ai != null && !ai.hasStance(UnitStance.mineAuto)){
+				if(byStance(ai)){
 					targetItem = Vars.content.items().min(i -> wanted(i) && ai.hasStance(mindustry.ai.ItemUnitStance.getByItem(i)), i -> core.items.get(i));
 				}else{
 					targetItem = unit.type.mineItems.min(this::wanted, i -> core.items.get(i));
