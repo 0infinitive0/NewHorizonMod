@@ -7,6 +7,7 @@ package newhorizon.content.industry;
  */
 public class IndustryContent{
 	public static void load(){
+		IndustryLiquids.load();
 		IndustryBlocks.load();
 	}
 }

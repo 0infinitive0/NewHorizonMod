@@ -28,6 +28,7 @@ import mindustry.ui.Bar;
 import mindustry.world.blocks.defense.turrets.PowerTurret;
 import mindustry.world.meta.Env;
 import mindustry.world.meta.Stat;
+import newhorizon.content.industry.IndustryLiquids;
 import newhorizon.content.nuke.NukeFx;
 import newhorizon.expand.units.nuke.AntiMatter;
 
@@ -50,6 +51,11 @@ public class AntiMatterCannon extends PowerTurret{
 	/** The distances of the barrel's coils from the middle, along the barrel. */
 	public float[] coils = {14f, 20f, 26f};
 	public Color glow = Color.valueOf("7ff4ff"), glow2 = Color.valueOf("b45cff");
+	/**
+	 * Its ammunition is anti-matter, a liquid: this much is spent <b>when a beam is fired</b> (never while it charges, which takes power only),
+	 * and a shot cannot be made without it in the tank.
+	 */
+	public float antiMatterPerShot = 100f;
 
 	public TextureRegion baseGlowRegion, baseR, outlineR;
 
@@ -60,6 +66,8 @@ public class AntiMatterCannon extends PowerTurret{
 	public AntiMatterCannon(String name){
 		super(name);
 		envEnabled = Env.any;
+		hasLiquids = true;
+		liquidCapacity = 400f;
 		targetAir = true;
 		targetGround = true;
 		buildType = AntiMatterBuild::new;
@@ -101,13 +109,20 @@ public class AntiMatterCannon extends PowerTurret{
 		super.setStats();
 		stats.remove(Stat.range);
 		stats.add(Stat.range, Core.bundle.get("stat.nh-whole-map", "The whole map"));
+		stats.add(ammoStat, Core.bundle.format("stat.nh-antimatter-ammo.value", (int)antiMatterPerShot));
 	}
+
+	public static final Stat ammoStat = new Stat("nh-antimatter-ammo", mindustry.world.meta.StatCat.function);
 
 	@Override
 	public void setBars(){
 		super.setBars();
+		addBar("nh-antimatter-tank", (AntiMatterBuild b) -> new Bar(
+			() -> IndustryLiquids.antiMatter.localizedName,
+			() -> IndustryLiquids.antiMatter.barColor(),
+			() -> b.liquids.get(IndustryLiquids.antiMatter) / liquidCapacity));
 		addBar("nh-antimatter", (AntiMatterBuild b) -> new Bar(
-			() -> Core.bundle.format("nh.antimatter.state." + b.state().name(), (int)(b.energy * 100f), (int)(b.cool / 60f)),
+			() -> Core.bundle.format("nh.antimatter.state." + (b.state() == State.ready && !b.hasAmmo2() ? "noammo" : b.state().name()), (int)(b.energy * 100f), (int)(b.cool / 60f)),
 			() -> b.state() == State.cooling ? Pal.lightishOrange : b.state() == State.down ? Pal.accent : Color.valueOf("b45cff"),
 			() -> b.state() == State.cooling ? 1f - b.cool / coolTicks : b.energy
 		));
@@ -135,6 +150,17 @@ public class AntiMatterCannon extends PowerTurret{
 		public float range(){
 			if(Vars.world == null || Vars.world.width() <= 0) return AntiMatterCannon.this.range;
 			return Math.max(AntiMatterCannon.this.range, Mathf.dst(Vars.world.unitWidth(), Vars.world.unitHeight()));
+		}
+
+		/** Whether the tank holds the anti-matter one shot takes. */
+		public boolean hasAmmo2(){
+			return liquids.get(IndustryLiquids.antiMatter) >= antiMatterPerShot - 0.0001f;
+		}
+
+		/** Only anti-matter, and only up to its tank. */
+		@Override
+		public boolean acceptLiquid(Building source, mindustry.type.Liquid liquid){
+			return liquid == IndustryLiquids.antiMatter && liquids.get(liquid) < liquidCapacity - 0.001f;
 		}
 
 		/** No target of its own, ever. */
@@ -194,7 +220,8 @@ public class AntiMatterCannon extends PowerTurret{
 			if(holding && lastEnergy <= 0f && energy > 0f && !Vars.headless) Sounds.chargeVela.at(x, y, 0.9f, 0.7f);
 			lastEnergy = energy;
 
-			if(Vars.net.client() || !pilot || !holding || energy < 1f || cool > 0f) return;
+			//The charge costs no anti-matter, but a shot needs a shot's worth in the tank.
+			if(Vars.net.client() || !pilot || !holding || energy < 1f || cool > 0f || !hasAmmo2()) return;
 			float mx = x + Angles.trnsx(rotation, muzzleLength), my = y + Angles.trnsy(rotation, muzzleLength);
 			if(Angles.angleDist(rotation, angleTo(targetPos.x, targetPos.y)) > fireCone) return;
 			Position t = AntiMatter.pick(team, targetPos.x, targetPos.y, mx, my, range());
@@ -212,6 +239,8 @@ public class AntiMatterCannon extends PowerTurret{
 			if(shield != null) AntiMatter.destroyShield(shield);
 			else AntiMatter.annihilate(t);
 
+			//The anti-matter is spent now, as the beam goes out.
+			liquids.remove(IndustryLiquids.antiMatter, antiMatterPerShot);
 			energy = 0f;
 			cool = coolTicks;
 			kick = 1f;

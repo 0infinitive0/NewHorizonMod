@@ -7,31 +7,33 @@ import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Lines;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.Mathf;
+import arc.util.Strings;
 import arc.util.Time;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
-import mindustry.content.Items;
 import mindustry.content.Liquids;
 import mindustry.gen.Building;
 import mindustry.graphics.Drawf;
 import mindustry.graphics.Layer;
 import mindustry.graphics.Pal;
 import mindustry.type.Liquid;
+import newhorizon.content.industry.IndustryLiquids;
 import mindustry.ui.Bar;
 import mindustry.world.blocks.power.PowerGenerator;
 import mindustry.world.meta.Stat;
 import mindustry.world.meta.StatCat;
 
 /**
- * The Fusion Reactor. It runs on hydrogen (full output) or, less well, on ozone (half the output, burnt twice as fast), and gives off a
- * trickle of thorium as a byproduct. Cryofluid, if it is supplied, lifts the output by half.
+ * The Fusion Reactor. It runs on hydrogen (full output) or, less well, on ozone (half the output, burnt twice as fast), and gives off two
+ * liquids as byproducts: super hot <b>plasma</b> out of its left side and <b>anti-matter</b> out of its right side (relative to its rotation;
+ * the anti-matter explodes if it leaks, see {@code AntiMatterLiquid}). Cryofluid, if it is supplied, lifts the output by half.
  *
  * <p>It has to be <b>ignited</b> first: while it holds fuel and is not lit it draws a very large amount of power from the grid (its
  * power use, for {@link #igniteTicks} at full supply, slower on a weaker grid), and does not generate. Once lit it stops drawing,
  * generates, and stays lit while fuel keeps coming. When the fuel runs out the plasma dies away over {@link #cooldownTicks}, and it has to
  * be ignited again. It never ignites without fuel.
  *
- * <p>If the thorium it makes has nowhere to go and the buffer is full, it stalls (it stops burning) until some is taken away.
+ * <p>If either byproduct has nowhere to go and its buffer is full, it stalls (it stops burning) until some is taken away.
  */
 public class FusionReactor extends PowerGenerator{
 	/** Ticks of full power supply to ignite, and ticks for the plasma to die away with no fuel. */
@@ -40,24 +42,27 @@ public class FusionReactor extends PowerGenerator{
 	public float hydrogenUse = 24f / 60f, ozoneUse = 48f / 60f, ozoneOutput = 0.5f;
 	/** Cryofluid used a tick when it is supplied, and how much the output rises with it. */
 	public float cryoUse = 6f / 60f, cryoBoost = 1.5f;
-	/** Ticks of full burn for one thorium. */
-	public float thoriumInterval = 1800f;
+	/** Plasma and anti-matter made a tick at full burn, and how much of each it holds before it stalls. */
+	public float plasmaOut = 12f / 60f, antiMatterOut = 0.6f / 60f, byproductCap = 600f;
 	/** Ticks for the output to come up to full once lit. */
 	public float rampTicks = 120f;
 	public Color hydrogenColor = Color.valueOf("7ff4ff"), ozoneColor = Color.valueOf("b45cff"), boostColor = Color.valueOf("c9f4ff");
 
+	/** The sides the byproducts leave from, relative to the rotation (1 is the left, 3 the right). */
+	public static final int plasmaSide = 1, antiMatterSide = 3;
+
 	public static final Stat modes = new Stat("nh-fusion-modes", StatCat.power);
 
-	public TextureRegion bottomRegion, lightsRegion;
+	public TextureRegion bottomRegion, lightsRegion, plasmaPortRegion, antiPortRegion;
 
 	public FusionReactor(String name){
 		super(name);
 		hasLiquids = true;
-		hasItems = true;
+		//Turnable: the plasma leaves from the left side and the anti-matter from the right, like the Electric Separator's liquids.
+		rotate = true;
 		outputsPower = true;
 		//A generator is not a consumer of the power graph unless it says so, and then its ignition power is never delivered (efficiency stays 0).
 		consumesPower = true;
-		itemCapacity = 20;
 		liquidCapacity = 1200f;
 		explosionDamage = 0;
 		explosionRadius = 0;
@@ -69,18 +74,15 @@ public class FusionReactor extends PowerGenerator{
 		super.load();
 		bottomRegion = Core.atlas.find(name + "-bottom");
 		lightsRegion = Core.atlas.find(name + "-lights");
-	}
-
-	@Override
-	public boolean outputsItems(){
-		return true;
+		plasmaPortRegion = Core.atlas.find(name + "-plasma-port");
+		antiPortRegion = Core.atlas.find(name + "-antimatter-port");
 	}
 
 	@Override
 	public void setStats(){
 		super.setStats();
 		stats.add(modes, Core.bundle.format("stat.nh-fusion-modes.value", (int)powerProduction, (int)(powerProduction * ozoneOutput), (int)(hydrogenUse * 60f), (int)(ozoneUse * 60f),
-			(int)(cryoBoost * 100f - 100f), (int)(cryoUse * 60f), (int)(igniteTicks / 60f), (int)(thoriumInterval / 60f)));
+			(int)(cryoBoost * 100f - 100f), (int)(cryoUse * 60f), (int)(igniteTicks / 60f), Strings.autoFixed(plasmaOut * 60f, 1), Strings.autoFixed(antiMatterOut * 60f, 1)));
 	}
 
 	@Override
@@ -106,11 +108,19 @@ public class FusionReactor extends PowerGenerator{
 			() -> Liquids.cryofluid.localizedName,
 			() -> boostColor,
 			() -> b.liquids.get(Liquids.cryofluid) / liquidCapacity));
+		addBar("nh-fusion-plasma", (FusionReactorBuild b) -> new Bar(
+			() -> IndustryLiquids.plasma.localizedName,
+			() -> IndustryLiquids.plasma.barColor(),
+			() -> b.liquids.get(IndustryLiquids.plasma) / byproductCap));
+		addBar("nh-fusion-antimatter", (FusionReactorBuild b) -> new Bar(
+			() -> IndustryLiquids.antiMatter.localizedName,
+			() -> IndustryLiquids.antiMatter.barColor(),
+			() -> b.liquids.get(IndustryLiquids.antiMatter) / byproductCap));
 	}
 
 	public class FusionReactorBuild extends GeneratorBuild{
-		/** How far the plasma is lit (0 to 1), whether it is lit, the output coming up, the cryofluid boost, and the thorium on its way. */
-		public float ignition, output, boost, thoriumTimer;
+		/** How far the plasma is lit (0 to 1), whether it is lit, the output coming up, and the cryofluid boost. */
+		public float ignition, output, boost;
 		public boolean lit;
 		protected Liquid lastFuel = Liquids.hydrogen;
 		protected float clock;
@@ -166,7 +176,7 @@ public class FusionReactor extends PowerGenerator{
 			}
 
 			//Burning.
-			boolean blocked = items.get(Items.thorium) >= itemCapacity && thoriumTimer >= thoriumInterval;
+			boolean blocked = liquids.get(IndustryLiquids.plasma) >= byproductCap - 0.001f || liquids.get(IndustryLiquids.antiMatter) >= byproductCap - 0.001f;
 			float target = 0f, boostTarget = 0f;
 			if(lit && f != null && !blocked){
 				float use = (f == Liquids.hydrogen ? hydrogenUse : ozoneUse) * dt;
@@ -184,19 +194,13 @@ public class FusionReactor extends PowerGenerator{
 			boost = Mathf.approachDelta(boost, boostTarget, 1f / 60f);
 			productionEfficiency = output * (1f + (cryoBoost - 1f) * boost);
 
-			//The byproduct.
+			//The byproducts, in proportion to the burn, each out of its own side (relative to the rotation: 1 is the left, 3 the right).
 			if(output > 0.001f){
-				thoriumTimer += dt * output;
-				if(thoriumTimer >= thoriumInterval){
-					if(items.get(Items.thorium) < itemCapacity){
-						items.add(Items.thorium, 1);
-						thoriumTimer -= thoriumInterval;
-					}else{
-						thoriumTimer = thoriumInterval;
-					}
-				}
+				liquids.add(IndustryLiquids.plasma, Math.min(plasmaOut * output * dt, byproductCap - liquids.get(IndustryLiquids.plasma)));
+				liquids.add(IndustryLiquids.antiMatter, Math.min(antiMatterOut * output * dt, byproductCap - liquids.get(IndustryLiquids.antiMatter)));
 			}
-			if(items.has(Items.thorium)) dump(Items.thorium);
+			if(liquids.get(IndustryLiquids.plasma) > 0.001f) dumpLiquid(IndustryLiquids.plasma, 2f, plasmaSide);
+			if(liquids.get(IndustryLiquids.antiMatter) > 0.001f) dumpLiquid(IndustryLiquids.antiMatter, 2f, antiMatterSide);
 			clock += dt * (0.4f + 2.2f * output);
 		}
 
@@ -231,6 +235,9 @@ public class FusionReactor extends PowerGenerator{
 			}
 			Draw.z(Layer.block + 0.3f);
 			Draw.rect(region, x, y);
+			//The ports of the two byproducts, turned with the block.
+			if(plasmaPortRegion.found()) Draw.rect(plasmaPortRegion, x, y, rotdeg());
+			if(antiPortRegion.found()) Draw.rect(antiPortRegion, x, y, rotdeg());
 			if(lightsRegion.found()){
 				Draw.color(plasma());
 				Draw.alpha(0.25f + 0.75f * glow);
@@ -247,7 +254,7 @@ public class FusionReactor extends PowerGenerator{
 
 		@Override
 		public byte version(){
-			return 1;
+			return 2;
 		}
 
 		@Override
@@ -257,7 +264,6 @@ public class FusionReactor extends PowerGenerator{
 			write.bool(lit);
 			write.f(output);
 			write.f(boost);
-			write.f(thoriumTimer);
 			write.b(lastFuel == Liquids.ozone ? 1 : 0);
 		}
 
@@ -269,7 +275,8 @@ public class FusionReactor extends PowerGenerator{
 				lit = read.bool();
 				output = read.f();
 				boost = read.f();
-				thoriumTimer = read.f();
+				//Revision 1 also kept the timer of the thorium it used to make.
+				if(revision < 2) read.f();
 				lastFuel = read.b() == 1 ? Liquids.ozone : Liquids.hydrogen;
 			}
 		}
