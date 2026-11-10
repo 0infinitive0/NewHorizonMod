@@ -49,6 +49,8 @@ public class SlagRefinery extends Block{
 	}
 
 	public final Seq<Recipe> recipes = new Seq<>();
+	/** Crafting speed: a recipe's time is divided by this (and its slag and ozone are used that much faster). */
+	public float speed = 1f;
 	public Color color = Color.valueOf("ff9a4a");
 	public TextureRegion topRegion;
 
@@ -106,7 +108,7 @@ public class SlagRefinery extends Block{
 					t.left();
 					t.image(r.item.uiIcon).size(24f).padRight(6f);
 					t.add(Core.bundle.format("stat.nh-refinery-recipes.value", r.item.localizedName, Strings.autoFixed(r.slag, 1), Strings.autoFixed(r.ozone, 1),
-						Strings.autoFixed(r.time / 60f, 2))).left();
+						Strings.autoFixed(r.time / speed / 60f, 2))).left();
 				}).left().padBottom(2f).row();
 			}
 		});
@@ -167,7 +169,7 @@ public class SlagRefinery extends Block{
 		public void updateTile(){
 			Recipe r = recipe();
 			if(r != null && shouldConsume() && efficiency > 0f){
-				progress += edelta() / r.time;
+				progress += edelta() * speed / r.time;
 				warmup = Mathf.lerpDelta(warmup, 1f, 0.05f);
 			}else{
 				warmup = Mathf.lerpDelta(warmup, 0f, 0.05f);

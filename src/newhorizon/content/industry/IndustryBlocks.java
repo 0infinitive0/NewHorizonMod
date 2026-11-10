@@ -230,6 +230,7 @@ public class IndustryBlocks{
 			health = 1100;
 			envEnabled = Env.any;
 			consumePower(2f);
+			speed = 5f;
 			recipe(Items.sand, 8f, 0.3f, 20f);
 			recipe(Items.scrap, 8f, 0.3f, 20f);
 			recipe(Items.copper, 12f, 0.5f, 30f);
