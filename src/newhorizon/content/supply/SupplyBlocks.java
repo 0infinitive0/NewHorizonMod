@@ -39,7 +39,7 @@ public class SupplyBlocks{
 	public static final Block[] conveyors = new Block[4], pipes = new Block[4], bridges = new Block[4], pipeBridges = new Block[4];
 
 	public static Block rotaryDrill, augerDrill, heavyLaserDrill, colossusDrill;
-	public static Block windTurbine;
+	public static Block windTurbine, improvedWindTurbine, ultimateWindTurbine;
 	public static Block statusTower1, statusTower2, statusTower3;
 	public static Block sectorLauncher;
 
@@ -178,13 +178,32 @@ public class SupplyBlocks{
 		}
 	}
 
-	/** A fuel-free generator: 15 to 60 power a second depending on the wind, which swings about once a minute. */
+	/**
+	 * Fuel-free generators in three sizes. Each swings between its minimum and its full output as the wind rises and falls (about once a
+	 * minute); the bigger ones are steadier and make more for each tile they cover.
+	 */
 	private static void loadPower(){
 		windTurbine = new WindGenerator("wind-turbine"){{
 			requirements(Category.power, with(Items.copper, 40, Items.lead, 35, Items.silicon, 25));
+			size = 1;
+			health = 100;
+			powerProduction = 1f;
+		}};
+		improvedWindTurbine = new WindGenerator("improved-wind-turbine"){{
+			requirements(Category.power, with(Items.copper, 90, Items.lead, 80, Items.silicon, 60, Items.titanium, 40));
 			size = 2;
-			health = 190;
-			powerProduction = 0.5f;
+			health = 300;
+			powerProduction = 5f;
+			minOutput = 0.3f;
+			rotorSpeed = 6f;
+		}};
+		ultimateWindTurbine = new WindGenerator("ultimate-wind-turbine"){{
+			requirements(Category.power, with(Items.titanium, 180, Items.silicon, 160, Items.metaglass, 80, Items.thorium, 60));
+			size = 3;
+			health = 700;
+			powerProduction = 12f;
+			minOutput = 0.4f;
+			rotorSpeed = 5f;
 		}};
 	}
 

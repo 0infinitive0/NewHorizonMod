@@ -13,7 +13,10 @@ public class SupplyTechTree{
 		if(SupplyBlocks.conveyors[0] == null) return;
 		belts();
 		drills();
-		child(find(Blocks.solarPanel), SupplyBlocks.windTurbine);
+		TechNode wind = child(find(Blocks.solarPanel), SupplyBlocks.windTurbine);
+		TechNode improved = child(wind, SupplyBlocks.improvedWindTurbine);
+		TechNode ultimate = child(improved, SupplyBlocks.ultimateWindTurbine);
+		if(ultimate != null) ultimate.objectives.add(new Objectives.Research(Blocks.largeSolarPanel));
 		walkers();
 		towers();
 		//Under the Advanced Launch Pad (the vanilla pad's own sector objective applies through its parent).

@@ -24,6 +24,7 @@ import newhorizon.expand.block.distribution.LiquidMassDriver;
 import newhorizon.expand.block.industry.FusionReactor;
 import newhorizon.expand.block.industry.ItemTeleporter;
 import newhorizon.expand.block.industry.LiquidTeleporter;
+import newhorizon.expand.block.industry.SlagRefinery;
 
 import static mindustry.type.ItemStack.with;
 
@@ -36,7 +37,7 @@ public class IndustryBlocks{
 	public static Block turbinePump, quantumPump, singularityPump;
 	public static Block armoredContainer, armoredTank, singularityTank;
 	public static Block capacitorBank, surgeBattery, singularityBattery;
-	public static Block electricSeparator, fusionReactor;
+	public static Block electricSeparator, fusionReactor, slagRefinery;
 	public static Block advancedMassDriver, advancedLiquidMassDriver, itemTeleporter, liquidTeleporter;
 
 	public static void load(){
@@ -220,6 +221,24 @@ public class IndustryBlocks{
 				glowScale = 5f;
 				glowIntensity = 0.25f;
 			}});
+		}};
+
+		//Slag and ozone in, one chosen ore out (the rarer the ore, the more of both it takes). The ozone comes from the Electric Separator.
+		slagRefinery = new SlagRefinery("slag-refinery"){{
+			requirements(Category.crafting, with(Items.silicon, 250, Items.graphite, 200, Items.thorium, 120, Items.surgeAlloy, 40));
+			size = 3;
+			health = 1100;
+			envEnabled = Env.any;
+			consumePower(2f);
+			recipe(Items.sand, 8f, 0.3f, 20f);
+			recipe(Items.scrap, 8f, 0.3f, 20f);
+			recipe(Items.copper, 12f, 0.5f, 30f);
+			recipe(Items.lead, 14f, 0.6f, 32f);
+			recipe(Items.coal, 16f, 0.8f, 36f);
+			recipe(Items.titanium, 30f, 1.5f, 50f);
+			recipe(Items.beryllium, 36f, 2f, 55f);
+			recipe(Items.tungsten, 50f, 3f, 70f);
+			recipe(Items.thorium, 80f, 5f, 100f);
 		}};
 
 		//Hydrogen (or less well ozone) in, 200 power a tick out, a little thorium on the side; it takes a great deal of power to light.

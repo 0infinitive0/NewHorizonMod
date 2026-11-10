@@ -70,6 +70,7 @@ public class IndustryTechTree{
 
 		TechNode separator = child(factory, IndustryBlocks.electricSeparator);
 		child(separator, IndustryBlocks.fusionReactor);
+		child(separator, IndustryBlocks.slagRefinery);
 
 		TechNode bank = child(factory, IndustryBlocks.capacitorBank);
 		TechNode surge = child(bank, IndustryBlocks.surgeBattery);
