@@ -10,6 +10,9 @@ import mindustry.type.LiquidStack;
 import mindustry.world.Block;
 import mindustry.world.blocks.distribution.MassDriver;
 import mindustry.world.blocks.liquid.LiquidRouter;
+import mindustry.world.blocks.defense.turrets.LiquidTurret;
+import newhorizon.expand.bullets.plasma.PlasmaBoltBulletType;
+import newhorizon.expand.bullets.plasma.PlasmaMineBulletType;
 import mindustry.world.blocks.power.Battery;
 import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.blocks.production.Pump;
@@ -37,7 +40,7 @@ public class IndustryBlocks{
 	public static Block turbinePump, quantumPump, singularityPump;
 	public static Block armoredContainer, armoredTank, singularityTank;
 	public static Block capacitorBank, surgeBattery, singularityBattery;
-	public static Block electricSeparator, fusionReactor, slagRefinery;
+	public static Block electricSeparator, fusionReactor, slagRefinery, plasmaSmelter, plasmaCannon, plasmaMineCannon;
 	public static Block advancedMassDriver, advancedLiquidMassDriver, itemTeleporter, liquidTeleporter;
 
 	public static void load(){
@@ -240,6 +243,87 @@ public class IndustryBlocks{
 			recipe(Items.beryllium, 36f, 2f, 55f);
 			recipe(Items.tungsten, 50f, 3f, 70f);
 			recipe(Items.thorium, 80f, 5f, 100f);
+		}};
+
+		//Sand and plasma in, a great deal of silicon out: the most of any factory (the Ultimate Silicon Factory makes 40 a second).
+		plasmaSmelter = new GenericCrafter("plasma-smelter"){{
+			requirements(Category.crafting, with(Items.silicon, 1000, Items.graphite, 700, Items.thorium, 500, Items.surgeAlloy, 250, Items.phaseFabric, 200));
+			size = 6;
+			health = 4000;
+			envEnabled = Env.any;
+			hasPower = true;
+			hasItems = true;
+			hasLiquids = true;
+			itemCapacity = 600;
+			liquidCapacity = 300f;
+			craftTime = 60f;
+			outputItem = new ItemStack(Items.silicon, 100);
+			consumeItems(with(Items.sand, 160));
+			consumeLiquid(IndustryLiquids.plasma, 0.5f);
+			consumePower(30f);
+			craftEffect = Fx.smeltsmoke;
+			drawer = new DrawMulti(new DrawDefault(), new DrawGlowRegion(){{
+				color = Color.valueOf("ff7bd0");
+				alpha = 0.9f;
+				glowScale = 6f;
+				glowIntensity = 0.3f;
+			}});
+			ambientSound = mindustry.gen.Sounds.loopSmelter;
+			ambientSoundVolume = 0.15f;
+		}};
+
+		//A turret that fires plasma bolts: fast, piercing, burning.
+		plasmaCannon = new LiquidTurret("plasma-cannon"){{
+			requirements(Category.turret, with(Items.silicon, 300, Items.thorium, 200, Items.surgeAlloy, 100, Items.phaseFabric, 60));
+			size = 3;
+			health = 1800;
+			envEnabled = Env.any;
+			liquidCapacity = 300f;
+			extinguish = false;
+			range = 280f;
+			reload = 40f;
+			rotateSpeed = 5f;
+			recoil = 2f;
+			targetAir = true;
+			targetGround = true;
+			shootSound = mindustry.gen.Sounds.shootLaser;
+			ammo(IndustryLiquids.plasma, new PlasmaBoltBulletType(9f, 90f){{
+				lifetime = 36f;
+				width = 14f;
+				height = 22f;
+				trailLength = 12;
+				trailWidth = 3.5f;
+				pierce = true;
+				pierceCap = 2;
+				splashDamage = 60f;
+				splashDamageRadius = 26f;
+				ammoMultiplier = 1f / 10f;
+				puddle = 4f;
+				hitEffect = Fx.blastExplosion;
+				despawnEffect = Fx.blastExplosion;
+				shootEffect = Fx.shootBig;
+			}});
+		}};
+
+		//A different turret: it lays plasma mines that drift slowly about the field and go off when an enemy touches them.
+		plasmaMineCannon = new LiquidTurret("plasma-mine-cannon"){{
+			requirements(Category.turret, with(Items.silicon, 350, Items.thorium, 250, Items.surgeAlloy, 150, Items.phaseFabric, 80));
+			size = 3;
+			health = 1900;
+			envEnabled = Env.any;
+			liquidCapacity = 300f;
+			extinguish = false;
+			range = 300f;
+			reload = 150f;
+			rotateSpeed = 3f;
+			recoil = 4f;
+			targetAir = true;
+			targetGround = true;
+			shootSound = mindustry.gen.Sounds.shootLaser;
+			ammo(IndustryLiquids.plasma, new PlasmaMineBulletType(){{
+				ammoMultiplier = 1f / 20f;
+				shootEffect = Fx.shootBig;
+			}});
 		}};
 
 		//Hydrogen (or less well ozone) in, 200 power a tick out, a little thorium on the side; it takes a great deal of power to light.

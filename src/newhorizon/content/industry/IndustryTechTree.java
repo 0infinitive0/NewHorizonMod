@@ -69,7 +69,10 @@ public class IndustryTechTree{
 		if(!addLiquidDriver && newhorizon.content.supply.SupplyBlocks.sectorLauncher != null) child(teleporter, newhorizon.content.supply.SupplyBlocks.sectorLauncher);
 
 		TechNode separator = child(factory, IndustryBlocks.electricSeparator);
-		child(separator, IndustryBlocks.fusionReactor);
+		TechNode reactor = child(separator, IndustryBlocks.fusionReactor);
+		child(reactor, IndustryBlocks.plasmaSmelter);
+		child(reactor, IndustryBlocks.plasmaCannon);
+		child(reactor, IndustryBlocks.plasmaMineCannon);
 		child(separator, IndustryBlocks.slagRefinery);
 
 		TechNode bank = child(factory, IndustryBlocks.capacitorBank);
