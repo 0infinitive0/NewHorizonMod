@@ -19,7 +19,8 @@ How it works
 
 Palettes (--palette)
     vanilla     62 stock Mindustry floors, colours measured from the game's own floor sprites
-    newhorizon  this mod's floors; colours are measured from assets/sprites/blocks/environment
+    newhorizon  this mod's floors; colours come from assets/sprites/blocks/environment when the
+                script sits in the repo, otherwise from a built-in table (so the file works alone)
     all         both (default). A map that uses a mod floor lists the mod in its metadata, and
                 needs the mod installed - otherwise those tiles load as plain stone.
     Use --palette-file to add or replace floors from a JSON file: {"floor-name": "#rrggbb", ...}
@@ -94,6 +95,16 @@ MOD_FLOORS = {
     "plating-metal-floor": "plating-metal-floor",
 }
 
+# Colours measured from those sprites, used when the sprites are not next to the script
+# (so the file also works when downloaded on its own). Regenerate if the sprites change.
+MOD_FLOOR_COLORS = {
+    "armor-clear": "#3f4049", "armor-ancient": "#686251", "armor-quantum": "#4f4961",
+    "armor-light": "#595961", "conglomerate-rock": "#4f4e51", "metal-ground": "#444651",
+    "metal-ground-heat": "#5f5675", "metal-ground-quantum": "#524c65", "quantum-field": "#ab7ce9",
+    "quantum-field-deep": "#915bcf", "lab-floor-light": "#555666", "lab-floor-dark": "#4d4e58",
+    "plating-metal-floor": "#3f4049",
+}
+
 
 class Floor:
     def __init__(self, name, rgb, mod=None):
@@ -135,12 +146,13 @@ def sprite_average(sprite_dir, base):
 
 
 def mod_floors(sprite_dir=SPRITE_DIR):
+    """Mod floors: measured from the sprites when they are available, else the embedded colours."""
+    have_sprites = os.path.isdir(sprite_dir)
     floors = []
     for name, base in MOD_FLOORS.items():
-        rgb = sprite_average(sprite_dir, base)
+        rgb = sprite_average(sprite_dir, base) if have_sprites else None
         if rgb is None:
-            print("warning: no sprite found for %s, skipping it" % name, file=sys.stderr)
-            continue
+            rgb = parse_hex(MOD_FLOOR_COLORS[name])
         floors.append(Floor("%s-%s" % (MOD_NAME, name), rgb, MOD_NAME))
     return floors
 

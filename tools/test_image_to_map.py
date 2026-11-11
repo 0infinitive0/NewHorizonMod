@@ -34,6 +34,19 @@ class PaletteTest(unittest.TestCase):
             self.assertTrue(f.name.startswith("new-horizon-"), f.name)
             self.assertEqual(f.mod, "new-horizon")
 
+    def test_works_without_the_sprites_folder(self):
+        with tempfile.TemporaryDirectory() as d:
+            pal = m.build_palette(("newhorizon",), sprite_dir=os.path.join(d, "missing"))
+        self.assertEqual(len(pal), len(m.MOD_FLOORS))
+        self.assertEqual(set(m.MOD_FLOOR_COLORS), set(m.MOD_FLOORS))
+
+    def test_embedded_colours_match_the_sprites(self):
+        if not os.path.isdir(m.SPRITE_DIR):
+            self.skipTest("sprites not present")
+        for f in m.mod_floors():
+            short = f.name[len("new-horizon-"):]
+            self.assertEqual(f.rgb, m.parse_hex(m.MOD_FLOOR_COLORS[short]), short)
+
     def test_sprite_pattern_does_not_mix_up_similar_names(self):
         d = SPRITE = m.SPRITE_DIR
         plain = m.sprite_average(d, "metal-ground")
