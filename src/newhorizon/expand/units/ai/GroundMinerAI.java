@@ -30,6 +30,11 @@ public class GroundMinerAI extends MinerAI{
 	public float maxOreDistance = 45f * tilesize;
 	/** Ticks an item with no reachable ore is left out of its choices. */
 	public float skipTime = 60f * 30f;
+	/**
+	 * How near the core it hands the load over from. The base game lets a miner (and a player's own unit) hand over from this far, and a core in
+	 * a base is shut in by the player's own buildings, which a walker cannot pass, so it could never get next to it.
+	 */
+	public float depositRange = Vars.mineTransferRange;
 
 	/** The tile (item, tile) it chose is far from or unreachable from the core; time until the item may be tried again. */
 	protected final ObjectFloatMap<Item> skipUntil = new ObjectFloatMap<>();
@@ -145,15 +150,15 @@ public class GroundMinerAI extends MinerAI{
 				return;
 			}
 
-			float reach = core.hitSize() / 2f + 14f;
-			if(unit.within(core, reach)){
+			if(unit.within(core, depositRange)){
 				if(core.acceptStack(unit.stack.item, unit.stack.amount, unit) > 0){
 					Call.transferItemTo(unit, unit.stack.item, unit.stack.amount, unit.x, unit.y, core);
 				}
 				unit.clearItem();
 				mining = true;
-			}else{
-				walkTo(core, reach);
+			}else if(!walkTo(core, depositRange * 0.8f)){
+				//no way through to the core (it is shut in): get as near as the walls allow, which is still in reach from outside
+				moveTo(core, depositRange * 0.8f, 20f);
 			}
 		}
 	}
