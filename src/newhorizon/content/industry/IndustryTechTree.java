@@ -73,6 +73,7 @@ public class IndustryTechTree{
 		child(reactor, IndustryBlocks.plasmaSmelter);
 		child(reactor, IndustryBlocks.plasmaCannon);
 		child(reactor, IndustryBlocks.plasmaMineCannon);
+		child(reactor, IndustryBlocks.antiMatterDisintegrator);
 		child(separator, IndustryBlocks.slagRefinery);
 
 		TechNode bank = child(factory, IndustryBlocks.capacitorBank);

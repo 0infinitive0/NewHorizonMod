@@ -40,7 +40,7 @@ public class IndustryBlocks{
 	public static Block turbinePump, quantumPump, singularityPump;
 	public static Block armoredContainer, armoredTank, singularityTank;
 	public static Block capacitorBank, surgeBattery, singularityBattery;
-	public static Block electricSeparator, fusionReactor, slagRefinery, plasmaSmelter, plasmaCannon, plasmaMineCannon;
+	public static Block electricSeparator, fusionReactor, slagRefinery, plasmaSmelter, plasmaCannon, plasmaMineCannon, antiMatterDisintegrator;
 	public static Block advancedMassDriver, advancedLiquidMassDriver, itemTeleporter, liquidTeleporter;
 
 	public static void load(){
@@ -324,6 +324,16 @@ public class IndustryBlocks{
 				ammoMultiplier = 1f / 20f;
 				shootEffect = Fx.shootBig;
 			}});
+		}};
+
+		//Anti-matter and power in: it dissolves one wall tile of the terrain at a time, wherever its pilot aims (like the Anti-Matter Cannon).
+		antiMatterDisintegrator = new newhorizon.expand.block.turrets.AntiMatterDisintegrator("anti-matter-disintegrator"){{
+			requirements(Category.turret, with(Items.silicon, 400, Items.thorium, 300, Items.surgeAlloy, 200, Items.phaseFabric, 150));
+			size = 3;
+			health = 1500;
+			range = 400f;
+			rotateSpeed = 3f;
+			consumePower(8f);
 		}};
 
 		//Hydrogen (or less well ozone) in, 200 power a tick out, a little thorium on the side; it takes a great deal of power to light.
