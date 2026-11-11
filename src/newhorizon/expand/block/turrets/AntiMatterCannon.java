@@ -38,7 +38,7 @@ import static mindustry.Vars.tilesize;
  * A turret that cannot aim by itself: it does nothing for an AI or with nobody at its controls. Someone who has taken control of it (a
  * player, or a logic processor that gives it a shoot order for a point) <b>holds fire to charge it</b>; it does not keep the charge, which drains away when fire is let go (or the power fails). With the charge
  * full, the barrel on the cursor and a target of another team under it, it fires one beam. What the beam hits is destroyed outright, and the
- * destruction spreads (see {@link AntiMatter}); a shield in the way is destroyed instead, and nothing spreads. After a shot the cannon cools
+ * destruction spreads with no limit, pausing now and then when a great deal is waiting (see {@link AntiMatter}); a shield in the way is destroyed instead, and nothing spreads. After a shot the cannon cools
  * for a while and cannot be charged. The state is drawn: coils that pulse towards the muzzle as it charges, a core that swells, a flare and
  * recoil when it fires, glow that fades as it powers down, and a hot barrel with vents as it cools. (The state is worked out by every side
  * that runs the turret; only the server makes the shot.)

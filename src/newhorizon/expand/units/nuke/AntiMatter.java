@@ -28,14 +28,18 @@ import static mindustry.Vars.tilesize;
 /**
  * What the anti-matter cannon's beam does. {@link #pick} chooses what is under the cursor, {@link #shield} finds a shield in the way of the
  * beam, and {@link #annihilate} destroys the target and starts a ripple: every {@link #stepTicks} ticks it destroys everything of the
- * target's team that touches what was destroyed in the step before, until nothing new is touched or {@link #cap} things have gone. A core is
- * never destroyed by the ripple and does not carry it on. Everything here is done on the server.
+ * target's team that touches what was destroyed in the step before, until nothing new is touched. There is no limit on how much it destroys,
+ * but a step destroys at most {@link #stepLimit} things: when more are waiting, the spread pauses for {@link #pauseTicks} and then goes on
+ * with the rest, so a huge base does not stall the game. A core is never destroyed by the ripple and does not carry it on. Everything here is
+ * done on the server.
  */
 public class AntiMatter{
-	/** How near the cursor a target has to be (besides its own size), ticks between two steps of a ripple, and the most a ripple destroys. */
+	/** How near the cursor a target has to be (besides its own size), and ticks between two steps of a ripple. */
 	public static float snap = 24f;
 	public static float stepTicks = 6f;
-	public static int cap = 4000;
+	/** The most things one step destroys, and the ticks the spread pauses after a step that reached it with more still waiting. */
+	public static int stepLimit = 400;
+	public static float pauseTicks = 60f;
 
 	/** A ripple that is going. */
 	private static class Wave{
@@ -45,6 +49,8 @@ public class AntiMatter{
 		final IntSet seenBuildings = new IntSet(), seenUnits = new IntSet();
 		float timer;
 		int destroyed;
+		/** The last step stopped at {@link #stepLimit} with things still waiting. */
+		boolean limited;
 	}
 
 	private static final Seq<Wave> waves = new Seq<>();
@@ -262,31 +268,41 @@ public class AntiMatter{
 			w.timer += stepTicks;
 			step(w);
 			if(w.buildings.isEmpty() && w.units.isEmpty()) waves.remove(i);
+			//the step ran out of its budget with more waiting: the spread pauses
+			else if(w.limited) w.timer += pauseTicks - stepTicks;
 		}
 	}
 
-	/** The things waiting are destroyed, and what touches them waits for the next step. */
+	/**
+	 * The things waiting are destroyed, from the front of the queue, up to {@link #stepLimit} of them; what touches them goes to the back of
+	 * the queue, so it waits for the next step and the spread keeps its order outward. Dead or invalid entries cost nothing.
+	 */
 	private static void step(Wave w){
-		Seq<Building> bs = new Seq<>(w.buildings);
-		Seq<Unit> us = new Seq<>(w.units);
-		w.buildings.clear();
-		w.units.clear();
-		for(Building b : bs){
-			if(w.destroyed >= cap) break;
+		int budget = stepLimit;
+		//only what was waiting when the step began: what these touch is for the next step
+		int nb = w.buildings.size, nu = w.units.size;
+		while(nb > 0 && budget > 0){
+			nb--;
+			Building b = w.buildings.remove(0);
 			if(!b.isValid()) continue;
 			touching(w, b);
-			if(destroy(b)) w.destroyed++;
+			if(destroy(b)){
+				w.destroyed++;
+				budget--;
+			}
 		}
-		for(Unit u : us){
-			if(w.destroyed >= cap) break;
+		//buildings left over put the units behind them in the queue too, as the units added by the buildings above are at the back
+		while(nu > 0 && budget > 0 && nb == 0){
+			nu--;
+			Unit u = w.units.remove(0);
 			if(u.dead() || !u.isAdded()) continue;
 			touching(w, u);
-			if(destroy(u)) w.destroyed++;
+			if(destroy(u)){
+				w.destroyed++;
+				budget--;
+			}
 		}
-		if(w.destroyed >= cap){
-			w.buildings.clear();
-			w.units.clear();
-		}
+		w.limited = budget <= 0 && !(w.buildings.isEmpty() && w.units.isEmpty());
 	}
 
 	/** Stops every ripple (for tests and for a new map). */
