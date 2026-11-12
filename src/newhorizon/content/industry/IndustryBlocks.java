@@ -12,6 +12,7 @@ import mindustry.world.blocks.distribution.MassDriver;
 import mindustry.world.blocks.liquid.LiquidRouter;
 import mindustry.world.blocks.defense.turrets.LiquidTurret;
 import newhorizon.expand.bullets.plasma.PlasmaBoltBulletType;
+import newhorizon.expand.bullets.plasma.PlasmaClusterBulletType;
 import newhorizon.expand.bullets.plasma.PlasmaMineBulletType;
 import mindustry.world.blocks.power.Battery;
 import mindustry.world.blocks.production.GenericCrafter;
@@ -320,8 +321,9 @@ public class IndustryBlocks{
 			targetAir = true;
 			targetGround = true;
 			shootSound = mindustry.gen.Sounds.shootLaser;
-			ammo(IndustryLiquids.plasma, new PlasmaMineBulletType(){{
-				ammoMultiplier = 1f / 20f;
+			//one shot is a shell that bursts into five mines where it comes to rest: 10 plasma a mine
+			ammo(IndustryLiquids.plasma, new PlasmaClusterBulletType(new PlasmaMineBulletType()){{
+				ammoMultiplier = 1f / 50f;
 				shootEffect = Fx.shootBig;
 			}});
 		}};
