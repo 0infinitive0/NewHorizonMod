@@ -39,6 +39,9 @@ public class OmniBlocks{
 			health = 200;
 			consumePowerBuffered(20000f);
 			energyPerItem = 10000f;
+			//The lit ring goes from a dim to a bright violet with the charge, to match its violet prongs.
+			emptyLightColor = Color.valueOf("8f6ae0");
+			fullLightColor = Color.valueOf("e0c8ff");
 		}};
 
 		omniShield = new OmniShield("omni-shield"){{

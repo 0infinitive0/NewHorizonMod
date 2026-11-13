@@ -152,6 +152,9 @@ public class IndustryBlocks{
 			envEnabled = Env.any;
 			consumePowerBuffered(6000000f);
 			baseExplosiveness = 8f;
+			//The lit cell rims go from a dim to a bright violet with the charge, to match its violet accents.
+			emptyLightColor = Color.valueOf("8f6ae0");
+			fullLightColor = Color.valueOf("e0c8ff");
 		}};
 
 		//Mass drivers: the base game's reaches 440 and flies at 5.5; these reach 1,200 at 14 (items) and 12 (liquids).
