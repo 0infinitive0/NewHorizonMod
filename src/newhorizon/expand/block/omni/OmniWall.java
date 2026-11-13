@@ -3,9 +3,7 @@ package newhorizon.expand.block.omni;
 import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
-import arc.graphics.g2d.Fill;
-import arc.graphics.g2d.Lines;
-import arc.math.geom.Geometry;
+import arc.graphics.g2d.TextureRegion;
 import arc.math.Mathf;
 import arc.util.Time;
 import arc.util.io.Reads;
@@ -36,6 +34,8 @@ public class OmniWall extends Wall{
 	/** Ticks before it can blast again. */
 	public float blastCooldown = 20f;
 	public Color color = Color.valueOf("c885ff");
+	/** The ring, dot and conduits of the wall, drawn over it in the colour of the charge it holds. */
+	public TextureRegion glowRegion;
 
 	public OmniWall(String name){
 		super(name);
@@ -43,6 +43,12 @@ public class OmniWall extends Wall{
 		absorbLasers = true;
 		insulated = true;
 		buildType = OmniWallBuild::new;
+	}
+
+	@Override
+	public void load(){
+		super.load();
+		glowRegion = Core.atlas.find(name + "-glow");
 	}
 
 	@Override
@@ -102,18 +108,12 @@ public class OmniWall extends Wall{
 		@Override
 		public void draw(){
 			super.draw();
-			if(charge > 1f){
-				//The stored charge fills the diamond core of the plate and lights the conduits that run out of it.
+			if(charge > 1f && glowRegion != null && glowRegion.found()){
+				//The stored charge lights the wall's own socket ring, dot and conduits.
 				float fill = Mathf.clamp(charge / 1500f);
 				Draw.z(Layer.blockOver);
-				Draw.color(color, fill * (0.45f + 0.15f * Mathf.absin(Time.time, 10f, 1f)));
-				Fill.poly(x, y, 4, 2f, 0f);
-				Draw.color(color, fill);
-				Lines.stroke(0.3f);
-				for(int i = 0; i < 4; i++){
-					float c = Geometry.d4x(i), s = Geometry.d4y(i);
-					Lines.line(x + c * 2f, y + s * 2f, x + c * 2.5f, y + s * 2.5f);
-				}
+				Draw.color(color, Math.min(1f, fill * (0.75f + 0.25f * Mathf.absin(Time.time, 10f, 1f))));
+				Draw.rect(glowRegion, x, y);
 				Draw.reset();
 			}
 		}
