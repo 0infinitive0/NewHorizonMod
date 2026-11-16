@@ -19,6 +19,8 @@ public class SupplyTechTree{
 		if(ultimate != null) ultimate.objectives.add(new Objectives.Research(Blocks.largeSolarPanel));
 		walkers();
 		towers();
+		//Next to the Scorch it is a longer-ranged spray of the same kind.
+		child(find(Blocks.scorch), SupplyBlocks.reverseSprayer);
 		//Under the Advanced Launch Pad (the vanilla pad's own sector objective applies through its parent).
 		child(find(Blocks.advancedLaunchPad), SupplyBlocks.sectorLauncher);
 	}

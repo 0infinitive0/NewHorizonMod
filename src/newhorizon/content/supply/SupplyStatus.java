@@ -5,7 +5,7 @@ import mindustry.content.Fx;
 import mindustry.type.StatusEffect;
 
 /**
- * Experimental status effects with negative values, delivered by the Status Towers. The game was not made for these, so they may do odd things:
+ * Experimental status effects with negative values: Reverse is sprayed by the Reverse Sprayer turret, Mending Shots is given by the Status Towers. The game was not made for these, so they may do odd things:
  * <ul>
  * <li><b>Reverse</b>: a speed multiplier of -1, so the unit moves backwards (away from where it is trying to go).</li>
  * <li><b>Mending shots</b>: a damage multiplier of -1, so what the unit's bullets hit is healed instead of hurt (armour still takes its share,

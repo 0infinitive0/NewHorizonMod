@@ -10,6 +10,14 @@ import mindustry.world.blocks.distribution.Conveyor;
 import mindustry.world.blocks.distribution.ItemBridge;
 import mindustry.world.blocks.liquid.Conduit;
 import arc.graphics.Color;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.math.Angles;
+import mindustry.entities.Effect;
+import mindustry.entities.bullet.BulletType;
+import mindustry.gen.Sounds;
+import mindustry.graphics.Layer;
+import mindustry.world.blocks.defense.turrets.ItemTurret;
 import newhorizon.content.NHStatusEffects;
 import newhorizon.content.jade.JadeStatus;
 import newhorizon.expand.block.supply.SectorLauncher;
@@ -42,6 +50,7 @@ public class SupplyBlocks{
 	public static Block windTurbine, improvedWindTurbine, ultimateWindTurbine;
 	public static Block statusTower1, statusTower2, statusTower3;
 	public static Block sectorLauncher;
+	public static Block reverseSprayer;
 
 	public static void load(){
 		SupplyStatus.load();
@@ -51,6 +60,7 @@ public class SupplyBlocks{
 		SupplyUnits.load();
 		loadTowers();
 		loadLauncher();
+		loadSprayer();
 	}
 
 	/**
@@ -249,8 +259,7 @@ public class SupplyBlocks{
 			item(Items.pyratite, StatusEffects.burning, false);
 			item(Items.thorium, StatusEffects.sapped, false);
 			item(Items.blastCompound, StatusEffects.melting, false);
-			//Experimental, with negative values: enemies walk backwards, and their shots heal what they hit.
-			item(Items.scrap, SupplyStatus.reverse, false);
+			//Experimental, with a negative value: their shots heal what they hit.
 			item(Items.metaglass, SupplyStatus.mendingShots, false);
 			liquid(Liquids.water, StatusEffects.wet, false);
 			liquid(Liquids.cryofluid, StatusEffects.freezing, false);
@@ -276,10 +285,8 @@ public class SupplyBlocks{
 			item(Items.thorium, StatusEffects.sapped, false);
 			item(Items.blastCompound, StatusEffects.melting, false);
 			item(Items.surgeAlloy, NHStatusEffects.emp2, false);
-			//Experimental, with negative values, for enemies (scrap, metaglass) and for your own units (coal, copper).
-			item(Items.scrap, SupplyStatus.reverse, false);
+			//Experimental, with a negative value, for enemies (metaglass) and for your own units (copper).
 			item(Items.metaglass, SupplyStatus.mendingShots, false);
-			item(Items.coal, SupplyStatus.reverse, true);
 			item(Items.copper, SupplyStatus.mendingShots, true);
 			liquid(Liquids.water, StatusEffects.wet, false);
 			liquid(Liquids.cryofluid, StatusEffects.freezing, false);
@@ -294,6 +301,56 @@ public class SupplyBlocks{
 			size = 4;
 			health = 1800;
 			consumePower(8f);
+		}};
+	}
+
+	/**
+	 * The Reverse Sprayer: a flamethrower like the Scorch with a longer reach that sprays a pink and violet mist instead. The mist does next to
+	 * no damage, but every unit it touches gets the Reverse effect (it moves backwards) for a minute. It burns spore pods.
+	 */
+	private static void loadSprayer(){
+		Color pink = Color.valueOf("ff8be8"), violet = Color.valueOf("9b5cff");
+		Effect mist = new Effect(40f, 60f, e -> {
+			Draw.color(pink, violet, e.fin());
+			Draw.alpha(0.5f * e.fout());
+			Angles.randLenVectors(e.id, 2, 2f + 9f * e.fin(), (x, y) -> Fill.circle(e.x + x, e.y + y, 2.4f + e.fin() * 5.5f));
+		}).layer(Layer.bullet - 1f);
+		Effect puff = new Effect(24f, 60f, e -> {
+			Draw.color(pink, violet, e.fin());
+			Draw.alpha(0.6f * e.fout());
+			Angles.randLenVectors(e.id, 4, 3f + 14f * e.fin(), e.rotation, 30f, (x, y) -> Fill.circle(e.x + x, e.y + y, 2f + e.fout() * 3.5f));
+		}).layer(Layer.bullet - 1f);
+
+		reverseSprayer = new ItemTurret("reverse-sprayer"){{
+			requirements(Category.turret, with(Items.titanium, 120, Items.silicon, 100, Items.graphite, 80, Items.plastanium, 30));
+			size = 2;
+			health = 700;
+			range = 150f;
+			reload = 4f;
+			inaccuracy = 14f;
+			shootCone = 30f;
+			rotateSpeed = 8f;
+			recoil = 0f;
+			targetAir = true;
+			targetGround = true;
+			ammoUseEffect = Fx.none;
+			shootSound = Sounds.shootFlame;
+			ammo(Items.sporePod, new BulletType(7f, 1f){{
+				ammoMultiplier = 3f;
+				hitSize = 9f;
+				lifetime = 22f;
+				pierce = true;
+				keepVelocity = false;
+				hittable = false;
+				absorbable = false;
+				status = SupplyStatus.reverse;
+				statusDuration = 60f * 60f;
+				shootEffect = puff;
+				hitEffect = Fx.none;
+				despawnEffect = Fx.none;
+				trailEffect = mist;
+				trailChance = 0.9f;
+			}});
 		}};
 	}
 }
