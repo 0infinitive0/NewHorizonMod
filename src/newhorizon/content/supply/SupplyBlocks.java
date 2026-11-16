@@ -9,7 +9,6 @@ import mindustry.world.Block;
 import mindustry.world.blocks.distribution.Conveyor;
 import mindustry.world.blocks.distribution.ItemBridge;
 import mindustry.world.blocks.liquid.Conduit;
-import arc.graphics.Blending;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
@@ -325,10 +324,10 @@ public class SupplyBlocks{
 			targetGround = true;
 			ammoUseEffect = Fx.none;
 			shootSound = Sounds.shootFlame;
-			//Spore pods: a pink and violet mist that makes units move backwards. Coal: an orange mist that makes them three times as fast but slow to turn and to stop.
+			//Spore pods: a pink and violet mist that makes units move backwards. Coal: a smoke, dark gray fading to black, that makes them three times as fast but slow to turn and to stop.
 			ammo(
 				Items.sporePod, mistBullet(Color.valueOf("ff8be8"), Color.valueOf("9b5cff"), SupplyStatus.reverse),
-				Items.coal, mistBullet(Color.valueOf("ffe08a"), Color.valueOf("ff7a2e"), SupplyStatus.runaway)
+				Items.coal, mistBullet(Color.valueOf("8a8a8f"), Color.valueOf("141417"), SupplyStatus.runaway)
 			);
 		}};
 	}
@@ -336,19 +335,14 @@ public class SupplyBlocks{
 	/** One kind of the sprayer's mist: next to no damage, a cone of puffs in the two colours, and {@code applied} for a minute on whatever it touches. */
 	private static BulletType mistBullet(Color from, Color to, StatusEffect applied){
 		Effect mist = new Effect(40f, 60f, e -> {
-			//Added to what is behind it, so that it glows in its colour over any ground and can never turn dark or gray.
-			Draw.blend(Blending.additive);
 			Draw.color(from, to, e.fin());
-			Draw.alpha(0.4f * e.fout());
+			Draw.alpha(0.55f * e.fout());
 			Angles.randLenVectors(e.id, 2, 2f + 9f * e.fin(), (x, y) -> Fill.circle(e.x + x, e.y + y, 2.4f + e.fin() * 5.5f));
-			Draw.blend();
 		}).layer(Layer.bullet - 1f);
 		Effect puff = new Effect(24f, 60f, e -> {
-			Draw.blend(Blending.additive);
 			Draw.color(from, to, e.fin());
-			Draw.alpha(0.5f * e.fout());
+			Draw.alpha(0.65f * e.fout());
 			Angles.randLenVectors(e.id, 4, 3f + 14f * e.fin(), e.rotation, 30f, (x, y) -> Fill.circle(e.x + x, e.y + y, 2f + e.fout() * 3.5f));
-			Draw.blend();
 		}).layer(Layer.bullet - 1f);
 
 		return new BulletType(7f, 1f){{

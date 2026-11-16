@@ -1,11 +1,6 @@
 package newhorizon.content.supply;
 
-import arc.graphics.Blending;
 import arc.graphics.Color;
-import arc.graphics.g2d.Draw;
-import arc.graphics.g2d.Fill;
-import arc.math.Angles;
-import mindustry.entities.Effect;
 import mindustry.content.Fx;
 import mindustry.entities.units.StatusEntry;
 import mindustry.gen.Unit;
@@ -41,22 +36,13 @@ public class SupplyStatus{
 			effectChance = 0.08f;
 		}};
 
-		//Bright orange sparks round the unit (the base game's fire effect fades through dark red and gray).
-		Effect sparks = new Effect(30f, e -> {
-			Draw.blend(Blending.additive);
-			Draw.color(Color.valueOf("ffe08a"), Color.valueOf("ff7a2e"), e.fin());
-			Draw.alpha(0.8f * e.fout());
-			Angles.randLenVectors(e.id, 2, 1f + 8f * e.fin(), (x, y) -> Fill.circle(e.x + x, e.y + y, 0.6f + e.fout() * 1.6f));
-			Draw.blend();
-		});
-
 		runaway = new StatusEffect("runaway"){
 			{
 				color = Color.valueOf("ffb347");
 				speedMultiplier = 3f;
 				dragMultiplier = 0.2f;
-				effect = sparks;
-				effectChance = 0.12f;
+				effect = Fx.fire;
+				effectChance = 0.08f;
 			}
 
 			@Override
