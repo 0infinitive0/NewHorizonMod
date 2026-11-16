@@ -9,6 +9,7 @@ import mindustry.world.Block;
 import mindustry.world.blocks.distribution.Conveyor;
 import mindustry.world.blocks.distribution.ItemBridge;
 import mindustry.world.blocks.liquid.Conduit;
+import arc.graphics.Blending;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
@@ -335,14 +336,19 @@ public class SupplyBlocks{
 	/** One kind of the sprayer's mist: next to no damage, a cone of puffs in the two colours, and {@code applied} for a minute on whatever it touches. */
 	private static BulletType mistBullet(Color from, Color to, StatusEffect applied){
 		Effect mist = new Effect(40f, 60f, e -> {
+			//Added to what is behind it, so that it glows in its colour over any ground and can never turn dark or gray.
+			Draw.blend(Blending.additive);
 			Draw.color(from, to, e.fin());
-			Draw.alpha(0.5f * e.fout());
+			Draw.alpha(0.4f * e.fout());
 			Angles.randLenVectors(e.id, 2, 2f + 9f * e.fin(), (x, y) -> Fill.circle(e.x + x, e.y + y, 2.4f + e.fin() * 5.5f));
+			Draw.blend();
 		}).layer(Layer.bullet - 1f);
 		Effect puff = new Effect(24f, 60f, e -> {
+			Draw.blend(Blending.additive);
 			Draw.color(from, to, e.fin());
-			Draw.alpha(0.6f * e.fout());
+			Draw.alpha(0.5f * e.fout());
 			Angles.randLenVectors(e.id, 4, 3f + 14f * e.fin(), e.rotation, 30f, (x, y) -> Fill.circle(e.x + x, e.y + y, 2f + e.fout() * 3.5f));
+			Draw.blend();
 		}).layer(Layer.bullet - 1f);
 
 		return new BulletType(7f, 1f){{
@@ -358,6 +364,7 @@ public class SupplyBlocks{
 			shootEffect = puff;
 			hitEffect = Fx.none;
 			despawnEffect = Fx.none;
+			smokeEffect = Fx.none;                 //the default gray muzzle smoke
 			trailEffect = mist;
 			trailChance = 0.9f;
 		}};
