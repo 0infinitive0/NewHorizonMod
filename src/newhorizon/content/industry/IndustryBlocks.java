@@ -41,7 +41,7 @@ public class IndustryBlocks{
 	public static Block turbinePump, quantumPump, singularityPump;
 	public static Block armoredContainer, armoredTank, singularityTank;
 	public static Block capacitorBank, surgeBattery, singularityBattery;
-	public static Block electricSeparator, fusionReactor, slagRefinery, plasmaSmelter, plasmaCannon, plasmaMineCannon, antiMatterDisintegrator;
+	public static Block electricSeparator, advancedElectricSeparator, fusionReactor, slagRefinery, plasmaSmelter, plasmaCannon, plasmaMineCannon, antiMatterDisintegrator;
 	public static Block advancedMassDriver, advancedLiquidMassDriver, itemTeleporter, liquidTeleporter;
 
 	public static void load(){
@@ -219,6 +219,29 @@ public class IndustryBlocks{
 			outputLiquids = LiquidStack.with(Liquids.hydrogen, 18f / 60f, Liquids.ozone, 6f / 60f);
 			//Like the Electrolyzer: it can be turned, and each liquid leaves from its own side (relative to the rotation: 1 is the left, 3 the right),
 			//with the ports drawn on those sides. Hydrogen out of the left, ozone out of the right.
+			rotate = true;
+			invertFlip = true;
+			liquidOutputDirections = new int[]{1, 3};
+			drawer = new DrawMulti(new DrawRegion(), new DrawLiquidOutputs(), new DrawGlowRegion(){{
+				color = Color.valueOf("7ff4ff");
+				alpha = 0.85f;
+				glowScale = 5f;
+				glowIntensity = 0.25f;
+			}});
+		}};
+
+		//The Electric Separator four times over in 4x4: the same recipe with four times the water, power and output, the same sides.
+		advancedElectricSeparator = new GenericCrafter("advanced-electric-separator"){{
+			requirements(Category.crafting, with(Items.silicon, 700, Items.graphite, 500, Items.thorium, 350, Items.surgeAlloy, 200, Items.phaseFabric, 100));
+			size = 4;
+			health = 2400;
+			envEnabled = Env.any;
+			hasPower = true;
+			hasLiquids = true;
+			liquidCapacity = 2400f;
+			consumeLiquid(Liquids.water, 144f / 60f);
+			consumePower(12f);
+			outputLiquids = LiquidStack.with(Liquids.hydrogen, 72f / 60f, Liquids.ozone, 24f / 60f);
 			rotate = true;
 			invertFlip = true;
 			liquidOutputDirections = new int[]{1, 3};
