@@ -17,6 +17,8 @@ public class NukeStatus{
 	public static StatusEffect highAltitude;
 	/** Scorched by a Serpent's flames: cannot heal for a moment (see NoHeal). */
 	public static StatusEffect unhealable;
+	/** Cannot turn: the body and the rotating weapons keep facing the way they were (see TurnLock). Gives no other effect. */
+	public static StatusEffect turnLocked;
 
 	public static void load(){
 		irradiated = new StatusEffect("irradiated"){{
@@ -49,6 +51,13 @@ public class NukeStatus{
 				newhorizon.expand.status.NoHeal.hold(unit);
 			}
 		};
+
+		turnLocked = new StatusEffect("turn-locked"){{
+			color = Color.valueOf("9fb4cc");
+			effect = Fx.shootSmallSmoke;
+			effectChance = 0.05f;
+		}};
+		newhorizon.expand.status.TurnLock.hook(turnLocked);
 
 		highAltitude = new StatusEffect("high-altitude"){{
 			show = false;

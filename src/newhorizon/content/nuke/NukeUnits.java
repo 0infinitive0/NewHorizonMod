@@ -60,6 +60,7 @@ public class NukeUnits{
 		quake, quakeActive,
 		meteor, meteorActive,
 		neoplasm, neoplasmActive,
+		lockdown, lockdownActive,
 		scatter, scatterActive,
 		magnet, magnetActive,
 		hijack, hijackActive,
@@ -183,6 +184,9 @@ public class NukeUnits{
 		neoplasm = nuke(Warhead.neoplasm, false);
 		neoplasmActive = nuke(Warhead.neoplasm, true);
 		pair(neoplasm, neoplasmActive);
+		lockdown = nuke(Warhead.lockdown, false);
+		lockdownActive = nuke(Warhead.lockdown, true);
+		pair(lockdown, lockdownActive);
 		quake = nuke(Warhead.quake, false);
 		quakeActive = nuke(Warhead.quake, true);
 		pair(quake, quakeActive);

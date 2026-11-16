@@ -47,7 +47,7 @@ public abstract class Warhead{
 		explosive, incendiary, radiation, emp,
 		psychic, gravity, spatial, shockwave, cluster, wall, temporal, infantry, overload,
 		laser, swarm, storm, decoy, mini, lightning, siphon, quake,
-		scatter, magnet, hijack, scramble, sabotage, breach, devolve, meteor, neoplasm;
+		scatter, magnet, hijack, scramble, sabotage, breach, devolve, meteor, neoplasm, lockdown;
 	public static final Seq<Warhead> all = new Seq<>();
 
 	public final String name;
@@ -560,6 +560,25 @@ public abstract class Warhead{
 			}
 		};
 
+		//No damage: every unit and every turret in reach, of either side, cannot turn for ninety seconds. Units can still move and fire what is in front of them.
+		lockdown = new Warhead("lockdown", Color.valueOf("9fb4cc"), 250f, 0f){
+			@Override
+			public void visual(float x, float y){
+				NukeFx.empPulse.at(x, y, radius, color);
+			}
+
+			@Override
+			public void special(float x, float y, Team team, Unit nuke){
+				float r2 = radius * radius;
+				Units.nearby(x - radius, y - radius, radius * 2f, radius * 2f, u -> {
+					if(u != nuke && !u.dead() && u.within(x, y, radius + u.hitSize / 2f)) newhorizon.expand.status.TurnLock.lock(u, lockdownTime);
+				});
+				Units.nearbyBuildings(x, y, radius, b -> {
+					if(b.dst2(x, y) <= r2 && b.block instanceof Turret) newhorizon.expand.status.TurnLock.lock(b, lockdownTime);
+				});
+			}
+		};
+
 		//Covers every tile in reach with neoplasm, the red liquid of the base game: it settles in puddles that keep creeping through
 		//blocks and over the ground for a while. Nothing is damaged: the neoplasm of the base game has no effect of its own.
 		neoplasm = new Warhead("neoplasm", Color.valueOf("c33e2b"), 170f, 0f){
@@ -710,6 +729,9 @@ public abstract class Warhead{
 
 	/** How long the temporal nuke's freeze lasts: three minutes. */
 	public static final float lockTime = 60f * 60f * 3f;
+
+	/** How long the lockdown nuke keeps units and turrets from turning: ninety seconds. */
+	public static final float lockdownTime = 60f * 90f;
 
 	/** Called by the zone of a nuke that waits before it explodes. */
 	public void finish(float x, float y){
