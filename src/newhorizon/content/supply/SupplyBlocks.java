@@ -16,6 +16,7 @@ import arc.math.Angles;
 import mindustry.entities.Effect;
 import mindustry.entities.bullet.BulletType;
 import mindustry.gen.Sounds;
+import mindustry.type.StatusEffect;
 import mindustry.graphics.Layer;
 import mindustry.world.blocks.defense.turrets.ItemTurret;
 import newhorizon.content.NHStatusEffects;
@@ -309,18 +310,6 @@ public class SupplyBlocks{
 	 * no damage, but every unit it touches gets the Reverse effect (it moves backwards) for a minute. It burns spore pods.
 	 */
 	private static void loadSprayer(){
-		Color pink = Color.valueOf("ff8be8"), violet = Color.valueOf("9b5cff");
-		Effect mist = new Effect(40f, 60f, e -> {
-			Draw.color(pink, violet, e.fin());
-			Draw.alpha(0.5f * e.fout());
-			Angles.randLenVectors(e.id, 2, 2f + 9f * e.fin(), (x, y) -> Fill.circle(e.x + x, e.y + y, 2.4f + e.fin() * 5.5f));
-		}).layer(Layer.bullet - 1f);
-		Effect puff = new Effect(24f, 60f, e -> {
-			Draw.color(pink, violet, e.fin());
-			Draw.alpha(0.6f * e.fout());
-			Angles.randLenVectors(e.id, 4, 3f + 14f * e.fin(), e.rotation, 30f, (x, y) -> Fill.circle(e.x + x, e.y + y, 2f + e.fout() * 3.5f));
-		}).layer(Layer.bullet - 1f);
-
 		reverseSprayer = new ItemTurret("reverse-sprayer"){{
 			requirements(Category.turret, with(Items.titanium, 120, Items.silicon, 100, Items.graphite, 80, Items.plastanium, 30));
 			size = 2;
@@ -335,22 +324,42 @@ public class SupplyBlocks{
 			targetGround = true;
 			ammoUseEffect = Fx.none;
 			shootSound = Sounds.shootFlame;
-			ammo(Items.sporePod, new BulletType(7f, 1f){{
-				ammoMultiplier = 3f;
-				hitSize = 9f;
-				lifetime = 22f;
-				pierce = true;
-				keepVelocity = false;
-				hittable = false;
-				absorbable = false;
-				status = SupplyStatus.reverse;
-				statusDuration = 60f * 60f;
-				shootEffect = puff;
-				hitEffect = Fx.none;
-				despawnEffect = Fx.none;
-				trailEffect = mist;
-				trailChance = 0.9f;
-			}});
+			//Spore pods: a pink and violet mist that makes units move backwards. Coal: an orange mist that makes them three times as fast but slow to turn and to stop.
+			ammo(
+				Items.sporePod, mistBullet(Color.valueOf("ff8be8"), Color.valueOf("9b5cff"), SupplyStatus.reverse),
+				Items.coal, mistBullet(Color.valueOf("ffe08a"), Color.valueOf("ff7a2e"), SupplyStatus.runaway)
+			);
+		}};
+	}
+
+	/** One kind of the sprayer's mist: next to no damage, a cone of puffs in the two colours, and {@code applied} for a minute on whatever it touches. */
+	private static BulletType mistBullet(Color from, Color to, StatusEffect applied){
+		Effect mist = new Effect(40f, 60f, e -> {
+			Draw.color(from, to, e.fin());
+			Draw.alpha(0.5f * e.fout());
+			Angles.randLenVectors(e.id, 2, 2f + 9f * e.fin(), (x, y) -> Fill.circle(e.x + x, e.y + y, 2.4f + e.fin() * 5.5f));
+		}).layer(Layer.bullet - 1f);
+		Effect puff = new Effect(24f, 60f, e -> {
+			Draw.color(from, to, e.fin());
+			Draw.alpha(0.6f * e.fout());
+			Angles.randLenVectors(e.id, 4, 3f + 14f * e.fin(), e.rotation, 30f, (x, y) -> Fill.circle(e.x + x, e.y + y, 2f + e.fout() * 3.5f));
+		}).layer(Layer.bullet - 1f);
+
+		return new BulletType(7f, 1f){{
+			ammoMultiplier = 3f;
+			hitSize = 9f;
+			lifetime = 22f;
+			pierce = true;
+			keepVelocity = false;
+			hittable = false;
+			absorbable = false;
+			status = applied;
+			statusDuration = 60f * 60f;
+			shootEffect = puff;
+			hitEffect = Fx.none;
+			despawnEffect = Fx.none;
+			trailEffect = mist;
+			trailChance = 0.9f;
 		}};
 	}
 }
