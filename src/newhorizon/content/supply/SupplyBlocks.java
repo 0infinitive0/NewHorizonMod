@@ -44,6 +44,7 @@ public class SupplyBlocks{
 	public static Block sectorLauncher;
 
 	public static void load(){
+		SupplyStatus.load();
 		loadBelts();
 		loadDrills();
 		loadPower();
@@ -248,6 +249,9 @@ public class SupplyBlocks{
 			item(Items.pyratite, StatusEffects.burning, false);
 			item(Items.thorium, StatusEffects.sapped, false);
 			item(Items.blastCompound, StatusEffects.melting, false);
+			//Experimental, with negative values: enemies walk backwards, and their shots heal what they hit.
+			item(Items.scrap, SupplyStatus.reverse, false);
+			item(Items.metaglass, SupplyStatus.mendingShots, false);
 			liquid(Liquids.water, StatusEffects.wet, false);
 			liquid(Liquids.cryofluid, StatusEffects.freezing, false);
 		}};
@@ -272,6 +276,11 @@ public class SupplyBlocks{
 			item(Items.thorium, StatusEffects.sapped, false);
 			item(Items.blastCompound, StatusEffects.melting, false);
 			item(Items.surgeAlloy, NHStatusEffects.emp2, false);
+			//Experimental, with negative values, for enemies (scrap, metaglass) and for your own units (coal, copper).
+			item(Items.scrap, SupplyStatus.reverse, false);
+			item(Items.metaglass, SupplyStatus.mendingShots, false);
+			item(Items.coal, SupplyStatus.reverse, true);
+			item(Items.copper, SupplyStatus.mendingShots, true);
 			liquid(Liquids.water, StatusEffects.wet, false);
 			liquid(Liquids.cryofluid, StatusEffects.freezing, false);
 			liquid(Liquids.oil, StatusEffects.tarred, false);
