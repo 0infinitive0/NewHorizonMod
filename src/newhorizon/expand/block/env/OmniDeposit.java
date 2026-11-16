@@ -57,6 +57,10 @@ public class OmniDeposit extends Block{
 	/** The mining timer of every unit that was working a deposit a moment ago, by unit id. */
 	private static final IntFloatMap timers = new IntFloatMap();
 	private static boolean hooked;
+	/** The game's private wall ore index, found once (see {@link #forget}). */
+	private static java.lang.reflect.Field wallOresField, allWallOresField, quadrantField;
+	private static java.lang.reflect.Method presentMethod;
+	private static boolean indexFailed;
 
 	public OmniDeposit(String name, Item item){
 		super(name);
@@ -90,10 +94,48 @@ public class OmniDeposit extends Block{
 		int left = remaining(tile) - 1;
 		if(left <= 0){
 			positions.remove(tile.pos());
+			forget(tile);
 			tile.setNet(Blocks.air);
 			tile.data = 0;
 		}else{
 			tile.data = (byte)left;
+		}
+	}
+
+	/**
+	 * Takes a used-up deposit tile out of the game's index of wall ores. The base game never removes a wall ore (they are terrain), so its index
+	 * keeps the tile after it has become air, and its search for the closest wall ore looks only at the first tile listed for each square of 20
+	 * by 20 tiles and skips the whole square when that one is air: so once the first deposit of a square was used up, the miners no longer found
+	 * any deposit in it, and none that was laid later. The index keeps its lists in private fields, hence the reflection; if the game's own
+	 * names differ (another version) this logs once and does nothing.
+	 */
+	@SuppressWarnings("unchecked")
+	private static void forget(Tile tile){
+		Item item = tile.wallDrop();
+		if(item == null || Vars.indexer == null || indexFailed) return;
+		try{
+			if(wallOresField == null){
+				Class<?> type = mindustry.ai.BlockIndexer.class;
+				wallOresField = type.getDeclaredField("wallOres");
+				allWallOresField = type.getDeclaredField("allWallOres");
+				quadrantField = type.getDeclaredField("quadrantSize");
+				presentMethod = type.getDeclaredMethod("updatePresentOres");
+				wallOresField.setAccessible(true);
+				allWallOresField.setAccessible(true);
+				quadrantField.setAccessible(true);
+				presentMethod.setAccessible(true);
+			}
+			int quad = quadrantField.getInt(null);
+			arc.struct.IntSeq[][][] lists = (arc.struct.IntSeq[][][])wallOresField.get(Vars.indexer);
+			if(item.id >= lists.length || lists[item.id] == null) return;
+			arc.struct.IntSeq list = lists[item.id][tile.x / quad][tile.y / quad];
+			if(list == null || !list.removeValue(tile.pos())) return;
+			arc.struct.ObjectIntMap<Item> all = (arc.struct.ObjectIntMap<Item>)allWallOresField.get(Vars.indexer);
+			all.increment(item, -1);
+			if(all.get(item, 0) <= 0) presentMethod.invoke(Vars.indexer);
+		}catch(Throwable e){
+			indexFailed = true;
+			arc.util.Log.warn("OmniDeposit: could not update the game's wall ore index (" + e + "); miners may stop finding deposits after one is used up.");
 		}
 	}
 
