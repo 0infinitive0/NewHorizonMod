@@ -176,7 +176,32 @@ public class ModularAbility extends Ability{
 	public void restore(Unit unit){
 		restored = true;
 		if(Vars.state != null) parse(Vars.state.rules.tags.get(TAG + unit.id));
+		if(empty() && unit.team.isAI() && !(Vars.net != null && Vars.net.client())) autoFit(unit);
 		apply(unit);
+	}
+
+	public boolean empty(){
+		for(int id : installed){
+			if(id >= 0) return false;
+		}
+		return true;
+	}
+
+	/**
+	 * A frame of an AI team that comes with nothing fitted (out of a wave, or out of the AI's own foundry) fits itself out, since nobody
+	 * will take it to a Refit Bay: a part for every slot, chosen by the unit's id so that it is the same every time. Parts that only let it
+	 * build are left out.
+	 */
+	protected void autoFit(Unit unit){
+		for(int slot = 0; slot < installed.length; slot++){
+			Seq<ModulePart> fitting = new Seq<>();
+			for(ModulePart part : ModulePart.all){
+				if(part.fits(slot) && !part.builds) fitting.add(part);
+			}
+			if(fitting.isEmpty()) continue;
+			installed[slot] = fitting.get(arc.math.Mathf.randomSeed(unit.id * 31L + slot, 0, fitting.size - 1)).id;
+		}
+		save(unit);
 	}
 
 	@Override
