@@ -22,7 +22,6 @@ public class NHVars{
 	public static void init(){
 		worldData = new NHWorldData();
 		listener = new NHInputListener();
-		control = new NHInputControl();
 
 		core = new NHModCore();
 
@@ -30,6 +29,8 @@ public class NHVars{
 		NHCSS_UI.init();
 
 		if(Vars.headless)return;
+		//An input handler resets the player when the world does, and a server has no player.
+		control = new NHInputControl();
 		GridUtil.init();
 		renderer = new NHRenderer();
 		NHSetting.loadUI();

@@ -14,6 +14,8 @@ public class Harness{
 	}
 
 	public static void boot(String dataDir, Task task){
+		Vars.platform = new Platform(){};
+		Vars.net = new mindustry.net.Net(Vars.platform.getNet());
 		new HeadlessApplication(new ApplicationListener(){
 			@Override
 			public void init(){

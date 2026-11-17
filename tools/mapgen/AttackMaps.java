@@ -11,7 +11,6 @@ import mindustry.world.*;
 import mindustry.world.blocks.defense.turrets.*;
 import mindustry.world.blocks.environment.*;
 import mindustry.world.blocks.units.*;
-import newhorizon.content.nuke.*;
 
 /**
  * Writes the three attack maps that show off the nukes and what came with them into a folder (normally assets/maps):
@@ -33,6 +32,23 @@ public class AttackMaps{
 	static final Team player = Team.sharded, enemy = Team.crux;
 	static int w, h, seed;
 	static Block ground;
+
+	/** The mod's content, by name: its classes are loaded by the game's own mod loader, so they are not used here directly. */
+	static Block B(String name){
+		Block block = Vars.content.block("new-horizon-" + name);
+		if(block == null) throw new IllegalArgumentException("no block " + name);
+		return block;
+	}
+
+	static UnitType U(String name){
+		UnitType type = Vars.content.unit("new-horizon-" + name);
+		if(type == null) throw new IllegalArgumentException("no unit " + name);
+		return type;
+	}
+
+	static Item omni(){
+		return Vars.content.item("new-horizon-omni-matter");
+	}
 
 	public static void main(String[] args){
 		Harness.boot(args[0], () -> {
@@ -82,21 +98,22 @@ public class AttackMaps{
 		Vars.world.endMapLoad();
 
 		put(Blocks.coreNucleus, px, py, 0, player);
+		defence(px + 12, py - 7);
 
 		//The enemy: its core at the back, a wall across the front, and the silos between them.
 		put(Blocks.coreNucleus, ex + 8, ey, 0, enemy);
-		silo(ex - 16, ey + 20, NukeBlocks.nukeLauncher, NukeUnits.explosive);
-		silo(ex - 16, ey - 20, NukeBlocks.nukeLauncher, NukeUnits.incendiary);
-		silo(ex - 18, ey, NukeBlocks.nukeLauncher, NukeUnits.quake);
-		silo(ex + 2, ey + 28, NukeBlocks.multiNukeLauncher, NukeUnits.swarm);
-		silo(ex + 4, ey - 28, NukeBlocks.orbitalLauncher, NukeUnits.radiation);
+		silo(ex - 16, ey + 20, B("nuke-launcher"), U("nuke-explosive"));
+		silo(ex - 16, ey - 20, B("nuke-launcher"), U("nuke-incendiary"));
+		silo(ex - 18, ey, B("nuke-launcher"), U("nuke-quake"));
+		silo(ex + 2, ey + 28, B("multi-nuke-launcher"), U("nuke-swarm"));
+		silo(ex + 4, ey - 28, B("orbital-launcher"), U("nuke-radiation"));
 		//Everything a base can do about nukes, so that the player's own have to get past it.
-		put(NukeBlocks.cloakProjector, ex + 12, ey + 8, 0, enemy);
-		put(NukeBlocks.nukeJammer, ex - 6, ey + 10, 0, enemy);
-		put(NukeBlocks.nukeInterceptor, ex - 22, ey + 10, 0, enemy);
-		put(NukeBlocks.nukeInterceptor, ex - 22, ey - 10, 0, enemy);
-		put(NukeBlocks.longRangeRadar, ex + 14, ey - 9, 0, enemy);
-		put(NukeBlocks.decoyBeacon, ex + 28, ey, 0, enemy);
+		put(B("cloak-projector"), ex + 12, ey + 8, 0, enemy);
+		put(B("nuke-jammer"), ex - 6, ey + 10, 0, enemy);
+		put(B("nuke-interceptor"), ex - 22, ey + 10, 0, enemy);
+		put(B("nuke-interceptor"), ex - 22, ey - 10, 0, enemy);
+		put(B("long-range-radar"), ex + 14, ey - 9, 0, enemy);
+		put(B("decoy-beacon"), ex + 28, ey, 0, enemy);
 		wallLine(ex - 30, ey - 32, ex - 30, ey + 32, Blocks.thoriumWallLarge, ey - 3, ey + 3);
 		for(int i = -3; i <= 3; i++){
 			if(i == 0) continue;
@@ -110,7 +127,7 @@ public class AttackMaps{
 		factory(Blocks.groundFactory, ex - 4, ey - 18, UnitTypes.dagger);
 		factory(Blocks.airFactory, ex + 22, ey + 10, UnitTypes.flare);
 
-		Rules rules = rules(0.1f, 60f * 150f, 60f * 240f);
+		Rules rules = rules(0.06f, 60f * 150f, 60f * 240f);
 		rules.loadout = ItemStack.list(Items.copper, 4000, Items.lead, 4000, Items.graphite, 3000, Items.silicon, 4000, Items.titanium, 3000,
 			Items.thorium, 2500, Items.metaglass, 1000, Items.plastanium, 800, Items.phaseFabric, 600, Items.surgeAlloy, 800);
 		rules.spawns = Seq.with(
@@ -123,7 +140,7 @@ public class AttackMaps{
 		);
 		write(out, "nuclear-standoff", "Nuclear Standoff",
 			"[accent]Attack.[] The enemy across the ridge has a Nuke Launcher at every silo, a Multi Nuke Launcher and an Orbital Launcher, and they keep "
-				+ "loading themselves. Get a Tracking Radar, Nuke Interceptors, a Decoy Beacon or a Nuke Jammer up before the first one lands, "
+				+ "loading themselves. You start with a radar and two Nuke Interceptors, which is not enough for long: add a Decoy Beacon or a Nuke Jammer, "
 				+ "then build your own Nuke Builder and answer. Its core is under a Cloak Projector: take that out first, or fly the nuke in yourself.");
 	}
 
@@ -163,7 +180,7 @@ public class AttackMaps{
 		ore(px - 12, py - 10, 6, Blocks.oreCopper);
 		ore(px - 12, py + 10, 6, Blocks.oreLead);
 		ore(px + 12, py - 14, 5, Blocks.oreCoal);
-		ore(px + 14, py + 12, 5, Blocks.oreTitanium);
+		ore(px + 14, py + 17, 5, Blocks.oreTitanium);
 		ore(px, py + 20, 5, Blocks.oreScrap);
 		ore(110, 110, 7, Blocks.oreThorium);
 		ore(56, 158, 7, Blocks.oreTitanium);
@@ -171,17 +188,19 @@ public class AttackMaps{
 		Vars.world.endMapLoad();
 
 		put(Blocks.coreFoundation, px, py, 0, player);
+		defence(px + 4, py - 7);
 
 		put(Blocks.coreNucleus, ex + 6, ey + 6, 0, enemy);
+		//A nuke hurts its own side too, so the kinds here are ones that leave the Serpent and the King Crab alone (an EMP kills what flies).
 		//The two that have to be stopped before they finish: the Serpent hatches first, the King Crab long after.
-		factory(OmniBlocks.serpentNest, ex - 12, ey + 12, SerpentUnits.head);
-		factory(OmniBlocks.crabDock, ex + 12, ey - 14, CrabUnits.kingCrab);
-		silo(ex - 16, ey - 6, NukeBlocks.orbitalLauncher, NukeUnits.emp);
-		silo(ex - 6, ey - 20, NukeBlocks.nukeLauncher, NukeUnits.storm);
-		silo(ex - 10, ey + 24, NukeBlocks.nukeLauncher, NukeUnits.lightning);
-		put(NukeBlocks.nukeJammer, ex + 2, ey - 4, 0, enemy);
-		put(NukeBlocks.trackingRadar, ex + 14, ey + 14, 0, enemy);
-		put(NukeBlocks.nukeInterceptor, ex - 2, ey + 10, 0, enemy);
+		factory(B("serpent-nest"), ex - 12, ey + 12, U("serpent"));
+		factory(B("crab-dock"), ex + 12, ey - 14, U("king-crab"));
+		silo(ex - 16, ey - 6, B("orbital-launcher"), U("nuke-quake"));
+		silo(ex - 6, ey - 20, B("nuke-launcher"), U("nuke-swarm"));
+		silo(ex - 10, ey + 24, B("nuke-launcher"), U("nuke-incendiary"));
+		put(B("nuke-jammer"), ex + 2, ey - 4, 0, enemy);
+		put(B("tracking-radar"), ex + 14, ey + 14, 0, enemy);
+		put(B("nuke-interceptor"), ex - 2, ey + 10, 0, enemy);
 		//The shore that faces the player.
 		for(int i = 0; i < 7; i++){
 			float a = 180f + i * 15f;
@@ -194,7 +213,7 @@ public class AttackMaps{
 		factory(Blocks.airFactory, ex + 18, ey - 2, UnitTypes.flare);
 		factory(Blocks.airFactory, ex + 20, ey + 10, UnitTypes.flare);
 
-		Rules rules = rules(0.2f, 60f * 180f, 60f * 300f);
+		Rules rules = rules(0.12f, 60f * 180f, 60f * 300f);
 		rules.loadout = ItemStack.list(Items.copper, 4000, Items.lead, 4000, Items.graphite, 2500, Items.silicon, 3500, Items.titanium, 2500,
 			Items.thorium, 1500, Items.metaglass, 1500, Items.plastanium, 500, Items.phaseFabric, 300, Items.surgeAlloy, 500);
 		//Only what flies: nothing else gets off the island.
@@ -206,7 +225,7 @@ public class AttackMaps{
 		);
 		write(out, "leviathan-strait", "Leviathan Strait",
 			"[accent]Attack.[] Islands and deep water. The enemy island has a Serpent Nest and a Crab Dock at work: the Serpent hatches after about "
-				+ "a quarter of an hour, the King Crab after about twenty-five minutes, and its Orbital Launcher throws EMP nukes that only a radar "
+				+ "twenty-five minutes, the King Crab after about forty, and its Orbital Launcher throws Quake nukes that only a radar "
 				+ "brings back into reach. The Naval Factory builds Nuke Carriers; the small islands have the thorium and titanium.");
 	}
 
@@ -250,29 +269,30 @@ public class AttackMaps{
 		Vars.world.endMapLoad();
 
 		put(Blocks.coreNucleus, px, py, 0, player);
+		defence(px - 9, py + 8);
 		//Omni-matter to mine, either side of the base and in the middle of the map.
 		deposit(px - 30, py + 4, 4);
 		deposit(px + 30, py + 4, 4);
 		deposit(100, 84, 5);
 
 		put(Blocks.coreNucleus, ex, ey + 12, 0, enemy);
-		factory(OmniBlocks.gravityDock, ex - 16, ey + 8, GravityUnits.gravityBase);
-		factory(OmniBlocks.modularFoundry, ex + 16, ey + 8, ModularUnits.frame);
-		silo(ex - 22, ey - 8, NukeBlocks.nukeLauncher, NukeUnits.siphon);
-		silo(ex + 14, ey - 8, NukeBlocks.nukeLauncher, NukeUnits.gravity);
-		silo(ex - 6, ey - 2, NukeBlocks.multiNukeLauncher, NukeUnits.shockwave);
-		put(NukeBlocks.cloakProjector, ex - 6, ey + 14, 0, enemy);
-		put(NukeBlocks.nukeInterceptor, ex + 8, ey + 16, 0, enemy);
-		put(NukeBlocks.decoyBeacon, ex, ey + 24, 0, enemy);
-		put(NukeBlocks.trackingRadar, ex + 8, ey + 4, 0, enemy);
+		factory(B("gravity-dock"), ex - 16, ey + 8, U("gravity-base"));
+		factory(B("modular-foundry"), ex + 16, ey + 8, U("chimera"));
+		silo(ex - 22, ey - 8, B("nuke-launcher"), U("nuke-scatter"));
+		silo(ex + 14, ey - 8, B("nuke-launcher"), U("nuke-emp"));
+		silo(ex - 6, ey - 2, B("multi-nuke-launcher"), U("nuke-cluster"));
+		put(B("cloak-projector"), ex - 6, ey + 14, 0, enemy);
+		put(B("nuke-interceptor"), ex + 8, ey + 16, 0, enemy);
+		put(B("decoy-beacon"), ex, ey + 24, 0, enemy);
+		put(B("tracking-radar"), ex + 8, ey + 4, 0, enemy);
 		//Omni walls right round it, open at the front, and two shields that hold as long as their omni-matter lasts.
-		wallLine(ex - 30, ey - 22, ex + 30, ey - 22, OmniBlocks.omniWall, ex - 4, ex + 4);
-		wallLine(ex - 30, ey - 21, ex - 30, ey + 26, OmniBlocks.omniWall, -1, -1);
-		wallLine(ex + 30, ey - 21, ex + 30, ey + 26, OmniBlocks.omniWall, -1, -1);
-		wallLine(ex - 29, ey + 26, ex + 29, ey + 26, OmniBlocks.omniWall, -1, -1);
+		wallLine(ex - 30, ey - 22, ex + 30, ey - 22, B("omni-wall"), ex - 4, ex + 4);
+		wallLine(ex - 30, ey - 21, ex - 30, ey + 26, B("omni-wall"), -1, -1);
+		wallLine(ex + 30, ey - 21, ex + 30, ey + 26, B("omni-wall"), -1, -1);
+		wallLine(ex - 29, ey + 26, ex + 29, ey + 26, B("omni-wall"), -1, -1);
 		for(int side = -1; side <= 1; side += 2){
-			Building shield = put(OmniBlocks.omniShield, ex + side * 14, ey - 16, 0, enemy);
-			if(shield != null && shield.items != null) shield.items.add(NukeItems.omniMatter, Math.min(30, shield.block.itemCapacity));
+			Building shield = put(B("omni-shield"), ex + side * 14, ey - 16, 0, enemy);
+			if(shield != null && shield.items != null) shield.items.add(omni(), Math.min(30, shield.block.itemCapacity));
 			put(Blocks.spectre, ex + side * 24, ey - 17, 0, enemy);
 			put(Blocks.ripple, ex + side * 9, ey - 18, 0, enemy);
 			put(Blocks.cyclone, ex + side * 25, ey - 2, 0, enemy);
@@ -280,22 +300,22 @@ public class AttackMaps{
 			put(Blocks.meltdown, ex + side * 5, ey - 12, 0, enemy);
 		}
 
-		Rules rules = rules(0.15f, 60f * 150f, 60f * 300f);
+		Rules rules = rules(0.1f, 60f * 150f, 60f * 300f);
 		rules.loadout = ItemStack.list(Items.copper, 5000, Items.lead, 5000, Items.graphite, 3000, Items.silicon, 5000, Items.titanium, 4000,
 			Items.thorium, 3000, Items.metaglass, 1500, Items.plastanium, 1500, Items.phaseFabric, 1000, Items.surgeAlloy, 1500,
-			NukeItems.omniMatter, 400);
+			omni(), 400);
 		//Chimera frames of the enemy team fit themselves out with two arms, a core and a hull.
 		rules.spawns = Seq.with(
 			group(UnitTypes.dagger, 1, 1, 2, 2f, 12),
 			group(UnitTypes.fortress, 3, 2, 1, 3f, 8),
 			group(UnitTypes.zenith, 5, 3, 1, 3f, 8),
-			group(ModularUnits.frame, 6, 4, 1, 12f, 3),
+			group(U("chimera"), 6, 4, 1, 12f, 3),
 			group(UnitTypes.scepter, 16, 6, 1, 0f, 1)
 		);
 		write(out, "event-horizon", "Event Horizon",
-			"[accent]Attack.[] A fortress behind omni walls and two omni shields. Its Gravity Dock is building a Gravity Base (about half an hour), its "
-				+ "Modular Foundry turns out Chimeras, and its launchers throw Siphon, Gravity and Shockwave nukes; a siphon orb leaves omni-matter "
-				+ "where it hung. There are deposits by your base and in the middle of the map: enough for omni walls, an Omni Shield, a Chimera of "
+			"[accent]Attack.[] A fortress behind omni walls and two omni shields. Its Gravity Dock is building a Gravity Base (about three quarters of an hour), its "
+				+ "Modular Foundry turns out Chimeras, and its launchers throw Scatter, EMP and Cluster nukes. "
+				+ "There are omni-matter deposits by your base and in the middle of the map: enough for omni walls, an Omni Shield, a Chimera of "
 				+ "your own or the Anti-Matter Cannon.");
 	}
 
@@ -304,7 +324,13 @@ public class AttackMaps{
 	// ------------------------------------------------------------------------------------------------------------------------
 
 	static void begin(int width, int height, int mapSeed, Block base){
-		Vars.logic.reset();
+		//What Logic.reset does, without its event: the mod listens for it with an input handler that needs a player.
+		Vars.state.rules = new Rules();
+		Vars.state.teams = new Teams();
+		Vars.state.wave = 1;
+		Vars.state.wavetime = 0f;
+		Vars.state.tick = 0;
+		Groups.clear();
 		w = width;
 		h = height;
 		seed = mapSeed;
@@ -346,7 +372,7 @@ public class AttackMaps{
 			for(int y = cy - radius; y <= cy + radius; y++){
 				Tile tile = Vars.world.tile(x, y);
 				if(tile == null || tile.build != null || Mathf.dst(x, y, cx, cy) > radius * (0.55f + fbm(x, y, 4f, 5) * 0.6f)) continue;
-				tile.setBlock(NukeItems.omniDeposit);
+				tile.setBlock(B("omni-matter-deposit"));
 				tile.data = (byte)220;
 			}
 		}
@@ -405,6 +431,25 @@ public class AttackMaps{
 		return build;
 	}
 
+	/**
+	 * What the player starts with against nukes, since one that gets through takes the core with it: a Tracking Radar and two Nuke
+	 * Interceptors on a field of solar panels. Structures that touch share power, so it needs no nodes. The tile is its lower left corner;
+	 * it is 18 tiles wide and 15 high.
+	 */
+	static void defence(int ox, int oy){
+		for(int i = 0; i < 6; i++){
+			for(int j = 0; j < 4; j++){
+				put(Blocks.largeSolarPanel, ox + 1 + i * 3, oy + 1 + j * 3, 0, player);
+			}
+		}
+		put(B("nuke-interceptor"), ox + 1, oy + 13, 0, player);
+		put(Blocks.batteryLarge, ox + 4, oy + 13, 0, player);
+		put(B("tracking-radar"), ox + 7, oy + 13, 0, player);
+		put(B("tracking-radar"), ox + 10, oy + 13, 0, player);
+		put(Blocks.batteryLarge, ox + 13, oy + 13, 0, player);
+		put(B("nuke-interceptor"), ox + 16, oy + 13, 0, player);
+	}
+
 	/** A unit factory of the enemy's, set to make this unit. */
 	static Building factory(Block block, int x, int y, UnitType type){
 		Building build = put(block, x, y, 0, enemy);
@@ -418,7 +463,7 @@ public class AttackMaps{
 
 	/** A Nuke Builder with a launcher in front of it (to its right), so that what it makes rolls straight in. The tile is the builder's. */
 	static void silo(int x, int y, Block launcher, UnitType nuke){
-		factory(NukeBlocks.nukeBuilder, x, y, nuke);
+		factory(B("nuke-builder"), x, y, nuke);
 		//The builder's right edge is two tiles from its centre tile; the launcher's left edge is (size - 1) / 2 from its own.
 		put(launcher, x + 3 + (launcher.size - 1) / 2, y, 0, enemy);
 	}
