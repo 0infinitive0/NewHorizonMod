@@ -259,6 +259,8 @@ public class FleetUnits{
 			drag = 0.04f;
 			rotateSpeed = 1.2f;
 			hitSize = 56f;
+			//Its own weapons are short range, but it fights with its drones: the game's AIs close in to 80% of this from their target, so it keeps far off.
+			range = maxRange = 650f;
 			engineOffset = 30f;
 			engineSize = 10f;
 			engineColor = glow;
