@@ -3,6 +3,8 @@ package newhorizon.expand.units.ai;
 import arc.math.Angles;
 import arc.math.Mathf;
 import arc.util.Time;
+import mindustry.Vars;
+import mindustry.content.Fx;
 import mindustry.ai.types.CommandAI;
 import mindustry.entities.Units;
 import mindustry.entities.units.AIController;
@@ -21,7 +23,8 @@ import newhorizon.expand.units.ablility.RammerBayAbility;
  *
  * <p>What it attacks is what the mothership targets (see {@link #targetOf}); with nothing to attack it orbits the mothership in its own slot.
  * Below {@link #returnBelow} of its health it flies to its slot, hovers there where the mothership's repair beams reach it, and goes back to the
- * attack at {@link #resumeAt}. With no mothership it looks for another with a free slot, and failing that fights alone.
+ * attack at {@link #resumeAt}. With no mothership it looks for another with a free slot, and failing that fights alone while it slowly dies
+ * ({@link #unboundDrain}).
  */
 public class RammerAI extends AIController{
 	/** Degrees a tick the heading turns, and px a tick a tick the speed rises and falls. */
@@ -34,6 +37,8 @@ public class RammerAI extends AIController{
 	public float slotGap = 40f, arrive = 14f;
 	/** How far from the mothership it guards, and how far it looks for a new one. */
 	public float guardRange = 400f, adoptRange = 2000f;
+	/** The share of its maximum health an unbound Rammer loses every second (it dies of it, in about a hundred seconds). */
+	public float unboundDrain = 0.01f;
 
 	public Unit owner;
 	public RammerBayAbility bay;
@@ -58,6 +63,8 @@ public class RammerAI extends AIController{
 				hasOwner = RammerBayAbility.adopt(unit, this, adoptRange);
 			}
 		}
+
+		if(!hasOwner) drain();
 
 		float hp = unit.healthf();
 		if(hasOwner && !returning && hp < returnBelow) returning = true;
@@ -85,6 +92,17 @@ public class RammerAI extends AIController{
 		}else{
 			fly(unit.x + unit.vel.x, unit.y + unit.vel.y, 0f);
 		}
+	}
+
+	/**
+	 * A Rammer with no mothership slowly wastes away. The loss comes straight off its health (armour and Bulwark cannot soften it), is not held
+	 * back at one point, and kills it when it runs out. A mothership with a free slot adopting it ends it.
+	 */
+	protected void drain(){
+		if(Vars.net.client() || !unit.isValid()) return;
+		unit.health -= unit.maxHealth * unboundDrain * Time.delta / 60f;
+		if(Mathf.chance(0.04 * Time.delta)) Fx.smoke.at(unit.x + Mathf.range(unit.hitSize / 3f), unit.y + Mathf.range(unit.hitSize / 3f));
+		if(unit.health <= 0f) unit.kill();
 	}
 
 	/** One tick of an attack run at a target. */
