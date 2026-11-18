@@ -38,6 +38,8 @@ public abstract class DroneAI extends AIController{
 	public float guardRange = 400f, adoptRange = 2000f;
 	/** The share of its maximum health an unbound drone loses every second (it dies of it, in about a hundred seconds). */
 	public float unboundDrain = 0.01f;
+	/** How far outside touching a recalled drone is taken in (px). */
+	public float absorbReach = 10f;
 
 	public Unit owner;
 	public DroneBayAbility bay;
@@ -130,7 +132,9 @@ public abstract class DroneAI extends AIController{
 	protected void recall(){
 		if(owner == null || !owner.isValid()) return;
 		float dist = unit.dst(owner);
-		if(dist < owner.hitSize / 2f){
+		//Taken in on touching it. Flying units push each other apart by their sizes, so a drone can never get closer to the middle of a big
+		//mothership than half of both sizes added; a smaller distance than that would never be reached.
+		if(dist < (owner.hitSize + unit.hitSize) / 2f + absorbReach){
 			if(bay != null) bay.absorb(unit);
 			return;
 		}
