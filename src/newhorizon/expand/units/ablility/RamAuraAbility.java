@@ -30,7 +30,7 @@ import mindustry.graphics.Layer;
  * {@link #maxDamage} at top speed, and above top speed it is multiplied by the fraction (up to {@link #overspeedCap}).
  *
  * <p>It touches everything inside a ring a little wider than the unit: units (flying and walking) and buildings. A target is hit once every
- * {@link #hitCooldown} ticks, so one it stays inside is not shredded every tick. Units are knocked away. <b>Every hit costs the unit itself</b>
+ * {@link #hitCooldown} ticks, so one it stays inside is not shredded every tick. Units are shoved away hard, see {@link #knockback}. <b>Every hit costs the unit itself</b>
  * {@link #selfRatio} of the damage it dealt, straight off its health (armour and status effects cannot soften it), but never its last point of
  * health: ramming alone cannot kill it.
  */
@@ -47,14 +47,25 @@ public class RamAuraAbility extends Ability{
 	public float ringPad = 8f;
 	/** The part of the damage it deals that it takes itself. */
 	public float selfRatio = 0.15f;
-	/** How hard units are knocked away at top speed (a speed change, in px a tick). */
-	public float knockback = 6f;
+	/**
+	 * How hard units are knocked away at top speed: the speed it gives them in all, in px a tick, handed out over {@link #kickTicks} ticks (a
+	 * walking unit's own movement pulls its speed back every tick, so a one-tick nudge would be lost at once). It is multiplied by the Rammer's
+	 * speed fraction, and by a mass factor that is 1 for a unit no heavier than the Rammer and no less than {@link #minKickMass} for the heaviest.
+	 */
+	public float knockback = 20f, kickTicks = 10f, minKickMass = 0.35f;
 	public Color color = Color.valueOf("ff9a4d");
 	public Effect hitEffect = Fx.hitLancer;
 
 	/** Targets that were hit and when they can be hit again (by identity: units and buildings). */
 	protected ObjectFloatMap<Object> hits = new ObjectFloatMap<>();
 	protected float cleanTimer;
+	/** The pushes going on: who, which way, how much a tick and for how many more ticks. */
+	protected Seq<Kick> kicks = new Seq<>();
+
+	protected static class Kick{
+		Unit unit;
+		float dx, dy, perTick, left;
+	}
 	/** What happened last: for the tests and for readouts. */
 	public float lastDamage, totalDealt, totalSelf;
 	public int hitCount;
@@ -64,6 +75,7 @@ public class RamAuraAbility extends Ability{
 	public Ability copy(){
 		RamAuraAbility c = (RamAuraAbility)super.copy();
 		c.hits = new ObjectFloatMap<>();
+		c.kicks = new Seq<>();
 		return c;
 	}
 
@@ -96,6 +108,8 @@ public class RamAuraAbility extends Ability{
 			old.each(k -> hits.remove(k, 0f));
 		}
 
+		pushKicks();
+
 		float f = fraction(unit);
 		float dmg = damageAt(f);
 		if(dmg <= 0f) return;
@@ -107,8 +121,7 @@ public class RamAuraAbility extends Ability{
 			if(!u.within(unit, r + u.hitSize / 2f) || !ready(u)) return;
 			hit(unit, u, u.x, u.y);
 			u.damage(dmg);
-			float push = knockback * f * Math.min(1f, unit.mass() / Math.max(1f, u.mass()));
-			if(push > 0f && u.isValid()) u.vel.add(Tmp.v1.set(u.x - unit.x, u.y - unit.y).setLength(push));
+			kick(unit, u, f);
 			pay(unit, dmg);
 		});
 		Vars.indexer.allBuildings(unit.x, unit.y, scan, b -> {
@@ -118,6 +131,36 @@ public class RamAuraAbility extends Ability{
 			b.damage(unit.team, dmg);
 			pay(unit, dmg);
 		});
+	}
+
+	/** Starts a push on a unit (it replaces one that is still going on, so they do not add up). */
+	protected void kick(Unit rammer, Unit target, float f){
+		float total = knockback * f * Mathf.clamp(rammer.mass() / Math.max(1f, target.mass()), minKickMass, 1f);
+		if(total <= 0f) return;
+		kicks.removeAll(k -> k.unit == target);
+		Tmp.v1.set(target.x - rammer.x, target.y - rammer.y);
+		if(Tmp.v1.isZero(0.001f)) Tmp.v1.set(1f, 0f);
+		Tmp.v1.nor();
+		Kick k = new Kick();
+		k.unit = target;
+		k.dx = Tmp.v1.x;
+		k.dy = Tmp.v1.y;
+		k.perTick = total / Math.max(1f, kickTicks);
+		k.left = Math.max(1f, kickTicks);
+		kicks.add(k);
+	}
+
+	/** One tick of every push going on. */
+	protected void pushKicks(){
+		for(int i = kicks.size - 1; i >= 0; i--){
+			Kick k = kicks.get(i);
+			if(!k.unit.isValid() || k.left <= 0f){
+				kicks.remove(i);
+				continue;
+			}
+			k.unit.vel.add(k.dx * k.perTick * Time.delta, k.dy * k.perTick * Time.delta);
+			k.left -= Time.delta;
+		}
 	}
 
 	/** Whether a target may be hit now. */

@@ -14,7 +14,9 @@ import mindustry.entities.abilities.StatusFieldAbility;
 import mindustry.entities.bullet.BasicBulletType;
 import mindustry.entities.bullet.BombBulletType;
 import mindustry.entities.bullet.BulletType;
+import mindustry.entities.bullet.FlakBulletType;
 import mindustry.entities.bullet.LaserBulletType;
+import mindustry.entities.bullet.MissileBulletType;
 import mindustry.entities.bullet.LightningBulletType;
 import mindustry.gen.Sounds;
 import mindustry.gen.UnitEntity;
@@ -22,6 +24,7 @@ import mindustry.type.UnitType;
 import mindustry.type.Weapon;
 import mindustry.type.weapons.RepairBeamWeapon;
 import mindustry.world.blocks.units.UnitFactory;
+import newhorizon.expand.bullets.TeslaForkBulletType;
 import newhorizon.expand.units.ablility.KeepStatusAbility;
 import newhorizon.expand.units.ablility.RamAuraAbility;
 import newhorizon.expand.units.ablility.DroneBayAbility;
@@ -40,7 +43,7 @@ import static mindustry.type.ItemStack.with;
  * touches ({@link RamAuraAbility}), and every hit hurts it too.
  */
 public class FleetUnits{
-	public static NHUnitType rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, mothership;
+	public static NHUnitType rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, missileDrone, mothership;
 	/** The stance buttons that pick the Mothership's drone type, in the order of the drone types. */
 	public static final Seq<UnitStance> droneStances = new Seq<>();
 	public static final Color outline = Color.valueOf("2c2a33"), glow = Color.valueOf("ff9a4d");
@@ -161,8 +164,36 @@ public class FleetUnits{
 			}};
 		}});
 
+		missileDrone = drone("missile-drone", 700f, 6f, 2.8f, 12f, () -> shooter(0.75f, 6f, 0.07f, 0.18f), new Color[]{Color.valueOf("ff8a6b")});
+		missileDrone.weapons.add(new Weapon(){{
+			x = 0f;
+			y = 3f;
+			mirror = false;
+			rotate = true;
+			reload = 100f;
+			shoot.shots = 6;
+			shoot.shotDelay = 4f;
+			inaccuracy = 8f;
+			velocityRnd = 0.15f;
+			ejectEffect = Fx.none;
+			shootSound = Sounds.shootMissileSmall;
+			bullet = new MissileBulletType(4.2f, 10f){{
+				lifetime = 55f;
+				width = 7f;
+				height = 10f;
+				homingPower = 0.08f;
+				homingRange = 90f;
+				splashDamage = 22f;
+				splashDamageRadius = 28f;
+				backColor = trailColor = lightColor = Color.valueOf("ff8a6b");
+				frontColor = Color.valueOf("fff1ea");
+				hitEffect = Fx.blastExplosion;
+				despawnEffect = Fx.blastExplosion;
+			}};
+		}});
+
 		//the buttons that pick the type, in the order of the types: only one on at a time
-		Seq<UnitType> types = Seq.with(rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone);
+		Seq<UnitType> types = Seq.with(rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, missileDrone);
 		droneStances.clear();
 		for(UnitType type : types) droneStances.add(new DroneStance(type));
 		for(UnitStance a : droneStances) for(UnitStance b : droneStances) if(a != b) a.incompatibleStances.add(b);
@@ -200,6 +231,33 @@ public class FleetUnits{
 				targetBuildings = true;
 				bullet = new BulletType(){{
 					maxRange = 200f;
+				}};
+			}});
+
+			//the flak turret: short range, ground and air, picks its own targets whatever the Mothership is attacking
+			weapons.add(new Weapon(){{
+				x = 24f;
+				y = 14f;
+				mirror = true;
+				alternate = true;
+				rotate = true;
+				controllable = false;
+				autoTarget = true;
+				reload = 16f;
+				ejectEffect = Fx.none;
+				shootSound = Sounds.shootScatter;
+				bullet = new FlakBulletType(4.2f, 3f){{
+					lifetime = 36f;
+					width = 7f;
+					height = 9f;
+					explodeRange = 26f;
+					collidesGround = true;
+					splashDamage = 30f;
+					splashDamageRadius = 36f;
+					backColor = trailColor = lightColor = Color.valueOf("ffb347");
+					frontColor = Color.valueOf("fff1c9");
+					hitEffect = Fx.flakExplosion;
+					despawnEffect = Fx.flakExplosion;
 				}};
 			}});
 
@@ -255,7 +313,7 @@ public class FleetUnits{
 	/** Electric arcs that electrify what they hit (units and buildings alike). */
 	protected static BulletType tesla(){
 		Color arc = Color.valueOf("6fe8ff");
-		return new LightningBulletType(){{
+		return new TeslaForkBulletType(){{
 			damage = 20f;
 			lightningLength = 14;
 			lightningColor = arc;

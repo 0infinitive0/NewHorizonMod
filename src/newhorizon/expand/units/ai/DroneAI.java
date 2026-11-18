@@ -49,6 +49,11 @@ public abstract class DroneAI extends AIController{
 	/** The target all its weapons aim at this tick. */
 	protected Teamc chosen;
 
+	/** The target all its weapons aim at this tick (null when it has none). */
+	public Teamc chosenTarget(){
+		return chosen;
+	}
+
 	/** Flies the drone at a target, one tick. */
 	protected abstract void engage(Teamc target);
 
