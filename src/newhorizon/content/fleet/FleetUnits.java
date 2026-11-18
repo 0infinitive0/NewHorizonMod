@@ -8,6 +8,7 @@ import mindustry.ai.UnitStance;
 import mindustry.content.Blocks;
 import mindustry.content.Fx;
 import mindustry.content.Items;
+import mindustry.content.Liquids;
 import mindustry.content.StatusEffects;
 import mindustry.entities.abilities.ForceFieldAbility;
 import mindustry.entities.abilities.StatusFieldAbility;
@@ -43,7 +44,7 @@ import static mindustry.type.ItemStack.with;
  * touches ({@link RamAuraAbility}), and every hit hurts it too.
  */
 public class FleetUnits{
-	public static NHUnitType rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, missileDrone, mothership;
+	public static NHUnitType rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, missileDrone, napalmDrone, mothership;
 	/** The stance buttons that pick the Mothership's drone type, in the order of the drone types. */
 	public static final Seq<UnitStance> droneStances = new Seq<>();
 	public static final Color outline = Color.valueOf("2c2a33"), glow = Color.valueOf("ff9a4d");
@@ -192,8 +193,52 @@ public class FleetUnits{
 			}};
 		}});
 
+		napalmDrone = drone("napalm-drone", 850f, 8f, 2.9f, 14f, () -> {
+			RammerAI ai = new RammerAI();
+			ai.turnRate = 5f;
+			ai.accelRate = 0.07f;
+			ai.brakeRate = 0.18f;
+			ai.runOut = 90f;
+			return ai;
+		}, new Color[]{Color.valueOf("ff5a36")});
+		napalmDrone.targetAir = false;
+		napalmDrone.weapons.add(new Weapon(){{
+			x = 0f;
+			y = 0f;
+			mirror = false;
+			rotate = false;
+			ignoreRotation = true;
+			shootCone = 180f;
+			minShootVelocity = 0.75f;
+			reload = 10f;
+			inaccuracy = 10f;
+			ejectEffect = Fx.none;
+			shootSound = Sounds.none;
+			//a small blast; what it does is the fire and the burning oil it leaves
+			bullet = new BombBulletType(10f, 40f){{
+				width = 10f;
+				height = 14f;
+				splashDamage = 14f;
+				hitEffect = Fx.fireballsmoke;
+				shootEffect = Fx.none;
+				smokeEffect = Fx.none;
+				backColor = lightColor = Color.valueOf("ff7a3a");
+				frontColor = Color.valueOf("ffd36b");
+				status = StatusEffects.burning;
+				statusDuration = 300f;
+				makeFire = true;
+				incendAmount = 3;
+				incendSpread = 20f;
+				incendChance = 1f;
+				puddleLiquid = Liquids.oil;
+				puddles = 3;
+				puddleRange = 24f;
+				puddleAmount = 16f;
+			}};
+		}});
+
 		//the buttons that pick the type, in the order of the types: only one on at a time
-		Seq<UnitType> types = Seq.with(rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, missileDrone);
+		Seq<UnitType> types = Seq.with(rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, missileDrone, napalmDrone);
 		droneStances.clear();
 		for(UnitType type : types) droneStances.add(new DroneStance(type));
 		for(UnitStance a : droneStances) for(UnitStance b : droneStances) if(a != b) a.incompatibleStances.add(b);
