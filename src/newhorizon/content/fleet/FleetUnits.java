@@ -311,7 +311,7 @@ public class FleetUnits{
 
 			abilities.add(new DroneBayAbility(4, types, droneStances));
 			//the shield projector
-			abilities.add(new ForceFieldAbility(190f, 2.4f, 6000f, 400f));
+			abilities.add(new ForceFieldAbility(100f, 2.4f, 6000f, 400f));
 			//the speed projector
 			abilities.add(new StatusFieldAbility(FleetStatus.rally, 120f, 36f, 260f));
 		}};

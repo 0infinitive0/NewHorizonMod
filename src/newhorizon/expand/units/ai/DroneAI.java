@@ -34,8 +34,8 @@ public abstract class DroneAI extends AIController{
 	public float soloRange = 700f;
 	/** How far from the mothership's centre its slot is (beyond the mothership's body), and how near the slot counts as there. */
 	public float slotGap = 40f, arrive = 14f;
-	/** How far from the mothership it guards, and how far it looks for a new one. */
-	public float guardRange = 400f, adoptRange = 2000f;
+	/** How far from the mothership it guards (the nearest enemy within this of it is attacked when the mothership has no target), and how far it looks for a new one. */
+	public float guardRange = 800f, adoptRange = 2000f;
 	/** The share of its maximum health an unbound drone loses every second (it dies of it, in about a hundred seconds). */
 	public float unboundDrain = 0.01f;
 	/** How far outside touching a recalled drone is taken in (px). */
