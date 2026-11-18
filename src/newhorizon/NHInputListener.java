@@ -4,7 +4,9 @@ import arc.Core;
 import arc.util.Tmp;
 import mindustry.Vars;
 import mindustry.gen.Unit;
+import newhorizon.expand.packets.DroneTypePacket;
 import newhorizon.expand.units.EnergyUnit;
+import newhorizon.expand.units.ablility.DroneBayAbility;
 import newhorizon.util.annotation.HeadlessDisabled;
 
 @HeadlessDisabled
@@ -27,6 +29,8 @@ public class NHInputListener{
 	}
 	
 	protected void updateActiveAbility(){
+		updateDroneKey();
+
 		if(currentUnit instanceof EnergyUnit){
 			EnergyUnit u = (EnergyUnit)currentUnit;
 			if(u.teleportValid() && Core.input.keyTap(NHKeyBinding.teleport)){
@@ -35,5 +39,19 @@ public class NHInputListener{
 				u.teleport(Tmp.v1.x, Tmp.v1.y);
 			}
 		}
+	}
+
+	/** The pilot's key: a Mothership flown by the player takes the next drone type. */
+	protected void updateDroneKey(){
+		if(currentUnit == null || !Vars.state.isGame() || Core.scene.hasKeyboard() || !Core.input.keyTap(NHKeyBinding.droneType)) return;
+		DroneBayAbility bay = DroneBayAbility.of(currentUnit);
+		if(bay == null) return;
+		int next = (bay.index() + 1) % bay.types.size;
+		if(Vars.net.client()) Vars.net.send(new DroneTypePacket(next), true);
+		else if(!bay.select(next)){
+			Vars.ui.showInfoToast(Core.bundle.format("ui.nh-drone-refused", bay.type().localizedName), 2f);
+			return;
+		}
+		Vars.ui.showInfoToast(Core.bundle.format("ui.nh-drone-type", bay.types.get(next).localizedName), 2f);
 	}
 }
