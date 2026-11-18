@@ -51,6 +51,7 @@ public class FleetUnits{
 
 	public static void load(){
 		FleetStatus.load();
+		FleetLiquids.load();
 
 		rammer = new NHUnitType("rammer"){{
 			constructor = UnitEntity::create;
@@ -230,10 +231,10 @@ public class FleetUnits{
 				incendAmount = 3;
 				incendSpread = 20f;
 				incendChance = 1f;
-				puddleLiquid = Liquids.oil;
+				puddleLiquid = FleetLiquids.napalm;
 				puddles = 3;
 				puddleRange = 24f;
-				puddleAmount = 16f;
+				puddleAmount = 20f;
 			}};
 		}});
 
