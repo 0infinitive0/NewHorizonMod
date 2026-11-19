@@ -54,6 +54,29 @@ public abstract class DroneAI extends AIController{
 	/** The target all its weapons aim at this tick. */
 	protected Teamc chosen;
 
+	/**
+	 * What a parked drone (Stand down) fires at: of the enemies the mothership is shooting at (the targets of its own weapons, such as the flak, and
+	 * its attack target) the nearest one within this drone's weapon range from where it sits. Null when none is in reach: the drone does not leave
+	 * its place to get at anything.
+	 */
+	protected Teamc standDownTarget(){
+		Teamc best = null;
+		float bestDst = Float.MAX_VALUE;
+		Teamc[] candidates = new Teamc[owner.mounts.length + 1];
+		for(int i = 0; i < owner.mounts.length; i++) candidates[i] = owner.mounts[i].target;
+		candidates[candidates.length - 1] = targetOf(owner, guardRange);
+		for(Teamc t : candidates){
+			if(t == null || !valid(t, unit)) continue;
+			float half = t instanceof mindustry.entities.Sized s ? s.hitSize() / 2f : 0f;
+			float d = unit.dst(t);
+			if(d <= unit.type.maxRange + half && d < bestDst){
+				best = t;
+				bestDst = d;
+			}
+		}
+		return best;
+	}
+
 	/** The target all its weapons aim at this tick (null when it has none). */
 	public Teamc chosenTarget(){
 		return chosen;
@@ -93,9 +116,10 @@ public abstract class DroneAI extends AIController{
 			return;
 		}
 
-		//stand down: dock beside the mothership and do not attack
+		//stand down: stay docked beside the mothership, never fly out; shoot only at what the mothership shoots, if it is within the drone's reach
 		if(hasOwner && bay.standDown){
 			returning = false;
+			chosen = standDownTarget();
 			dock();
 			return;
 		}
