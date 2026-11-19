@@ -126,7 +126,8 @@ public class RicochetBlocks{
 	}
 
 	/** One ammo: a fast bolt that starts {@code n} arcs on its first hit. */
-	private static RicochetBulletType bolt(int n, Color c, float dmg, StatusEffect st){
+	/** A Ricochet bolt: {@code n} jumps, a colour, damage per hit and the status it gives (the Mothership's Tesla drone uses it too). */
+	public static RicochetBulletType bolt(int n, Color c, float dmg, StatusEffect st){
 		return new RicochetBulletType(8f, dmg){{
 			maxBounces = n;
 			bounceRange = 90f;

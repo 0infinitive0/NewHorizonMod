@@ -15,6 +15,7 @@ import mindustry.entities.abilities.StatusFieldAbility;
 import mindustry.entities.bullet.BasicBulletType;
 import mindustry.entities.bullet.BombBulletType;
 import mindustry.entities.bullet.BulletType;
+import mindustry.entities.bullet.ContinuousLaserBulletType;
 import mindustry.entities.bullet.FlakBulletType;
 import mindustry.entities.bullet.LaserBulletType;
 import mindustry.entities.bullet.MissileBulletType;
@@ -25,7 +26,8 @@ import mindustry.type.UnitType;
 import mindustry.type.Weapon;
 import mindustry.type.weapons.RepairBeamWeapon;
 import mindustry.world.blocks.units.UnitFactory;
-import newhorizon.expand.bullets.TeslaForkBulletType;
+import newhorizon.content.ricochet.RicochetBlocks;
+import newhorizon.expand.bullets.ricochet.RicochetBulletType;
 import newhorizon.expand.units.ablility.KeepStatusAbility;
 import newhorizon.expand.units.ablility.RamAuraAbility;
 import newhorizon.expand.units.ablility.DroneBayAbility;
@@ -45,7 +47,7 @@ import static mindustry.type.ItemStack.with;
  * touches ({@link RamAuraAbility}), and every hit hurts it too.
  */
 public class FleetUnits{
-	public static NHUnitType rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, missileDrone, napalmDrone, mothership, mothershipII, mothershipIII;
+	public static NHUnitType rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, missileDrone, napalmDrone, continuousLaserDrone, mothership, mothershipII, mothershipIII;
 	/** The Stand down button of every Mothership. */
 	public static UnitStance standDownStance;
 	/** The stance buttons that pick the Mothership's drone type, in the order of the drone types. */
@@ -131,7 +133,7 @@ public class FleetUnits{
 			mirror = true;
 			alternate = true;
 			rotate = true;
-			reload = 16f;
+			reload = 14f;
 			ejectEffect = Fx.none;
 			shootSound = Sounds.shootArc;
 			bullet = tesla();
@@ -241,8 +243,36 @@ public class FleetUnits{
 			}};
 		}});
 
+		continuousLaserDrone = drone("continuous-laser-drone", 800f, 8f, 2.4f, 13f, () -> shooter(0.75f, 6f, 0.07f, 0.18f), new Color[]{Color.valueOf("8fc8ff")});
+		continuousLaserDrone.weapons.add(new Weapon(){{
+			x = 0f;
+			y = 4f;
+			mirror = false;
+			rotate = true;
+			reload = 90f;
+			shoot.firstShotDelay = 25f;
+			continuous = true;
+			ejectEffect = Fx.none;
+			shootSound = Sounds.shootBeamPlasma;
+			bullet = new ContinuousLaserBulletType(){{
+				damage = 14f;
+				length = 190f;
+				lifetime = 100f;
+				width = 5f;
+				drawSize = 420f;
+				hitEffect = Fx.hitMeltdown;
+				hitColor = Color.valueOf("8fc8ff");
+				lightColor = Color.valueOf("8fc8ff");
+				status = StatusEffects.burning;
+				incendChance = 0.1f;
+				incendSpread = 5f;
+				incendAmount = 1;
+				colors = new Color[]{Color.valueOf("8fc8ff").a(0.35f), Color.valueOf("8fc8ff").a(0.7f), Color.valueOf("d8ecff"), Color.white};
+			}};
+		}});
+
 		//the buttons that pick the type, in the order of the types: only one on at a time
-		Seq<UnitType> types = Seq.with(rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, missileDrone, napalmDrone);
+		Seq<UnitType> types = Seq.with(rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, missileDrone, napalmDrone, continuousLaserDrone);
 		droneStances.clear();
 		for(UnitType type : types) droneStances.add(new DroneStance(type));
 		for(UnitStance a : droneStances) for(UnitStance b : droneStances) if(a != b) a.incompatibleStances.add(b);
@@ -389,27 +419,10 @@ public class FleetUnits{
 		return ai;
 	}
 
-	/** Electric arcs that electrify what they hit (units and buildings alike). */
+	/** The Tesla drone's bolt: the Ricochet turret's. It turns into arcs that jump from enemy to enemy, 8 times, at full damage, and electrify what they hit. */
 	protected static BulletType tesla(){
-		Color arc = Color.valueOf("6fe8ff");
-		return new TeslaForkBulletType(){{
-			damage = 20f;
-			lightningLength = 14;
-			lightningColor = arc;
-			collidesAir = true;
-			collidesGround = true;
-			rangeChange = 35f;   // the arcs reach 80 px by themselves
-			ammoMultiplier = 1f;
-			lightningType = new BulletType(0.0001f, 0f){{
-				lifetime = Fx.lightning.lifetime;
-				hitEffect = Fx.hitLancer;
-				despawnEffect = Fx.none;
-				status = StatusEffects.electrified;
-				statusDuration = 120f;
-				hittable = false;
-				lightColor = Color.white;
-				collidesAir = true;
-			}};
-		}};
+		RicochetBulletType b = RicochetBlocks.bolt(8, Color.valueOf("6fe8ff"), 22f, StatusEffects.electrified);
+		b.lifetime = 22f;   // 8 px a tick: reaches about 176 px
+		return b;
 	}
 }
