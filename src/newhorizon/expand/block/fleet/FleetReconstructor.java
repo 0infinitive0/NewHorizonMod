@@ -1,6 +1,7 @@
 package newhorizon.expand.block.fleet;
 
 import arc.struct.ObjectFloatMap;
+import arc.struct.Seq;
 import arc.struct.ObjectMap;
 import mindustry.Vars;
 import mindustry.content.Fx;
@@ -136,11 +137,14 @@ public class FleetReconstructor extends Reconstructor{
 			nb.standDown = ob.standDown;
 			nb.switchLeft = ob.switchLeft;
 			UnitType want = nb.type();
+			//collected first: removing from the group while going through it skips units
+			Seq<Unit> wrong = new Seq<>();
 			for(Unit u : Groups.unit){
-				if(u.team == team && u.controller() instanceof DroneAI ai && ai.dockedAt == this && u.type != want){
-					Fx.spawn.at(u.x, u.y);
-					u.remove();
-				}
+				if(u.team == team && u.controller() instanceof DroneAI ai && ai.dockedAt == this && u.type != want) wrong.add(u);
+			}
+			for(Unit u : wrong){
+				Fx.spawn.at(u.x, u.y);
+				u.remove();
 			}
 		}
 	}
