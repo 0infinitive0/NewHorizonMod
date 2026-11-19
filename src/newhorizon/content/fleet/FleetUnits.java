@@ -30,6 +30,7 @@ import newhorizon.expand.units.ablility.KeepStatusAbility;
 import newhorizon.expand.units.ablility.RamAuraAbility;
 import newhorizon.expand.units.ablility.DroneBayAbility;
 import newhorizon.expand.units.ablility.DroneStance;
+import newhorizon.expand.units.ablility.StandDownStance;
 import newhorizon.expand.units.ai.DroneAI;
 import newhorizon.expand.units.ai.RammerAI;
 import newhorizon.expand.units.ai.ShooterDroneAI;
@@ -44,7 +45,9 @@ import static mindustry.type.ItemStack.with;
  * touches ({@link RamAuraAbility}), and every hit hurts it too.
  */
 public class FleetUnits{
-	public static NHUnitType rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, missileDrone, napalmDrone, mothership;
+	public static NHUnitType rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, missileDrone, napalmDrone, mothership, mothershipII, mothershipIII;
+	/** The Stand down button of every Mothership. */
+	public static UnitStance standDownStance;
 	/** The stance buttons that pick the Mothership's drone type, in the order of the drone types. */
 	public static final Seq<UnitStance> droneStances = new Seq<>();
 	public static final Color outline = Color.valueOf("2c2a33"), glow = Color.valueOf("ff9a4d");
@@ -244,81 +247,109 @@ public class FleetUnits{
 		for(UnitType type : types) droneStances.add(new DroneStance(type));
 		for(UnitStance a : droneStances) for(UnitStance b : droneStances) if(a != b) a.incompatibleStances.add(b);
 
-		mothership = new NHUnitType("mothership"){{
-			constructor = UnitEntity::create;
-			outlineColor = outline;
-			drawCell = false;
-			stances = droneStances.copy();
+		standDownStance = new StandDownStance();
 
-			flying = true;
-			lowAltitude = false;
-			health = 24000f;
-			armor = 25f;
-			speed = 0.9f;
-			accel = 0.02f;
-			drag = 0.04f;
-			rotateSpeed = 1.2f;
-			hitSize = 56f;
-			//Its own weapons are short range, but it fights with its drones: the game's AIs close in to 80% of this from their target, so it keeps far off.
-			range = maxRange = 650f;
-			engineOffset = 30f;
-			engineSize = 10f;
-			engineColor = glow;
-			immunities = ObjectSet.with(StatusEffects.burning, StatusEffects.melting, StatusEffects.corroded, StatusEffects.sapped);
-
-			//the healing turret: the Rammers hover near it to be mended
-			weapons.add(new RepairBeamWeapon("repair-beam-weapon-center"){{
-				x = 18f;
-				y = -4f;
-				shootY = 6f;
-				mirror = true;
-				beamWidth = 0.9f;
-				repairSpeed = 2.5f;
-				fractionRepairSpeed = 0.05f;
-				targetUnits = true;
-				targetBuildings = true;
-				bullet = new BulletType(){{
-					maxRange = 200f;
-				}};
-			}});
-
-			//the flak turret: short range, ground and air, picks its own targets whatever the Mothership is attacking
-			weapons.add(new Weapon(){{
-				x = 24f;
-				y = 14f;
-				mirror = true;
-				alternate = true;
-				rotate = true;
-				controllable = false;
-				autoTarget = true;
-				reload = 16f;
-				ejectEffect = Fx.none;
-				shootSound = Sounds.shootScatter;
-				bullet = new FlakBulletType(4.2f, 3f){{
-					lifetime = 36f;
-					width = 7f;
-					height = 9f;
-					explodeRange = 26f;
-					collidesGround = true;
-					splashDamage = 30f;
-					splashDamageRadius = 36f;
-					backColor = trailColor = lightColor = Color.valueOf("ffb347");
-					frontColor = Color.valueOf("fff1c9");
-					hitEffect = Fx.flakExplosion;
-					despawnEffect = Fx.flakExplosion;
-				}};
-			}});
-
-			abilities.add(new DroneBayAbility(4, types, droneStances));
-			//the shield projector
-			abilities.add(new ForceFieldAbility(100f, 2.4f, 6000f, 400f));
-			//the speed projector
-			abilities.add(new StatusFieldAbility(FleetStatus.rally, 120f, 36f, 260f));
-		}};
+		//The three tiers, from one builder: drones, health, armour, speed, hit size, range, shield (radius, strength, recharge), repair beam pairs and
+		//strength, flak pairs, speed projector range, seconds to replace a lost drone, and the scale of the weapon positions.
+		mothership = carrier("mothership", types, 4, 24000f, 25f, 0.9f, 1.2f, 44f, 650f, 100f, 6000f, 2.4f, 1, 2.5f, 1, 260f, 40f, 1f);
+		mothershipII = carrier("mothership-ii", types, 8, 48000f, 35f, 0.8f, 1.0f, 58f, 720f, 130f, 12000f, 4.8f, 2, 3.5f, 2, 340f, 30f, 1.3f);
+		mothershipIII = carrier("mothership-iii", types, 12, 90000f, 45f, 0.7f, 0.8f, 74f, 800f, 160f, 24000f, 9.6f, 2, 5f, 3, 420f, 20f, 1.65f);
+		//Tiers II and III are made by upgrading in the Fleet Reconstructor, not in a factory: what they cost to research is set here.
+		mothershipII.setRequirements(with(Items.silicon, 1500, Items.titanium, 1000, Items.thorium, 700, Items.plastanium, 500, Items.surgeAlloy, 250));
+		mothershipIII.setRequirements(with(Items.silicon, 3000, Items.titanium, 2000, Items.thorium, 1400, Items.plastanium, 1000, Items.surgeAlloy, 600));
 
 		//Built in the Air Factory, after what it already makes (so that the numbers saved in factories stay right).
 		((UnitFactory)Blocks.airFactory).plans.add(new UnitFactory.UnitPlan(mothership, 60f * 120f,
 			with(Items.silicon, 800, Items.titanium, 600, Items.thorium, 400, Items.plastanium, 300, Items.surgeAlloy, 100)));
+	}
+
+	/**
+	 * A Mothership of one tier. Its own weapons are short range (repair beams that mend the drones and allied units, flak that shoots ground and air by
+	 * itself), it fights with its drones: the game's AIs close in to 80% of its range from a target, so it keeps far off. Besides the drone bay it has a
+	 * shield projector and a speed projector. The sizes of the weapon positions follow {@code scale}.
+	 */
+	protected static NHUnitType carrier(String name, Seq<UnitType> types, int drones, float hpV, float armorV, float speedV, float turnV, float hitV, float rangeV,
+		float shieldRadius, float shieldMax, float shieldRegen, int beamPairs, float beamRepair, int flakPairs, float rallyRange, float replaceSeconds, float scale){
+		return new NHUnitType(name){{
+			constructor = UnitEntity::create;
+			outlineColor = outline;
+			drawCell = false;
+			stances = droneStances.copy();
+			stances.add(standDownStance);
+
+			flying = true;
+			lowAltitude = false;
+			health = hpV;
+			armor = armorV;
+			speed = speedV;
+			accel = 0.02f;
+			drag = 0.04f;
+			rotateSpeed = turnV;
+			hitSize = hitV;
+			range = maxRange = rangeV;
+			engineOffset = 30f * scale;
+			engineSize = 10f * scale;
+			engineColor = glow;
+			immunities = ObjectSet.with(StatusEffects.burning, StatusEffects.melting, StatusEffects.corroded, StatusEffects.sapped);
+
+			//the healing turrets: the drones hover near them to be mended
+			for(int i = 0; i < beamPairs; i++){
+				final int k = i;
+				weapons.add(new RepairBeamWeapon("repair-beam-weapon-center"){{
+					x = (18f + 4f * k) * scale;
+					y = (-4f - 12f * k) * scale;
+					shootY = 6f;
+					mirror = true;
+					beamWidth = 0.9f;
+					repairSpeed = beamRepair;
+					fractionRepairSpeed = 0.05f;
+					targetUnits = true;
+					targetBuildings = true;
+					bullet = new BulletType(){{
+						maxRange = 200f;
+					}};
+				}});
+			}
+
+			//the flak turrets: short range, ground and air, they pick their own targets whatever the Mothership is attacking
+			for(int i = 0; i < flakPairs; i++){
+				final int k = i;
+				weapons.add(new Weapon(){{
+					x = 24f * scale;
+					y = (14f - 14f * k) * scale;
+					mirror = true;
+					alternate = true;
+					rotate = true;
+					controllable = false;
+					autoTarget = true;
+					reload = 16f;
+					ejectEffect = Fx.none;
+					shootSound = Sounds.shootScatter;
+					bullet = new FlakBulletType(4.2f, 3f){{
+						lifetime = 36f;
+						width = 7f;
+						height = 9f;
+						explodeRange = 26f;
+						collidesGround = true;
+						splashDamage = 30f;
+						splashDamageRadius = 36f;
+						backColor = trailColor = lightColor = Color.valueOf("ffb347");
+						frontColor = Color.valueOf("fff1c9");
+						hitEffect = Fx.flakExplosion;
+						despawnEffect = Fx.flakExplosion;
+					}};
+				}});
+			}
+
+			DroneBayAbility bay = new DroneBayAbility(drones, types, droneStances);
+			bay.standDownStance = standDownStance;
+			bay.rebuildTime = 60f * replaceSeconds;
+			abilities.add(bay);
+			//the shield projector
+			abilities.add(new ForceFieldAbility(shieldRadius, shieldRegen, shieldMax, 400f));
+			//the speed projector
+			abilities.add(new StatusFieldAbility(FleetStatus.rally, 120f, 36f, rallyRange));
+		}};
 	}
 
 	/** A drone: a small flyer launched only by the Mothership (no factory, no unit cap, no commands of its own), whose weapons all aim at the one target its AI chose. */

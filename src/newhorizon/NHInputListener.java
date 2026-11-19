@@ -4,6 +4,7 @@ import arc.Core;
 import arc.util.Tmp;
 import mindustry.Vars;
 import mindustry.gen.Unit;
+import newhorizon.expand.packets.DroneStandDownPacket;
 import newhorizon.expand.packets.DroneTypePacket;
 import newhorizon.expand.units.EnergyUnit;
 import newhorizon.expand.units.ablility.DroneBayAbility;
@@ -30,6 +31,7 @@ public class NHInputListener{
 	
 	protected void updateActiveAbility(){
 		updateDroneKey();
+		updateStandDownKey();
 
 		if(currentUnit instanceof EnergyUnit){
 			EnergyUnit u = (EnergyUnit)currentUnit;
@@ -53,5 +55,16 @@ public class NHInputListener{
 			return;
 		}
 		Vars.ui.showInfoToast(Core.bundle.format("ui.nh-drone-type", bay.types.get(next).localizedName), 2f);
+	}
+
+	/** The pilot's Stand down key: a Mothership flown by the player holds its drones back, or lets them attack again. */
+	protected void updateStandDownKey(){
+		if(currentUnit == null || !Vars.state.isGame() || Core.scene.hasKeyboard() || !Core.input.keyTap(NHKeyBinding.standDown)) return;
+		DroneBayAbility bay = DroneBayAbility.of(currentUnit);
+		if(bay == null) return;
+		boolean on = !bay.standDown;
+		if(Vars.net.client()) Vars.net.send(new DroneStandDownPacket(on), true);
+		else bay.standDown = on;
+		Vars.ui.showInfoToast(Core.bundle.get(on ? "ui.nh-stand-down-on" : "ui.nh-stand-down-off"), 2f);
 	}
 }

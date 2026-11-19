@@ -43,6 +43,7 @@ public class NHRegister{
 	static{
 		Net.registerPacket(LongInfoMessageCallPacket::new);
 		Net.registerPacket(newhorizon.expand.packets.DroneTypePacket::new);
+		Net.registerPacket(newhorizon.expand.packets.DroneStandDownPacket::new);
 	}
 	
 	public static void addTaskOnSave(Runnable runnable){

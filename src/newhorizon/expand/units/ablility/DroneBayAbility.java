@@ -38,6 +38,10 @@ public class DroneBayAbility extends Ability{
 	/** The drone types the bay can carry (in the order of the stance buttons), and the stance that picks each. */
 	public final Seq<UnitType> types;
 	public final Seq<UnitStance> stances;
+	/** The Stand down button (null for a bay without one). */
+	public UnitStance standDownStance;
+	/** Stand down: the drones dock beside the Mothership and do not attack. Set by the stance button of a commanded Mothership, or by a pilot's key. */
+	public boolean standDown;
 	public int count = 4;
 	/** Ticks between the first launches, ticks before the first, and ticks to replace a lost drone. */
 	public float firstInterval = 90f, startDelay = 120f, rebuildTime = 60f * 40f;
@@ -160,6 +164,7 @@ public class DroneBayAbility extends Ability{
 				break;
 			}
 		}
+		if(standDownStance != null) standDown = ai.hasStance(standDownStance);
 		UnitStance now = stances.get(index());
 		if(!ai.hasStance(now)) ai.setStance(now, true);
 		for(int i = 0; i < stances.size; i++) if(i != index() && ai.hasStance(stances.get(i))) ai.setStance(stances.get(i), false);

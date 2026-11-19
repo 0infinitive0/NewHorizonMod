@@ -10,6 +10,7 @@ import mindustry.entities.Units;
 import mindustry.entities.units.AIController;
 import mindustry.gen.Teamc;
 import mindustry.gen.Unit;
+import newhorizon.expand.block.fleet.FleetReconstructor;
 import newhorizon.expand.units.ablility.DroneBayAbility;
 
 /**
@@ -32,8 +33,8 @@ public abstract class DroneAI extends AIController{
 	public float returnBelow = 0.35f, resumeAt = 0.9f;
 	/** How far from itself it looks for something to fight with no mothership. */
 	public float soloRange = 700f;
-	/** How far from the mothership's centre its slot is (beyond the mothership's body), and how near the slot counts as there. */
-	public float slotGap = 40f, arrive = 14f;
+	/** How far its slot is from the mothership's body: the slot is at half of both sizes added, plus this (so a drone parks right beside the hull), and how near the slot counts as there. */
+	public float slotGap = 8f, arrive = 14f;
 	/** How far from the mothership it guards (the nearest enemy within this of it is attacked when the mothership has no target), and how far it looks for a new one. */
 	public float guardRange = 800f, adoptRange = 2000f;
 	/** The share of its maximum health an unbound drone loses every second (it dies of it, in about a hundred seconds). */
@@ -43,6 +44,8 @@ public abstract class DroneAI extends AIController{
 
 	public Unit owner;
 	public DroneBayAbility bay;
+	/** The Fleet Reconstructor it is waiting at while its Mothership is being upgraded (null otherwise). */
+	public FleetReconstructor.FleetReconstructorBuild dockedAt;
 	/** Breaking off to be healed, and ordered back to the mothership to be absorbed (set by the bay). */
 	public boolean returning, recalling;
 
@@ -79,12 +82,21 @@ public abstract class DroneAI extends AIController{
 		chosen = null;
 		if(!hasOwner){
 			recalling = false;
+			//its Mothership is being upgraded in a Fleet Reconstructor: wait there, not wasting away
+			if(waitAtReconstructor()) return;
 			drain();
 		}
 
 		//ordered home: fly to the middle of the mothership and be absorbed there
 		if(recalling){
 			recall();
+			return;
+		}
+
+		//stand down: dock beside the mothership and do not attack
+		if(hasOwner && bay.standDown){
+			returning = false;
+			dock();
 			return;
 		}
 
@@ -128,6 +140,26 @@ public abstract class DroneAI extends AIController{
 		if(unit.health <= 0f) unit.kill();
 	}
 
+	/**
+	 * With no Mothership but a Fleet Reconstructor with one inside it near, the drone waits around the reconstructor (no attack, no wasting away)
+	 * until the new ship comes out and adopts it. False when there is no such reconstructor.
+	 */
+	protected boolean waitAtReconstructor(){
+		dockedAt = FleetReconstructor.findFor(unit, adoptRange);
+		if(dockedAt == null) return false;
+		float ang = (unit.id % 16) * 22.5f + Time.time * 0.15f;
+		float r = dockedAt.block.size * 4f + unit.hitSize + 12f;
+		float tx = dockedAt.x + Angles.trnsx(ang, r), ty = dockedAt.y + Angles.trnsy(ang, r);
+		float dist = unit.dst(tx, ty);
+		if(dist < arrive){
+			unit.vel.scl(1f - Mathf.clamp(0.25f * Time.delta));
+			unit.rotation = Angles.moveToward(unit.rotation, Angles.angle(dockedAt.x, dockedAt.y, unit.x, unit.y) + 90f, unit.type.rotateSpeed * Time.delta);
+		}else{
+			fly(tx, ty, Math.min(unit.speed(), (float)Math.sqrt(2f * brakeRate * 0.8f * dist) + 1f));
+		}
+		return true;
+	}
+
 	/** One tick of going home to be absorbed. */
 	protected void recall(){
 		if(owner == null || !owner.isValid()) return;
@@ -151,7 +183,7 @@ public abstract class DroneAI extends AIController{
 		int count = Math.max(1, bay == null ? 4 : bay.count);
 		int idx = bay == null ? 0 : Math.max(0, bay.bound.indexOf(unit));
 		float ang = owner.rotation + 45f + idx * 360f / count;
-		float r = owner.hitSize / 2f + slotGap;
+		float r = (owner.hitSize + unit.hitSize) / 2f + slotGap;
 		float sx = owner.x + Angles.trnsx(ang, r), sy = owner.y + Angles.trnsy(ang, r);
 		float dist = unit.dst(sx, sy);
 		if(dist < arrive){
