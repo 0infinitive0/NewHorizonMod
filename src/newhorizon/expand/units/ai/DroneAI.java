@@ -147,7 +147,7 @@ public abstract class DroneAI extends AIController{
 			chosen = t;
 			engage(t);
 		}else if(hasOwner){
-			dock();
+			idle();
 		}else{
 			fly(unit.x + unit.vel.x, unit.y + unit.vel.y, 0f);
 		}
@@ -208,14 +208,23 @@ public abstract class DroneAI extends AIController{
 		int idx = bay == null ? 0 : Math.max(0, bay.bound.indexOf(unit));
 		float ang = owner.rotation + 45f + idx * 360f / count;
 		float r = (owner.hitSize + unit.hitSize) / 2f + slotGap;
-		float sx = owner.x + Angles.trnsx(ang, r), sy = owner.y + Angles.trnsy(ang, r);
+		station(owner.x + Angles.trnsx(ang, r), owner.y + Angles.trnsy(ang, r));
+	}
+
+	/** What a drone does when the mothership has no target (the drones that do not attack have their own idea of it): the default is to park. */
+	protected void idle(){
+		dock();
+	}
+
+	/** Flies to a point beside the mothership and holds it, moving with the mothership. */
+	protected void station(float sx, float sy){
 		float dist = unit.dst(sx, sy);
 		if(dist < arrive){
 			unit.vel.lerp(owner.vel, Mathf.clamp(0.25f * Time.delta));
 			unit.rotation = Angles.moveToward(unit.rotation, owner.rotation, unit.type.rotateSpeed * Time.delta);
 			return;
 		}
-		//slow down in time to stop at the slot (what the brakes can do over the distance), plus the mothership's own speed
+		//slow down in time to stop at the point (what the brakes can do over the distance), plus the mothership's own speed
 		float cap = Math.min(unit.speed(), (float)Math.sqrt(2f * brakeRate * 0.8f * dist) + owner.vel.len());
 		fly(sx, sy, cap);
 	}
