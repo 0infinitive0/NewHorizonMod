@@ -97,7 +97,9 @@ public class SporeContent{
 			aiController = MoteAI::new;
 			commands = Seq.with(moteHunt, UnitCommand.moveCommand);
 			defaultCommand = moteHunt;
-			outlineColor = SporeFx.amberDark.cpy().mul(0.25f);
+			//A 30 px sprite: the game's 3 px outline in near-black was most of what you saw, so a thin one in a dark amber-brown.
+			outlineColor = SporeFx.amberDark.cpy().mul(0.5f);
+			outlineRadius = 1;
 			drawCell = false;
 
 			flying = true;
