@@ -16,7 +16,10 @@ import mindustry.entities.abilities.StatusFieldAbility;
 import mindustry.entities.bullet.BasicBulletType;
 import mindustry.entities.bullet.BombBulletType;
 import mindustry.entities.bullet.BulletType;
+import mindustry.entities.bullet.ArtilleryBulletType;
 import mindustry.entities.bullet.ContinuousLaserBulletType;
+import mindustry.entities.bullet.RailBulletType;
+import mindustry.entities.pattern.ShootSpread;
 import mindustry.entities.bullet.FlakBulletType;
 import mindustry.entities.bullet.LaserBulletType;
 import mindustry.entities.bullet.MissileBulletType;
@@ -48,7 +51,7 @@ import static mindustry.type.ItemStack.with;
  * touches ({@link RamAuraAbility}), and every hit hurts it too.
  */
 public class FleetUnits{
-	public static NHUnitType rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, missileDrone, napalmDrone, continuousLaserDrone, mothership, mothershipII, mothershipIII;
+	public static NHUnitType rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, missileDrone, napalmDrone, continuousLaserDrone, sniperDrone, artilleryDrone, shotgunDrone, cryoDrone, mothership, mothershipII, mothershipIII;
 	/** The Stand down button of every Mothership. */
 	public static UnitStance standDownStance;
 	/** The stance buttons that pick the Mothership's drone type, in the order of the drone types. */
@@ -272,8 +275,97 @@ public class FleetUnits{
 			}};
 		}});
 
+		sniperDrone = drone("sniper-drone", 500f, 4f, 2.6f, 12f, () -> shooter(0.85f, 6f, 0.07f, 0.18f), new Color[]{Color.valueOf("c0392b")});
+		sniperDrone.weapons.add(new Weapon(){{
+			x = 0f;
+			y = 4f;
+			mirror = false;
+			rotate = true;
+			reload = 150f;
+			ejectEffect = Fx.none;
+			shootSound = Sounds.shootSalvo;
+			bullet = new RailBulletType(){{
+				shootEffect = Fx.railShoot;
+				length = 340f;
+				pointEffectSpace = 60f;
+				pierceEffect = Fx.railHit;
+				pointEffect = Fx.railTrail;
+				hitEffect = Fx.massiveExplosion;
+				smokeEffect = Fx.smokeCloud;
+				damage = 260f;
+				pierceDamageFactor = 0.15f;
+				pierceBuilding = true;
+			}};
+		}});
+
+		artilleryDrone = drone("artillery-drone", 800f, 10f, 2.2f, 14f, () -> shooter(0.8f, 5f, 0.06f, 0.16f), new Color[]{Color.valueOf("9aa14b")});
+		artilleryDrone.weapons.add(new Weapon(){{
+			x = 0f;
+			y = 2f;
+			mirror = false;
+			rotate = true;
+			reload = 72f;
+			ejectEffect = Fx.none;
+			shootSound = Sounds.shootArtillery;
+			bullet = new ArtilleryBulletType(3f, 20f){{
+				lifetime = 110f;
+				width = 10f;
+				height = 14f;
+				splashDamage = 95f;
+				splashDamageRadius = 44f;
+				backColor = trailColor = lightColor = hitColor = Color.valueOf("9aa14b");
+				frontColor = Color.valueOf("eef2c4");
+				hitEffect = Fx.flakExplosion;
+				despawnEffect = Fx.flakExplosion;
+			}};
+		}});
+
+		shotgunDrone = drone("shotgun-drone", 650f, 6f, 3.2f, 12f, () -> shooter(0.55f, 7f, 0.08f, 0.2f), new Color[]{Color.valueOf("c98a4b")});
+		shotgunDrone.weapons.add(new Weapon(){{
+			x = 0f;
+			y = 3f;
+			mirror = false;
+			rotate = true;
+			reload = 40f;
+			shoot = new ShootSpread(7, 7f);
+			inaccuracy = 2f;
+			ejectEffect = Fx.none;
+			shootSound = Sounds.shoot;
+			bullet = new BasicBulletType(6f, 9f){{
+				lifetime = 16f;
+				width = 5f;
+				height = 11f;
+				knockback = 0.6f;
+				backColor = trailColor = lightColor = hitColor = Color.valueOf("c98a4b");
+				frontColor = Color.valueOf("ffe9c9");
+				hitEffect = Fx.hitBulletColor;
+			}};
+		}});
+
+		cryoDrone = drone("cryo-drone", 700f, 6f, 2.8f, 12f, () -> shooter(0.7f, 6f, 0.07f, 0.18f), new Color[]{Color.valueOf("9fe4ff")});
+		cryoDrone.weapons.add(new Weapon(){{
+			x = 3f;
+			y = 2f;
+			mirror = true;
+			alternate = true;
+			rotate = true;
+			reload = 9f;
+			ejectEffect = Fx.none;
+			shootSound = Sounds.shoot;
+			bullet = new BasicBulletType(6f, 10f){{
+				lifetime = 30f;
+				width = 6f;
+				height = 12f;
+				status = StatusEffects.freezing;
+				statusDuration = 180f;
+				backColor = trailColor = lightColor = hitColor = Color.valueOf("9fe4ff");
+				frontColor = Color.white;
+				hitEffect = Fx.hitBulletColor;
+			}};
+		}});
+
 		//the buttons that pick the type, in the order of the types: only one on at a time
-		Seq<UnitType> types = Seq.with(rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, missileDrone, napalmDrone, continuousLaserDrone);
+		Seq<UnitType> types = Seq.with(rammer, gunnerDrone, laserDrone, teslaDrone, bomberDrone, missileDrone, napalmDrone, continuousLaserDrone, sniperDrone, artilleryDrone, shotgunDrone, cryoDrone);
 		droneStances.clear();
 		for(UnitType type : types) droneStances.add(new DroneStance(type));
 		for(UnitStance a : droneStances) for(UnitStance b : droneStances) if(a != b) a.incompatibleStances.add(b);
@@ -282,9 +374,9 @@ public class FleetUnits{
 
 		//The three tiers, from one builder: drones, health, armour, speed, hit size, range, shield (radius, strength, recharge), repair beam pairs and
 		//strength, flak pairs, speed projector range, seconds to replace a lost drone, and the scale of the weapon positions.
-		mothership = carrier("mothership", types, 4, 24000f, 25f, 0.9f, 1.2f, 44f, 650f, 100f, 6000f, 2.4f, 1, 2.5f, 1, 260f, 40f, 1f, 30f, 300f);
-		mothershipII = carrier("mothership-ii", types, 8, 48000f, 35f, 0.8f, 1.0f, 58f, 720f, 130f, 12000f, 4.8f, 2, 3.5f, 2, 340f, 30f, 1.3f, 60f, 600f);
-		mothershipIII = carrier("mothership-iii", types, 12, 90000f, 45f, 0.7f, 0.8f, 74f, 800f, 160f, 24000f, 9.6f, 2, 5f, 3, 420f, 20f, 1.65f, 120f, 1200f);
+		mothership = carrier("mothership", types, 4, 24000f, 25f, 0.9f, 1.2f, 44f, 650f, 100f, 6000f, 2.4f, 1, 2.5f, 1, 260f, 40f, 1f, 30f, 300f, 2f);
+		mothershipII = carrier("mothership-ii", types, 8, 48000f, 35f, 0.8f, 1.0f, 58f, 720f, 130f, 12000f, 4.8f, 2, 3.5f, 2, 340f, 30f, 1.3f, 60f, 600f, 3f);
+		mothershipIII = carrier("mothership-iii", types, 12, 90000f, 45f, 0.7f, 0.8f, 74f, 800f, 160f, 24000f, 9.6f, 2, 5f, 3, 420f, 20f, 1.65f, 120f, 1200f, 4.5f);
 		//Tiers II and III are made by upgrading in the Fleet Reconstructor, not in a factory: what they cost to research is set here.
 		mothershipII.setRequirements(with(Items.silicon, 1500, Items.titanium, 1000, Items.thorium, 700, Items.plastanium, 500, Items.surgeAlloy, 250));
 		mothershipIII.setRequirements(with(Items.silicon, 3000, Items.titanium, 2000, Items.thorium, 1400, Items.plastanium, 1000, Items.surgeAlloy, 600));
@@ -300,7 +392,7 @@ public class FleetUnits{
 	 * shield projector and a speed projector. The sizes of the weapon positions follow {@code scale}.
 	 */
 	protected static NHUnitType carrier(String name, Seq<UnitType> types, int drones, float hpV, float armorV, float speedV, float turnV, float hitV, float rangeV,
-		float shieldRadius, float shieldMax, float shieldRegen, int beamPairs, float beamRepair, int flakPairs, float rallyRange, float replaceSeconds, float scale, float allyShield, float allyShieldMax){
+		float shieldRadius, float shieldMax, float shieldRegen, int beamPairs, float beamRepair, int flakPairs, float rallyRange, float replaceSeconds, float scale, float allyShield, float allyShieldMax, float buildV){
 		return new NHUnitType(name){{
 			constructor = UnitEntity::create;
 			outlineColor = outline;
@@ -310,6 +402,8 @@ public class FleetUnits{
 
 			flying = true;
 			lowAltitude = false;
+			//it builds, as a Poly or a Mega does: a piloted one places blocks, a commanded one gets the Rebuild and Assist commands
+			buildSpeed = buildV;
 			health = hpV;
 			armor = armorV;
 			speed = speedV;
