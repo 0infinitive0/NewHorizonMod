@@ -88,17 +88,27 @@ public class RicochetBulletType extends BasicBulletType{
 		return false;
 	}
 
-	/** The next target for a chain standing at {@code (x, y)} on {@code cur}: a fresh one if there is one, else one already hit. */
+	/**
+	 * The next target for a chain standing at {@code (x, y)} on {@code cur}: a fresh one if there is one, else one already hit. Enemy units come
+	 * first; among blocks the nearest of the enemy's and the <b>derelict</b> ones is taken (the game's own closest-enemy search never returns derelict
+	 * blocks, although the bolt itself hits and damages them).
+	 */
 	public Teamc nextTarget(Team team, float x, float y, Teamc cur, ObjectSet<Teamc> hit){
-		Teamc next = Units.closestTarget(team, x, y, bounceRange,
-			u -> u != cur && !hit.contains(u) && u.checkTarget(collidesAir, collidesGround) && u.targetable(team),
-			t -> t != cur && !hit.contains(t) && collidesGround);
-		if(next == null){
-			next = Units.closestTarget(team, x, y, bounceRange,
-				u -> u != cur && u.checkTarget(collidesAir, collidesGround) && u.targetable(team),
-				t -> t != cur && collidesGround);
-		}
+		Teamc next = pick(team, x, y, cur, hit, true);
+		if(next == null) next = pick(team, x, y, cur, hit, false);
 		return next;
+	}
+
+	/** One search: for an enemy unit or block, or a derelict block, that is not {@code cur} (and, when {@code fresh}, not hit yet). */
+	protected Teamc pick(Team team, float x, float y, Teamc cur, ObjectSet<Teamc> hit, boolean fresh){
+		Teamc t = Units.closestTarget(team, x, y, bounceRange,
+			u -> u != cur && (!fresh || !hit.contains(u)) && u.checkTarget(collidesAir, collidesGround) && u.targetable(team),
+			b -> b != cur && (!fresh || !hit.contains(b)) && collidesGround);
+		if(t instanceof Unit || !collidesGround || team == Team.derelict || Vars.indexer == null) return t;
+		Building d = Vars.indexer.findTile(Team.derelict, x, y, bounceRange, b -> b != cur && b.isValid() && (!fresh || !hit.contains(b)), true);
+		if(d == null) return t;
+		if(t == null) return d;
+		return Mathf.dst2(x, y, d.x, d.y) < Mathf.dst2(x, y, t.getX(), t.getY()) ? d : t;
 	}
 
 	/** What an arc does to a target it reaches (damage and the rest only on the server). */

@@ -44,7 +44,7 @@ public class DroneStandDownPacket extends Packet{
 	public static boolean apply(Unit unit, boolean on){
 		DroneBayAbility bay = DroneBayAbility.of(unit);
 		if(bay == null) return false;
-		bay.standDown = on;
+		bay.setStandDown(on);
 		return true;
 	}
 }

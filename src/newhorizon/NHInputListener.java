@@ -64,7 +64,7 @@ public class NHInputListener{
 		if(bay == null) return;
 		boolean on = !bay.standDown;
 		if(Vars.net.client()) Vars.net.send(new DroneStandDownPacket(on), true);
-		else bay.standDown = on;
+		else bay.setStandDown(on);
 		Vars.ui.showInfoToast(Core.bundle.get(on ? "ui.nh-stand-down-on" : "ui.nh-stand-down-off"), 2f);
 	}
 }

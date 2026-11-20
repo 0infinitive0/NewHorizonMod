@@ -42,6 +42,10 @@ public class DroneBayAbility extends Ability{
 	public UnitStance standDownStance;
 	/** Stand down: the drones dock beside the Mothership and do not attack. Set by the stance button of a commanded Mothership, or by a pilot's key. */
 	public boolean standDown;
+	/** The stand down was turned on by the bay itself (the fleet was empty), and is turned off by it when the fleet is full again. */
+	public boolean autoHold;
+	/** The drone count the bay last looked at (it looks again only when the count changes), and how many times it has looked. */
+	public int lastCount = -1, countChecks;
 	public int count = 4;
 	/** Ticks between the first launches, ticks before the first, and ticks to replace a lost drone. */
 	public float firstInterval = 90f, startDelay = 120f, rebuildTime = 60f * 40f;
@@ -75,6 +79,8 @@ public class DroneBayAbility extends Ability{
 	public Ability copy(){
 		DroneBayAbility c = (DroneBayAbility)super.copy();
 		c.bound = new Seq<>();
+		c.lastCount = -1;
+		c.autoHold = false;
 		c.reset();
 		return c;
 	}
@@ -124,6 +130,12 @@ public class DroneBayAbility extends Ability{
 		if(Vars.net.client() || !mother.isValid()) return;
 		switchLeft = Math.max(0f, switchLeft - Time.delta);
 		syncStances(mother);
+		bound.removeAll(u -> !u.isValid());
+		if(bound.size != lastCount){
+			lastCount = bound.size;
+			countChecks++;
+			countChanged(mother, lastCount);
+		}
 
 		if(recalling){
 			bound.removeAll(u -> !u.isValid());
@@ -164,10 +176,43 @@ public class DroneBayAbility extends Ability{
 				break;
 			}
 		}
-		if(standDownStance != null) standDown = ai.hasStance(standDownStance);
+		//the button was pressed since the last look: a player's choice, which the automatic stand down must not undo
+		if(standDownStance != null && ai.hasStance(standDownStance) != standDown){
+			standDown = !standDown;
+			autoHold = false;
+		}
 		UnitStance now = stances.get(index());
 		if(!ai.hasStance(now)) ai.setStance(now, true);
 		for(int i = 0; i < stances.size; i++) if(i != index() && ai.hasStance(stances.get(i))) ai.setStance(stances.get(i), false);
+	}
+
+	/** A player's Stand down (the button, or the pilot's key): it stays as chosen, whatever the fleet does. */
+	public void setStandDown(boolean on){
+		standDown = on;
+		autoHold = false;
+	}
+
+	/**
+	 * The drone count changed. With none left the bay turns Stand down on by itself, so that the drones that come out park instead of flying off one by
+	 * one; when the fleet is full again it turns that off, if it was the one that turned it on.
+	 */
+	protected void countChanged(Unit mother, int n){
+		if(n == 0){
+			if(!standDown){
+				standDown = true;
+				autoHold = true;
+				showStance(mother, true);
+			}
+		}else if(n >= count && autoHold){
+			standDown = false;
+			autoHold = false;
+			showStance(mother, false);
+		}
+	}
+
+	/** Lights or clears the Stand down button of a commanded mothership. */
+	protected void showStance(Unit mother, boolean on){
+		if(standDownStance != null && mother.controller() instanceof CommandAI ai) ai.setStance(standDownStance, on);
 	}
 
 	/** Sends one drone of the chosen type out of the back of the mothership. */

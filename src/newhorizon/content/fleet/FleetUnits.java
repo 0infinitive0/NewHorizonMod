@@ -11,6 +11,7 @@ import mindustry.content.Items;
 import mindustry.content.Liquids;
 import mindustry.content.StatusEffects;
 import mindustry.entities.abilities.ForceFieldAbility;
+import mindustry.entities.abilities.ShieldRegenFieldAbility;
 import mindustry.entities.abilities.StatusFieldAbility;
 import mindustry.entities.bullet.BasicBulletType;
 import mindustry.entities.bullet.BombBulletType;
@@ -281,9 +282,9 @@ public class FleetUnits{
 
 		//The three tiers, from one builder: drones, health, armour, speed, hit size, range, shield (radius, strength, recharge), repair beam pairs and
 		//strength, flak pairs, speed projector range, seconds to replace a lost drone, and the scale of the weapon positions.
-		mothership = carrier("mothership", types, 4, 24000f, 25f, 0.9f, 1.2f, 44f, 650f, 100f, 6000f, 2.4f, 1, 2.5f, 1, 260f, 40f, 1f);
-		mothershipII = carrier("mothership-ii", types, 8, 48000f, 35f, 0.8f, 1.0f, 58f, 720f, 130f, 12000f, 4.8f, 2, 3.5f, 2, 340f, 30f, 1.3f);
-		mothershipIII = carrier("mothership-iii", types, 12, 90000f, 45f, 0.7f, 0.8f, 74f, 800f, 160f, 24000f, 9.6f, 2, 5f, 3, 420f, 20f, 1.65f);
+		mothership = carrier("mothership", types, 4, 24000f, 25f, 0.9f, 1.2f, 44f, 650f, 100f, 6000f, 2.4f, 1, 2.5f, 1, 260f, 40f, 1f, 30f, 300f);
+		mothershipII = carrier("mothership-ii", types, 8, 48000f, 35f, 0.8f, 1.0f, 58f, 720f, 130f, 12000f, 4.8f, 2, 3.5f, 2, 340f, 30f, 1.3f, 60f, 600f);
+		mothershipIII = carrier("mothership-iii", types, 12, 90000f, 45f, 0.7f, 0.8f, 74f, 800f, 160f, 24000f, 9.6f, 2, 5f, 3, 420f, 20f, 1.65f, 120f, 1200f);
 		//Tiers II and III are made by upgrading in the Fleet Reconstructor, not in a factory: what they cost to research is set here.
 		mothershipII.setRequirements(with(Items.silicon, 1500, Items.titanium, 1000, Items.thorium, 700, Items.plastanium, 500, Items.surgeAlloy, 250));
 		mothershipIII.setRequirements(with(Items.silicon, 3000, Items.titanium, 2000, Items.thorium, 1400, Items.plastanium, 1000, Items.surgeAlloy, 600));
@@ -299,7 +300,7 @@ public class FleetUnits{
 	 * shield projector and a speed projector. The sizes of the weapon positions follow {@code scale}.
 	 */
 	protected static NHUnitType carrier(String name, Seq<UnitType> types, int drones, float hpV, float armorV, float speedV, float turnV, float hitV, float rangeV,
-		float shieldRadius, float shieldMax, float shieldRegen, int beamPairs, float beamRepair, int flakPairs, float rallyRange, float replaceSeconds, float scale){
+		float shieldRadius, float shieldMax, float shieldRegen, int beamPairs, float beamRepair, int flakPairs, float rallyRange, float replaceSeconds, float scale, float allyShield, float allyShieldMax){
 		return new NHUnitType(name){{
 			constructor = UnitEntity::create;
 			outlineColor = outline;
@@ -379,6 +380,8 @@ public class FleetUnits{
 			abilities.add(new ForceFieldAbility(shieldRadius, shieldRegen, shieldMax, 400f));
 			//the speed projector
 			abilities.add(new StatusFieldAbility(FleetStatus.rally, 120f, 36f, rallyRange));
+			//the shield field: shield points for the allies near it (the drones and itself included)
+			abilities.add(new ShieldRegenFieldAbility(allyShield, allyShieldMax, 120f, rallyRange));
 		}};
 	}
 
