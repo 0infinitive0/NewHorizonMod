@@ -45,6 +45,8 @@ public class GroundMinerAI extends MinerAI{
 	/** Set by {@link #walkTo} when the path finder says there is no way there. */
 	public boolean noPath;
 	protected boolean stancesDone;
+	/** Set for a tick by {@link #walkTo} when it flies straight because there is no way on foot. */
+	protected boolean crossing;
 
 	/** The ore tile closest to the core for an item, or null. Overridable (a test supplies its own). */
 	protected Tile findOre(Building core, Item item){
@@ -60,18 +62,44 @@ public class GroundMinerAI extends MinerAI{
 		return unit.type.mineFloor && unit.canMine(item) && hasOre(item) && skipUntil.get(item, 0f) <= Time.time;
 	}
 
-	/** Walks one step along the route to {@code target}; true when it is within {@code stop} of it or on its way, false when there is no way there. */
+	/**
+	 * Walks one step along the path finder's route to {@code target}: true if it moved (or is already there), false when the path finder says there is
+	 * no way on foot. Overridable (a test cannot run the path finder).
+	 */
+	protected boolean pathStep(Vec2 target, float stop){
+		var result = Vars.controlPath.getPathPosition(unit, target);
+		if(result.unreachable) return false;
+		if(result.move) moveTo(result.dest, 1f, 20f);
+		return true;
+	}
+
+	/**
+	 * Walks one step along the route to {@code target}; true when it is within {@code stop} of it or on its way. When there is no way on foot a unit that
+	 * can boost (the miners) <b>flies straight there</b>, over water and rock; one that cannot reports false.
+	 */
 	protected boolean walkTo(Position target, float stop){
 		noPath = false;
 		if(unit.within(target, stop)) return true;
 		goal.set(target.getX(), target.getY());
-		var result = Vars.controlPath.getPathPosition(unit, goal);
-		if(result.unreachable){
+		if(pathStep(goal, stop)) return true;
+		if(!unit.type.canBoost){
 			noPath = true;
 			return false;
 		}
-		if(result.move) moveTo(result.dest, 1f, 20f);
+		crossing = true;
+		moveTo(target, stop, 20f);
 		return true;
+	}
+
+	/** Whether the unit is over deep water or one tile from it (a boosting unit lands only where it is clear of it). */
+	protected boolean deepNear(){
+		float r = unit.hitSize / 2f + 8f;
+		return deep(unit.x, unit.y) || deep(unit.x + r, unit.y) || deep(unit.x - r, unit.y) || deep(unit.x, unit.y + r) || deep(unit.x, unit.y - r);
+	}
+
+	protected static boolean deep(float x, float y){
+		var floor = Vars.world.floorWorld(x, y);
+		return floor != null && floor.isDeep();
 	}
 
 	/**
@@ -109,8 +137,24 @@ public class GroundMinerAI extends MinerAI{
 		}
 	}
 
+	/**
+	 * A unit that can boost lifts off when it is over or next to deep water, and when it has to cross because there is no way on foot; the game lowers it
+	 * (only where it can land) once neither holds. The Command AI does not look after this for a unit with a command controller, so it is done here.
+	 */
 	@Override
 	public void updateMovement(){
+		crossing = false;
+		mineStep();
+		//over deep water with nothing to do there (the ore was used up, it was knocked in): head for the core, which is on land
+		var home = unit.closestCore();
+		if(unit.type.canBoost && !crossing && home != null && deep(unit.x, unit.y) && unit.vel.len() < 0.1f){
+			crossing = true;
+			moveTo(home, depositRange * 0.8f, 20f);
+		}
+		if(unit.type.canBoost) unit.updateBoosting(crossing || deepNear());
+	}
+
+	protected void mineStep(){
 		Building core = unit.closestCore();
 		if(!unit.canMine() || core == null) return;
 
@@ -180,7 +224,7 @@ public class GroundMinerAI extends MinerAI{
 				unit.clearItem();
 				mining = true;
 			}else if(!walkTo(core, depositRange * 0.8f)){
-				//no way through to the core (it is shut in): get as near as the walls allow, which is still in reach from outside
+				//no way through to the core (it is shut in) and it cannot boost: get as near as the walls allow, which is still in reach from outside
 				moveTo(core, depositRange * 0.8f, 20f);
 			}
 		}

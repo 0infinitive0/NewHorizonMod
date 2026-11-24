@@ -62,6 +62,9 @@ public class SupplyUnits{
 			drawCell = false;
 			mechStepParticles = false;
 			mechSideSway = 0.3f;
+			//lifts off to cross deep water and rock, so that it does not drown on the way to ore (GroundMinerAI does the boosting)
+			canBoost = true;
+			boostMultiplier = 1.6f;
 		}
 			@Override public void getUnitStances(mindustry.gen.Unit unit, Seq<mindustry.ai.UnitStance> out){ super.getUnitStances(unit, out); MinerCommands.addStances(this, unit, out); }
 		};
