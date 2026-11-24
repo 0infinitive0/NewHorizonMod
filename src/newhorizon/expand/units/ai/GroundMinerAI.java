@@ -80,6 +80,13 @@ public class GroundMinerAI extends MinerAI{
 	protected boolean walkTo(Position target, float stop){
 		noPath = false;
 		if(unit.within(target, stop)) return true;
+		//Over or next to deep water a unit that can boost just flies at the target. The path finder is no use there: it answers "no move yet,
+		//not unreachable" while it searches (and for a unit over a fully deep tile), so asking it leaves the unit hanging at the shore or in the air.
+		if(unit.type.canBoost && deepNear()){
+			crossing = true;
+			moveTo(target, stop, 20f);
+			return true;
+		}
 		goal.set(target.getX(), target.getY());
 		if(pathStep(goal, stop)) return true;
 		if(!unit.type.canBoost){
