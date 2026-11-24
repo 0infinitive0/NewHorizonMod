@@ -10,13 +10,9 @@ import static mindustry.Vars.indexer;
 
 /**
  * {@link GroundMinerAI} for a unit that flies (the Omni Miner, the Gather): the same item choice, but it flies straight at the ore (no path
- * finder, no limit on how far from the core the ore is), and it also mines ore in walls (omni-matter deposits), as the base game's miner does.
+ * finder), and it also mines ore in walls (omni-matter deposits), as the base game's miner does.
  */
 public class FlyingMinerAI extends GroundMinerAI{
-	public FlyingMinerAI(){
-		maxOreDistance = Float.MAX_VALUE;
-	}
-
 	@Override
 	protected Tile findOre(Building core, Item item){
 		Tile t = null;

@@ -24,12 +24,13 @@ import static mindustry.Vars.tilesize;
  *
  * <p>It goes for the highest tier first and leaves an item alone once the core is full of it ({@link MinerPriority}).
  *
- * <p>It only goes for ore within {@link #maxOreDistance} of the core, and an item whose ore cannot be reached is left alone for
+ * <p>It goes for the ore nearest the core, however far it is, as long as the path finder finds a way there ({@link #maxOreDistance} can set a limit),
+ * and an item whose ore cannot be reached is left alone for
  * {@link #skipTime} ticks while it picks another item, so it does not stand against a wall forever.
  */
 public class GroundMinerAI extends MinerAI{
-	/** How far from the core it will look for ore, in world units. */
-	public float maxOreDistance = 45f * tilesize;
+	/** How far from the core it will look for ore, in world units. No limit by default: titanium and thorium are often far from the core. */
+	public float maxOreDistance = Float.MAX_VALUE;
 	/** Ticks an item with no reachable ore is left out of its choices. */
 	public float skipTime = 60f * 30f;
 	/**
