@@ -30,9 +30,23 @@ public class DroneStance extends UnitStance{
 		return longest <= max || longest <= 0f ? 1f : max / longest;
 	}
 
+	/**
+	 * The size of the icon cell for an image of this size: its longer side, but no more than {@code max}. (The game sizes a button's icon cell from
+	 * {@code Drawable.imageSize()}, not from the drawable's scale.)
+	 */
+	public static float fitSize(float width, float height, float max){
+		return Math.min(Math.max(width, height), max);
+	}
+
 	@Override
 	public TextureRegionDrawable getIcon(){
 		var region = drone.uiIcon;
-		return new TextureRegionDrawable(region, fitScale(region.width, region.height, iconSize));
+		return new TextureRegionDrawable(region, fitScale(region.width, region.height, iconSize)){
+			/** {@code Table.button(icon, ...)} makes the icon cell this big; the base class says the sprite's own width, which is far more than the button holds. */
+			@Override
+			public float imageSize(){
+				return fitSize(region.width, region.height, iconSize);
+			}
+		};
 	}
 }
