@@ -3,6 +3,7 @@ package newhorizon.expand.research;
 import arc.Core;
 import arc.graphics.Color;
 import arc.scene.Element;
+import arc.scene.Group;
 import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.Image;
 import arc.scene.ui.ImageButton;
@@ -37,44 +38,51 @@ public class ResearchPinUI{
 		var dialog = Vars.ui.research;
 		Table info = dialog.view.infoTable;
 
-		//The game empties the info panel and takes its update hook off every time it shows a node (View.showInfo), so the button is added from
-		//the dialog's own update, which it never touches: whenever a node's panel is up and has no pin button yet.
-		dialog.update(() -> {
-			var hover = dialog.view.hoverNode;
-			if(hover == null || !(hover.userObject instanceof TechNode node) || !info.hasChildren()) return;
-			if(!state.isCampaign() || Vars.net.client() || info.find("nh-pin-button") != null) return;
-
-			info.row();
-			info.button(Core.bundle.get(PinnedResearch.isPinned(node.content) ? "research.nh-unpin" : "research.nh-pin"), Icon.star, Styles.cleart, () -> {
-				PinnedResearch.toggle(node.content);
-			}).name("nh-pin-button").growX().height(36f).update(b -> b.setText(Core.bundle.get(PinnedResearch.isPinned(node.content) ? "research.nh-unpin" : "research.nh-pin")));
-			info.invalidateHierarchy();
-			info.pack();
-		});
-
 		//The auto research switch, in the bar at the bottom with Close and Database.
 		dialog.buttons.button("", Icon.star, () -> Core.settings.put(PinnedResearch.settingKey, !PinnedResearch.enabled()))
 			.size(210f, 64f).name("nh-auto-research")
 			.update(b -> b.setText(Core.bundle.get(PinnedResearch.enabled() ? "research.nh-auto.on" : "research.nh-auto.off")))
-			.visible(() -> state.isCampaign() && !Vars.net.client())
+			.visible(() -> !Vars.net.client())
 			.tooltip(Core.bundle.get("research.nh-auto.tip"));
 
+		//An element has ONE update hook (Element.update(Runnable) replaces the last), so everything the dialog needs each frame is in this one.
+		//The game empties the info panel and takes its hook off every time it shows a node (View.showInfo), so the pin button is added from here,
+		//which it never touches: whenever a node's panel is up and has no pin button yet.
 		dialog.update(() -> {
-			for(Element e : dialog.view.getChildren()){
-				if(e instanceof ImageButton b && b.userObject instanceof TechNode node && b.find("nh-pin-mark") == null){
-					Image mark = new Image(Icon.star);
-					mark.name = "nh-pin-mark";
-					mark.setColor(Pal.accent);
-					mark.touchable = arc.scene.event.Touchable.disabled;
-					b.addChild(mark);
-					mark.update(() -> {
-						mark.visible = PinnedResearch.isPinned(node.content);
-						mark.setSize(16f);
-						mark.setPosition(b.getWidth() - 18f, b.getHeight() - 18f);
-					});
-				}
-			}
+			addPinButton(info, dialog.view.hoverNode);
+			addPinMarks(dialog.view);
 		});
+	}
+
+	/** Adds the Pin/Unpin button to the info panel of the node under the cursor, once. */
+	static void addPinButton(Table info, ImageButton hover){
+		if(hover == null || !(hover.userObject instanceof TechNode node) || !info.hasChildren()) return;
+		if(Vars.net.client() || info.find("nh-pin-button") != null) return;
+
+		info.row();
+		info.button(Core.bundle.get(PinnedResearch.isPinned(node.content) ? "research.nh-unpin" : "research.nh-pin"), Icon.star, Styles.cleart, () -> {
+			PinnedResearch.toggle(node.content);
+		}).name("nh-pin-button").growX().height(36f).update(b -> b.setText(Core.bundle.get(PinnedResearch.isPinned(node.content) ? "research.nh-unpin" : "research.nh-pin")));
+		info.invalidateHierarchy();
+		info.pack();
+	}
+
+	/** Puts a star on each node of the tree that is pinned (the node buttons are rebuilt by the game, so it looks for new ones every frame). */
+	private static void addPinMarks(Group view){
+		for(Element e : view.getChildren()){
+			if(e instanceof ImageButton b && b.userObject instanceof TechNode node && b.find("nh-pin-mark") == null){
+				Image mark = new Image(Icon.star);
+				mark.name = "nh-pin-mark";
+				mark.setColor(Pal.accent);
+				mark.touchable = arc.scene.event.Touchable.disabled;
+				b.addChild(mark);
+				mark.update(() -> {
+					mark.visible = PinnedResearch.isPinned(node.content);
+					mark.setSize(16f);
+					mark.setPosition(b.getWidth() - 18f, b.getHeight() - 18f);
+				});
+			}
+		}
 	}
 
 	/** A panel on the left of the HUD listing the pinned research. */

@@ -23,7 +23,7 @@ public class SupplyUnits{
 	public static final Color outline = Color.valueOf("2c2a33");
 
 	public static void load(){
-		mineCommand = new UnitCommand("nh-ground-mine", "production", u -> new GroundMinerAI());
+		mineCommand = MinerCommands.mine;
 
 		digger = miner("digger", 70f, 0.55f, 8f, 15, 1.0f, 1, new mindustry.type.Item[]{Items.copper, Items.lead});
 		delver = miner("delver", 130f, 0.65f, 9f, 30, 1.5f, 2, new mindustry.type.Item[]{Items.copper, Items.lead, Items.sand, Items.scrap, Items.coal});
@@ -44,6 +44,8 @@ public class SupplyUnits{
 			commands = Seq.with(mineCommand, UnitCommand.moveCommand);
 			defaultCommand = mineCommand;
 			outlineColor = outline;
+			//the sprites carry their own edge: the game's default 3 px of outline on top of it is a thick halo on a 24 to 40 px unit
+			outlineRadius = 1;
 
 			//(The names of the parameters differ from the fields' on purpose: inside this block a field's name would hide the parameter.)
 			health = hp;
@@ -60,6 +62,8 @@ public class SupplyUnits{
 			drawCell = false;
 			mechStepParticles = false;
 			mechSideSway = 0.3f;
-		}};
+		}
+			@Override public void getUnitStances(mindustry.gen.Unit unit, Seq<mindustry.ai.UnitStance> out){ super.getUnitStances(unit, out); MinerCommands.addStances(this, unit, out); }
+		};
 	}
 }

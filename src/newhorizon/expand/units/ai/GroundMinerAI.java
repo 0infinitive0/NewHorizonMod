@@ -22,6 +22,8 @@ import static mindustry.Vars.tilesize;
  * finds the ore closest to the core, <b>walks</b> there along the path finder's route (the same one the Command AI uses), mines, and walks
  * back to hand what it carries to the core.
  *
+ * <p>It goes for the highest tier first and leaves an item alone once the core is full of it ({@link MinerPriority}).
+ *
  * <p>It only goes for ore within {@link #maxOreDistance} of the core, and an item whose ore cannot be reached is left alone for
  * {@link #skipTime} ticks while it picks another item, so it does not stand against a wall forever.
  */
@@ -41,6 +43,7 @@ public class GroundMinerAI extends MinerAI{
 	private final Vec2 goal = new Vec2();
 	/** Set by {@link #walkTo} when the path finder says there is no way there. */
 	public boolean noPath;
+	protected boolean stancesDone;
 
 	/** The ore tile closest to the core for an item, or null. Overridable (a test supplies its own). */
 	protected Tile findOre(Building core, Item item){
@@ -88,6 +91,23 @@ public class GroundMinerAI extends MinerAI{
 		}
 	}
 
+	/** The item to go for now: the highest tier the core is not full of (see {@link MinerPriority}), or null. */
+	protected Item chooseItem(Building core, CommandAI ai){
+		if(byStance(ai)){
+			return MinerPriority.pick(Vars.content.items(), core, i -> wanted(i) && ai.hasStance(mindustry.ai.ItemUnitStance.getByItem(i)));
+		}
+		return MinerPriority.pick(unit.type.mineItems, core, this::wanted);
+	}
+
+	/** A Command AI starts the base game's own Mine command with "mine anything" on; this command has to do that itself. */
+	protected void initStances(CommandAI ai){
+		if(stancesDone) return;
+		stancesDone = true;
+		if(ai != null && !ai.hasStance(UnitStance.mineAuto) && !mindustry.ai.ItemUnitStance.all().contains(ai::hasStance)){
+			ai.setStance(UnitStance.mineAuto, true);
+		}
+	}
+
 	@Override
 	public void updateMovement(){
 		Building core = unit.closestCore();
@@ -98,28 +118,30 @@ public class GroundMinerAI extends MinerAI{
 		}
 
 		CommandAI ai = unit.controller() instanceof CommandAI a ? a : null;
+		initStances(ai);
 
 		if(mining){
-			if(timer.get(timerTarget2, 60 * 4) || targetItem == null){
-				if(byStance(ai)){
-					targetItem = Vars.content.items().min(i -> wanted(i) && ai.hasStance(mindustry.ai.ItemUnitStance.getByItem(i)), i -> core.items.get(i));
-				}else{
-					targetItem = unit.type.mineItems.min(this::wanted, i -> core.items.get(i));
-				}
+			if(timer.get(timerTarget2, 60 * 4) || targetItem == null || MinerPriority.full(core, targetItem)){
+				targetItem = chooseItem(core, ai);
 			}
 
-			//the core is full of it: nothing to do
-			if(targetItem != null && core.acceptStack(targetItem, 1, unit) == 0){
+			//carrying what the core is full of: there is no use in taking it home
+			if(unit.stack.amount > 0 && MinerPriority.full(core, unit.stack.item)){
 				unit.clearItem();
+			}
+
+			//nothing to mine (the core is full of all of it, or there is no ore): hand over what it carries, else wait
+			if(targetItem == null){
 				unit.mineTile = null;
+				if(unit.stack.amount > 0) mining = false;
 				return;
 			}
 
 			//full: take it home
-			if(unit.stack.amount >= unit.type.itemCapacity || (targetItem != null && !unit.acceptsItem(targetItem))){
+			if(unit.stack.amount >= unit.type.itemCapacity || !unit.acceptsItem(targetItem)){
 				mining = false;
 			}else{
-				if(timer.get(timerTarget3, 60) && targetItem != null){
+				if(timer.get(timerTarget3, 60)){
 					ore = findOre(core, targetItem);
 					if(ore != null && Mathf.dst(ore.worldx(), ore.worldy(), core.x, core.y) > maxOreDistance){
 						ore = null;
@@ -131,10 +153,10 @@ public class GroundMinerAI extends MinerAI{
 					}
 				}
 
-				if(ore != null){
+				if(ore != null && targetItem != null){
 					if(!walkTo(ore, unit.type.mineRange / 2f)){
 						//the ore cannot be reached: leave this item alone for a while and choose again
-						if(targetItem != null) skipUntil.put(targetItem, Time.time + skipTime);
+						skipUntil.put(targetItem, Time.time + skipTime);
 						ore = null;
 						targetItem = null;
 					}else if(unit.within(ore, unit.type.mineRange) && unit.validMine(ore)){
@@ -151,7 +173,7 @@ public class GroundMinerAI extends MinerAI{
 			}
 
 			if(unit.within(core, depositRange)){
-				if(core.acceptStack(unit.stack.item, unit.stack.amount, unit) > 0){
+				if(!MinerPriority.full(core, unit.stack.item) && core.acceptStack(unit.stack.item, unit.stack.amount, unit) > 0){
 					Call.transferItemTo(unit, unit.stack.item, unit.stack.amount, unit.x, unit.y, core);
 				}
 				unit.clearItem();

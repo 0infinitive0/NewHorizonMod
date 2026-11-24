@@ -9,6 +9,8 @@ import mindustry.content.UnitTypes;
 import mindustry.gen.UnitEntity;
 import mindustry.type.UnitType;
 import mindustry.world.blocks.units.UnitFactory;
+import newhorizon.content.supply.MinerCommands;
+import newhorizon.expand.units.ai.FlyingMinerAI;
 import newhorizon.expand.units.unitType.NHUnitType;
 
 import static mindustry.type.ItemStack.with;
@@ -27,6 +29,7 @@ public class OmniDrones{
 		omniMiner = new NHUnitType("omni-miner"){{
 			constructor = UnitEntity::create;
 			outlineColor = Color.valueOf("1b1b22");
+			outlineRadius = 1;
 			drawCell = false;
 
 			//Everything of the mono's.
@@ -53,13 +56,17 @@ public class OmniDrones{
 			useUnitCap = mono.useUnitCap;
 			payloadCapacity = mono.payloadCapacity;
 			envDisabled = mono.envDisabled;
-			defaultCommand = UnitCommand.mineCommand;
+			aiController = FlyingMinerAI::new;
+			defaultCommand = MinerCommands.mine;
+			commands = Seq.with(MinerCommands.mine, UnitCommand.moveCommand);
 
 			//What differs: omni-matter is as hard as titanium, and deposits are solid blocks (the mono's mining speed is kept: a hard item takes longer).
 			mineTier = 3;
 			mineWalls = true;
 			mineItems = Seq.with(Items.copper, Items.lead, NukeItems.omniMatter);
-		}};
+		}
+			@Override public void getUnitStances(mindustry.gen.Unit unit, Seq<mindustry.ai.UnitStance> out){ super.getUnitStances(unit, out); MinerCommands.addStances(this, unit, out); }
+		};
 
 		//Made where the mono is made, after it in the list of what the factory can make (so that the numbers saved in factories stay right).
 		((UnitFactory)Blocks.airFactory).plans.add(new UnitFactory.UnitPlan(omniMiner, 60f * 40f, with(Items.silicon, 40, Items.lead, 25, Items.titanium, 10)));

@@ -3249,8 +3249,9 @@ public class NHUnitTypes{
 		
 		gather = new NHUnitType("gather"){{
 			outlineColor = OColor;
-			aiController = MinerAI::new;
-			defaultCommand = UnitCommand.mineCommand;
+			aiController = newhorizon.expand.units.ai.FlyingMinerAI::new;
+			defaultCommand = newhorizon.content.supply.MinerCommands.mine;
+			commands = Seq.with(newhorizon.content.supply.MinerCommands.mine, UnitCommand.moveCommand);
 			constructor = EntityMapping.map(3);
 			immunities = ObjectSet.with(NHStatusEffects.ultFireBurn, NHStatusEffects.emp1, NHStatusEffects.emp2, StatusEffects.shocked, StatusEffects.burning, StatusEffects.melting, StatusEffects.electrified, StatusEffects.wet, StatusEffects.slow, StatusEffects.blasted);
 			weapons.add(new RepairBeamWeapon("repair-beam-weapon-center"){{
@@ -3283,6 +3284,7 @@ public class NHUnitTypes{
 			
 			mineItems.addAll(NHItems.zeta, Items.beryllium, Items.tungsten);
 		}
+			@Override public void getUnitStances(Unit unit, Seq<mindustry.ai.UnitStance> out){super.getUnitStances(unit, out); newhorizon.content.supply.MinerCommands.addStances(this, unit, out);}
 			@Override public void createIcons(MultiPacker packer){super.createIcons(packer); NHPixmap.createIcons(packer, this); NHPixmap.outlineLegs(packer, this);}
 		};
 		
