@@ -62,37 +62,79 @@ public class GroundMinerAI extends MinerAI{
 		return unit.type.mineFloor && unit.canMine(item) && hasOre(item) && skipUntil.get(item, 0f) <= Time.time;
 	}
 
-	/**
-	 * Walks one step along the path finder's route to {@code target}: true if it moved (or is already there), false when the path finder says there is
-	 * no way on foot. Overridable (a test cannot run the path finder).
-	 */
-	protected boolean pathStep(Vec2 target, float stop){
-		var result = Vars.controlPath.getPathPosition(unit, target);
-		if(result.unreachable) return false;
-		if(result.move) moveTo(result.dest, 1f, 20f);
-		return true;
-	}
+	/** What the path finder said: it moved the unit, it is still searching, or there is no way on foot. */
+	protected enum Step{ MOVED, PENDING, UNREACHABLE }
 
 	/**
-	 * Walks one step along the route to {@code target}; true when it is within {@code stop} of it or on its way. When there is no way on foot a unit that
-	 * can boost (the miners) <b>flies straight there</b>, over water and rock; one that cannot reports false.
+	 * Walks one step along the path finder's route to {@code target}. The path finder searches on another thread and answers "no move, not unreachable"
+	 * until it has finished (and starts again whenever the unit's tile changes, and for a unit on a tile it cannot cross), so PENDING can last a long time.
+	 * Overridable (a test cannot run the path finder).
+	 */
+	protected Step pathStep(Vec2 target, float stop){
+		var result = Vars.controlPath.getPathPosition(unit, target);
+		if(result.unreachable) return Step.UNREACHABLE;
+		if(result.move){
+			moveTo(result.dest, 1f, 20f);
+			return Step.MOVED;
+		}
+		return Step.PENDING;
+	}
+
+	/** Ticks the path finder may answer "still searching" before a unit that can boost stops waiting and flies. */
+	public float pendingLimit = 45f;
+	/** Ticks a flight to one target lasts at most before the path finder is asked again. */
+	public float flightTime = 60f * 20f;
+	/** The target a committed flight is going to, whether one is under way, until when, and how long the path finder has been silent. */
+	protected final Vec2 flyGoal = new Vec2();
+	protected boolean flying;
+	protected float flyUntil, pending;
+	/** Set by {@link #mineStep} when there is nothing to mine. */
+	protected boolean idle;
+
+	/**
+	 * Walks one step along the route to {@code target}; true when it is within {@code stop} of it or on its way. A unit that can boost (the miners) does not
+	 * depend on the path finder where it is no use: it <b>flies straight</b> to the target when it is over or next to deep water or over a solid tile, when
+	 * the path finder says there is no way on foot, and when the path finder has not answered for {@link #pendingLimit} ticks. Once it flies to a target
+	 * it keeps going until it is there (or {@link #flightTime} has passed), because the path finder starts its search again at every tile and would
+	 * stop the unit again and again. A unit that cannot boost reports false when there is no way.
 	 */
 	protected boolean walkTo(Position target, float stop){
 		noPath = false;
-		if(unit.within(target, stop)) return true;
-		//Over or next to deep water a unit that can boost just flies at the target. The path finder is no use there: it answers "no move yet,
-		//not unreachable" while it searches (and for a unit over a fully deep tile), so asking it leaves the unit hanging at the shore or in the air.
-		if(unit.type.canBoost && deepNear()){
-			crossing = true;
-			moveTo(target, stop, 20f);
+		if(unit.within(target, stop)){
+			flying = false;
+			pending = 0f;
 			return true;
 		}
-		goal.set(target.getX(), target.getY());
-		if(pathStep(goal, stop)) return true;
-		if(!unit.type.canBoost){
-			noPath = true;
-			return false;
+		boolean boost = unit.type.canBoost;
+		if(boost){
+			if(flying && (Time.time >= flyUntil || !flyGoal.epsilonEquals(target.getX(), target.getY(), 1f))) flying = false;
+			if(flying || deepNear() || unit.onSolid()){
+				crossing = true;
+				moveTo(target, stop, 20f);
+				return true;
+			}
 		}
+		goal.set(target.getX(), target.getY());
+		Step step = pathStep(goal, stop);
+		if(step == Step.MOVED){
+			pending = 0f;
+			return true;
+		}
+		if(!boost){
+			if(step == Step.UNREACHABLE){
+				noPath = true;
+				return false;
+			}
+			return true;
+		}
+		if(step == Step.PENDING){
+			pending += Time.delta;
+			if(pending < pendingLimit) return true;
+		}
+		pending = 0f;
+		flying = true;
+		flyGoal.set(goal);
+		flyUntil = Time.time + flightTime;
 		crossing = true;
 		moveTo(target, stop, 20f);
 		return true;
@@ -151,12 +193,13 @@ public class GroundMinerAI extends MinerAI{
 	@Override
 	public void updateMovement(){
 		crossing = false;
+		idle = false;
 		mineStep();
-		//over deep water with nothing to do there (the ore was used up, it was knocked in): head for the core, which is on land
+		//nothing to do over water or walls (nothing wanted, the ore was used up, it was knocked in): go to the core and land beside it
 		var home = unit.closestCore();
-		if(unit.type.canBoost && !crossing && home != null && deep(unit.x, unit.y) && unit.vel.len() < 0.1f){
+		if(unit.type.canBoost && idle && !crossing && home != null && (deepNear() || unit.onSolid())){
 			crossing = true;
-			moveTo(home, depositRange * 0.8f, 20f);
+			moveTo(home, home.hitSize() / 2f + 24f, 20f);
 		}
 		if(unit.type.canBoost) unit.updateBoosting(crossing || deepNear());
 	}
@@ -185,6 +228,7 @@ public class GroundMinerAI extends MinerAI{
 			//nothing to mine (the core is full of all of it, or there is no ore): hand over what it carries, else wait
 			if(targetItem == null){
 				unit.mineTile = null;
+				idle = true;
 				if(unit.stack.amount > 0) mining = false;
 				return;
 			}
