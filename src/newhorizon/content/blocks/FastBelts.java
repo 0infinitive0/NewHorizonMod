@@ -11,6 +11,8 @@ import mindustry.world.meta.StatUnit;
 import newhorizon.content.NHBlocks;
 import newhorizon.content.NHItems;
 import newhorizon.expand.block.distribution.FastConveyor;
+import newhorizon.expand.block.distribution.FastJunction;
+import newhorizon.expand.block.distribution.FastRouter;
 import newhorizon.expand.block.distribution.FloatStackConveyor;
 
 import static mindustry.Vars.tilesize;
@@ -37,6 +39,9 @@ public class FastBelts{
 	public static final Color[] tierColors = {Color.valueOf("5fe0d0"), Color.valueOf("b08cff"), Color.valueOf("ffb04a")};
 	public static final FastConveyor[] plain = new FastConveyor[3];
 	public static final FloatStackConveyor[] batch = new FloatStackConveyor[3];
+	/** A junction (items a second per direction), a router and a 2x2 distributor (items a second in all, twice the belt's) for each tier. */
+	public static final FastJunction[] junction = new FastJunction[3];
+	public static final FastRouter[] router = new FastRouter[3], distributor = new FastRouter[3];
 
 	public static void load(){
 		for(int i = 0; i < 3; i++){
@@ -74,8 +79,41 @@ public class FastBelts{
 					stats.add(Stat.itemsMoved, batchRate[t], StatUnit.itemsSecond);
 				}
 			};
+
+			junction[i] = new FastJunction(tierNames[i] + "-junction"){{
+				requirements(Category.distribution, times(cost(t, false), 3));
+				speed = junctionTime;
+				displayedSpeed = plainRate[t];
+				capacity = (int)Math.ceil(plainRate[t] * junctionTime / 60f) + 2;
+				health = 500 + 100 * t;
+			}};
+			plain[i].junctionReplacement = junction[i];
+
+			router[i] = fastRouter(tierNames[i] + "-router", 1, plainRate[t], times(cost(t, false), 3), 500 + 100 * t);
+			distributor[i] = fastRouter(tierNames[i] + "-distributor", 2, plainRate[t] * 2f, times(cost(t, false), 12), 1200 + 200 * t);
 		}
 	}
+
+	//(The names of the parameters differ from the fields' on purpose: inside the block a field's name would hide the parameter.)
+	private static FastRouter fastRouter(String name, int sz, float rt, mindustry.type.ItemStack[] costs, int hitpoints){
+		return new FastRouter(name){{
+			requirements(Category.distribution, costs);
+			size = sz;
+			rate = rt;
+			queueSize = (int)Math.ceil(rt * 2f / 60f) + 2;
+			perTick = (int)Math.ceil(rt / 60f) + 1;
+			health = hitpoints;
+		}};
+	}
+
+	private static mindustry.type.ItemStack[] times(mindustry.type.ItemStack[] stacks, int k){
+		mindustry.type.ItemStack[] out = new mindustry.type.ItemStack[stacks.length];
+		for(int i = 0; i < stacks.length; i++) out[i] = new mindustry.type.ItemStack(stacks[i].item, stacks[i].amount * k);
+		return out;
+	}
+
+	/** Ticks an item spends inside a fast junction. */
+	public static final float junctionTime = 4f;
 
 	/** Costs for a tile of tier {@code t}: the Multi-Steel / Iridium Panel belts' items, with a senior processor from the second tier and fusion energy from the third. */
 	private static mindustry.type.ItemStack[] cost(int t, boolean batch){

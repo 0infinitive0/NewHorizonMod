@@ -4,6 +4,7 @@ import arc.math.Mathf;
 import arc.struct.Seq;
 import arc.util.Time;
 import mindustry.gen.Building;
+import mindustry.type.Item;
 import mindustry.world.blocks.distribution.Conveyor;
 
 /**
@@ -22,6 +23,11 @@ public class FastConveyor extends Conveyor{
 	/** The base belt's spacing between items, and the capacity of a tile (private constants there). */
 	public static final float itemSpace = 0.4f;
 	public static final int capacity = 3;
+	/**
+	 * How many items the first tile of a run can hold when blocks that deliver several items a tick (the fast junctions and routers) put them on it: such a
+	 * block is not stepped with the run, so a tile that could take only 3 would limit it to about 2 a tick.
+	 */
+	public static final int headCapacity = 6;
 
 	public FastConveyor(String name){
 		super(name);
@@ -32,6 +38,12 @@ public class FastConveyor extends Conveyor{
 		protected float runTick = -1f;
 		protected int idleTicks;
 
+		{
+			ids = new Item[headCapacity];
+			xs = new float[headCapacity];
+			ys = new float[headCapacity];
+		}
+
 		/** The tile behind this one, if it is one of these and hands its items straight on to this one. */
 		protected FastConveyorBuild before(){
 			Building rear = nearby(Mathf.mod(rotation + 2, 4));
@@ -41,6 +53,35 @@ public class FastConveyor extends Conveyor{
 		/** The tile ahead of this one, if it is one of these and this one hands its items straight on to it. */
 		protected FastConveyorBuild after(){
 			return aligned && nextc instanceof FastConveyorBuild f && f.before() == this ? f : null;
+		}
+
+		/**
+		 * How far into this tile an item from {@code source} can be put if it comes in from directly behind (the base belt's rules for that), or a negative
+		 * number if it cannot be taken that way now. For blocks that deliver several items a tick (see {@link #giveRear}).
+		 */
+		public float rearRoom(Building source, Item item){
+			if(source == null || source.team != team || len >= headCapacity) return -1f;
+			if(Math.abs(source.relativeTo(tile.x, tile.y) - rotation) != 0) return -1f;
+			if(source.block.rotate && next == source) return -1f;
+			return lowest(0) - itemSpace;
+		}
+
+		/** The lowest item of this tile; with none, one tile further on (counted from this tile's start) as far as the run goes, else the end of the next tile. */
+		protected float lowest(int depth){
+			if(len > 0) return ys[0];
+			FastConveyorBuild ahead = depth < 2 ? after() : null;
+			return 1f + (ahead != null ? ahead.lowest(depth + 1) : 1f);
+		}
+
+		/** Puts an item on this tile {@code y} into it (at most {@link #rearRoom}), as the base belt's handleItem does for an item from behind. */
+		public void giveRear(Building source, Item item, float y){
+			noSleep();
+			items.add(item, 1);
+			add(0);
+			xs[0] = 0f;
+			ys[0] = y;
+			ids[0] = item;
+			minitem = Math.min(minitem, y);
 		}
 
 		@Override

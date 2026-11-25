@@ -155,9 +155,24 @@ public class NHTechTree{
 					});
 				});
 				node(NHBlocks.irdryonVault);
-				node(NHBlocks.multiJunction);
+				node(NHBlocks.multiJunction, () -> {
+					node(FastBelts.junction[0], () -> {
+						node(FastBelts.junction[1], () -> {
+							node(FastBelts.junction[2]);
+						});
+					});
+				});
 				node(NHBlocks.multiRouter, () -> {
 					node(NHBlocks.rapidUnloader);
+					node(FastBelts.router[0], () -> {
+						node(FastBelts.distributor[0]);
+						node(FastBelts.router[1], () -> {
+							node(FastBelts.distributor[1]);
+							node(FastBelts.router[2], () -> {
+								node(FastBelts.distributor[2]);
+							});
+						});
+					});
 				});
 				node(NHBlocks.multiSteelItemBridge);
 				node(NHBlocks.multiConduit, () -> {
