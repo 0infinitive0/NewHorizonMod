@@ -7,6 +7,7 @@ import mindustry.game.Objectives;
 import mindustry.type.ItemStack;
 import mindustry.type.UnitType;
 import newhorizon.content.blocks.DefenseBlock;
+import newhorizon.content.blocks.FastBelts;
 import newhorizon.content.blocks.ProductionBlocks;
 import newhorizon.content.blocks.SpecialBlock;
 import newhorizon.content.blocks.TurretBlock;
@@ -148,6 +149,11 @@ public class NHTechTree{
 			});
 			
 			node(NHBlocks.multiEfficientConveyor, () -> {
+				node(FastBelts.plain[0], () -> {
+					node(FastBelts.plain[1], () -> {
+						node(FastBelts.plain[2]);
+					});
+				});
 				node(NHBlocks.irdryonVault);
 				node(NHBlocks.multiJunction);
 				node(NHBlocks.multiRouter, () -> {
@@ -159,7 +165,13 @@ public class NHTechTree{
 					node(NHBlocks.multiSteelLiquidBridge);
 				});
 				node(NHBlocks.multiArmorConveyor, () -> {
-					node(NHBlocks.multiConveyor);
+					node(NHBlocks.multiConveyor, () -> {
+						node(FastBelts.batch[0], () -> {
+							node(FastBelts.batch[1], () -> {
+								node(FastBelts.batch[2]);
+							});
+						});
+					});
 				});
 			});
 			

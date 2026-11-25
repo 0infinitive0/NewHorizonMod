@@ -4617,6 +4617,7 @@ public class NHBlocks{
 		//loadExperiments();
 
 		DistributionBlock.load();
+		newhorizon.content.blocks.FastBelts.load();
 		ProductionBlocks.load();
 		TurretBlock.load();
 		DefenseBlock.load();
