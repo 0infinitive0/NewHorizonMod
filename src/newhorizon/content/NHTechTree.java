@@ -358,6 +358,7 @@ public class NHTechTree{
 		newhorizon.content.spore.SporeTechTree.loadOtherPlanets();
 		newhorizon.content.heavy.HeavyTechTree.loadOtherPlanets();
 		newhorizon.content.ricochet.RicochetTechTree.loadOtherPlanets();
+		newhorizon.content.tesla.TeslaTechTree.loadOtherPlanets();
 		newhorizon.content.supply.SupplyTechTree.loadOtherPlanets();
 		newhorizon.content.siphoner.SiphonerTechTree.loadOtherPlanets();
 		newhorizon.content.fleet.FleetTechTree.loadOtherPlanets();
