@@ -60,6 +60,7 @@ public class SupplyBlocks{
 		loadPower();
 		SupplyUnits.load();
 		loadTowers();
+		SupplyFactories.load();
 		loadLauncher();
 		loadSprayer();
 	}

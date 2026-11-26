@@ -19,6 +19,7 @@ public class SupplyTechTree{
 		if(ultimate != null) ultimate.objectives.add(new Objectives.Research(Blocks.largeSolarPanel));
 		walkers();
 		towers();
+		factories();
 		//Next to the Scorch it is a longer-ranged spray of the same kind.
 		child(find(Blocks.scorch), SupplyBlocks.reverseSprayer);
 		//Under the Advanced Launch Pad (the vanilla pad's own sector objective applies through its parent).
@@ -33,6 +34,20 @@ public class SupplyTechTree{
 	static TechNode child(TechNode parent, UnlockableContent content){
 		if(parent == null) return null;
 		return new TechNode(parent, content, content.researchRequirements());
+	}
+
+	/** Each better crafter under the base one, the Ultimate under the Advanced; the Ultimate Surge Smelter wants the Phase Weaver, the Crucible the Melter. */
+	private static void factories(){
+		if(SupplyFactories.advancedPlastanium == null) return;
+		TechNode plastanium = child(find(Blocks.plastaniumCompressor), SupplyFactories.advancedPlastanium);
+		child(plastanium, SupplyFactories.ultimatePlastanium);
+		TechNode phase = child(find(Blocks.phaseWeaver), SupplyFactories.advancedPhase);
+		child(phase, SupplyFactories.ultimatePhase);
+		TechNode surge = child(find(Blocks.surgeSmelter), SupplyFactories.advancedSurge);
+		TechNode ultimate = child(surge, SupplyFactories.ultimateSurge);
+		if(ultimate != null) ultimate.objectives.add(new Objectives.Research(Blocks.phaseWeaver));
+		TechNode crucible = child(ultimate, SupplyFactories.surgeCrucible);
+		if(crucible != null) crucible.objectives.add(new Objectives.Research(Blocks.melter));
 	}
 
 	private static void belts(){
