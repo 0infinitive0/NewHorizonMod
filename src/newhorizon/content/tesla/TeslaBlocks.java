@@ -28,7 +28,7 @@ public class TeslaBlocks{
 
 		teslaCoil = new TeslaCoil("tesla-coil"){{
 			requirements(Category.turret, with(Items.silicon, 900, Items.thorium, 500, Items.plastanium, 250, Items.surgeAlloy, 300, Items.phaseFabric, 200));
-			size = 4;
+			size = 2;
 			health = 3600;
 			armor = 8f;
 			range = 20f * 8f;
